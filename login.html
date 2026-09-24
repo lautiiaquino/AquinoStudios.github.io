@@ -4,23 +4,40 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Iniciar sesión — Aquino Studios</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='2' width='28' height='28' rx='7' fill='%238b5cf6'/><path d='M9 23 16 8l7 15h-4l-3-7-3 7z' fill='%230b0b12'/></svg>">
+  <meta name="theme-color" content="#0d0f1a">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='3' y='3' width='26' height='26' rx='7' fill='%23b6ff3c' stroke='%2305060c' stroke-width='2'/><path d='M10 22 16 9l6 13h-3.5L16 16l-2.5 6z' fill='%2305060c'/></svg>">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
   <main class="auth-page">
-    <div class="auth-box">
-      <div class="card">
+    <aside class="auth-side">
+      <h1 id="sideTitle">¡Hola de nuevo!</h1>
+      <p id="sideText">Entrá a tu cuenta de Aquino Studios para seguir donde lo dejaste.</p>
+      <ul>
+        <li><span>⭐</span> Guardá tus juegos favoritos</li>
+        <li><span>💬</span> Comentá y opiná sobre cada juego</li>
+        <li><span>🔔</span> Enterate primero de las novedades</li>
+      </ul>
+      <div class="deco" aria-hidden="true"></div>
+      <div class="deco deco-2" aria-hidden="true"></div>
+    </aside>
+
+    <div class="auth-main">
+      <div class="auth-box">
         <div class="tabs" role="tablist">
           <button class="tab active" data-tab="login" role="tab">Iniciar sesión</button>
           <button class="tab" data-tab="register" role="tab">Crear cuenta</button>
         </div>
 
+        <!-- Botones de Google / Discord (se muestran si están activados en js/config.js) -->
+        <div class="oauth hidden" id="oauth"></div>
+        <div class="divider hidden" id="oauthDivider" style="margin:18px 0">o con tu email</div>
+
         <!-- LOGIN -->
         <form class="form" id="loginForm" data-panel="login" novalidate>
           <div class="field">
             <label for="lEmail">Email</label>
-            <input id="lEmail" type="email" autocomplete="email" required>
+            <input id="lEmail" type="email" autocomplete="email" placeholder="tu@email.com" required>
           </div>
           <div class="field">
             <label for="lPass">Contraseña</label>
@@ -32,18 +49,19 @@
           <div style="text-align:right;margin-top:-6px"><button type="button" class="link-btn" data-go="forgot">¿Olvidaste tu contraseña?</button></div>
           <div class="msg"></div>
           <button class="btn btn-primary btn-block" type="submit">Entrar</button>
+          <p class="muted small center" style="margin:0">¿No tenés cuenta? <button type="button" class="link-btn" data-go="register">Registrate gratis</button></p>
         </form>
 
         <!-- REGISTRO -->
         <form class="form hidden" id="registerForm" data-panel="register" novalidate>
           <div class="field">
             <label for="rUser">Nombre de usuario</label>
-            <input id="rUser" autocomplete="username" maxlength="20" required>
+            <input id="rUser" autocomplete="username" maxlength="20" placeholder="ej: lauti_07" required>
             <span class="hint">3 a 20 caracteres: letras, números o guion bajo.</span>
           </div>
           <div class="field">
             <label for="rEmail">Email</label>
-            <input id="rEmail" type="email" autocomplete="email" required>
+            <input id="rEmail" type="email" autocomplete="email" placeholder="tu@email.com" required>
           </div>
           <div class="field">
             <label for="rPass">Contraseña</label>
@@ -61,17 +79,18 @@
           <label class="check"><input type="checkbox" id="rTerms"> Acepto usar la comunidad con respeto.</label>
           <div class="msg"></div>
           <button class="btn btn-primary btn-block" type="submit">Crear cuenta</button>
+          <p class="muted small center" style="margin:0">¿Ya tenés cuenta? <button type="button" class="link-btn" data-go="login">Iniciá sesión</button></p>
         </form>
 
         <!-- RECUPERAR -->
         <form class="form hidden" id="forgotForm" data-panel="forgot" novalidate>
           <div>
-            <h3>Recuperar contraseña</h3>
-            <p class="muted small">Te enviamos un email con un enlace para crear una contraseña nueva.</p>
+            <h2>Recuperar contraseña</h2>
+            <p class="muted small">Te mandamos un email con un enlace para crear una contraseña nueva.</p>
           </div>
           <div class="field">
             <label for="fEmail">Email</label>
-            <input id="fEmail" type="email" autocomplete="email" required>
+            <input id="fEmail" type="email" autocomplete="email" placeholder="tu@email.com" required>
           </div>
           <div class="msg"></div>
           <button class="btn btn-primary btn-block" type="submit">Enviar enlace</button>

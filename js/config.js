@@ -7,6 +7,11 @@
 export const SUPABASE_URL = 'https://TU_PROYECTO.supabase.co';
 export const SUPABASE_ANON_KEY = 'TU_ANON_KEY';
 
+// Login con otras cuentas (opcional). Primero activalas en
+// Supabase > Authentication > Sign In / Providers y después agregalas acá.
+// Opciones: 'google', 'discord'.   Ejemplo: ['google', 'discord']
+export const AUTH_PROVIDERS = [];
+
 // Redes del estudio (dejá '' para ocultar el ícono)
 export const SOCIALS = {
   roblox: '',   // ej: https://www.roblox.com/communities/123456/Aquino-Studios

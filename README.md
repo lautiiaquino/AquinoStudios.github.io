@@ -46,6 +46,11 @@ En **Authentication**, luego **URL Configuration**:
 
 (Si probás el sitio en tu PC, agregá también `http://localhost:8000/**`.)
 
+### 4b. Entrar con Google o Discord (opcional)
+1. En Supabase, andá a **Authentication**, luego **Sign In / Providers**, y activá **Google** o **Discord** (cada uno te pide un *Client ID* y un *Secret*; Supabase explica ahí cómo sacarlos).
+2. En `js/config.js` poné, por ejemplo: `export const AUTH_PROVIDERS = ['google', 'discord'];`
+3. Los botones aparecen solos en la página de login.
+
 ### 5. Estadísticas de Roblox en vivo (opcional pero recomendado)
 En **Edge Functions**, luego **Deploy a new function** y **Via Editor**:
 1. Nombre: `roblox-stats`.

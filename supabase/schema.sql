@@ -87,7 +87,11 @@ $$;
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare
-  wanted text := coalesce(new.raw_user_meta_data->>'username', '');
+  meta   jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb);
+  -- Registro con email: viene "username". Con Google/Discord: se usa el nombre de esa cuenta.
+  wanted text := left(regexp_replace(coalesce(
+    meta->>'username', meta->>'user_name', meta->>'preferred_username', meta->>'full_name', meta->>'name', ''
+  ), '[^A-Za-z0-9_]', '', 'g'), 20);
 begin
   if wanted !~ '^[A-Za-z0-9_]{3,20}$' or exists (select 1 from public.profiles where lower(username) = lower(wanted)) then
     wanted := 'user_' || substr(replace(new.id::text, '-', ''), 1, 10);
