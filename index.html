@@ -9,6 +9,7 @@
   <meta property="og:title" content="Aquino Studios">
   <meta property="og:description" content="Juegos de Roblox creados por Aquino Studios.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='3' y='3' width='26' height='26' rx='7' fill='%23b6ff3c' stroke='%2305060c' stroke-width='2'/><path d='M10 22 16 9l6 13h-3.5L16 16l-2.5 6z' fill='%2305060c'/></svg>">
+  <script src="js/theme.js"></script>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -48,6 +49,8 @@
         <div class="stat"><div class="stat-value" id="statVisits">–</div><div class="stat-label">Visitas totales</div></div>
         <div class="stat"><div class="stat-value" id="statMembers">–</div><div class="stat-label">Miembros</div></div>
       </div>
+      <!-- Próximo lanzamiento (aparece solo si hay un juego con fecha de salida futura) -->
+      <div class="release-banner hidden" id="releaseBanner"></div>
     </div>
 
     <!-- JUEGOS -->
@@ -92,6 +95,20 @@
       </div>
     </section>
 
+    <!-- ENCUESTAS (se muestra solo si hay encuestas generales) -->
+    <section id="encuestas" class="hidden">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <span class="kicker">Tu opinión</span>
+            <h2>Encuestas</h2>
+            <p class="muted">Votá y ayudanos a decidir qué hacemos después.</p>
+          </div>
+        </div>
+        <div class="polls" id="pollsList"></div>
+      </div>
+    </section>
+
     <!-- NOSOTROS -->
     <section id="nosotros">
       <div class="container about">
@@ -107,6 +124,20 @@
           <div class="feature"><div class="feature-icon">💬</div><h4>Comunidad</h4><p>Tus comentarios nos ayudan a mejorar.</p></div>
           <div class="feature"><div class="feature-icon">⭐</div><h4>Favoritos</h4><p>Guardá los juegos que más te gustan.</p></div>
         </div>
+      </div>
+    </section>
+
+    <!-- EQUIPO (se muestra solo si cargaste miembros desde el panel) -->
+    <section id="equipo" class="hidden" style="padding-top:0">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <span class="kicker">Equipo</span>
+            <h2>Quiénes somos</h2>
+            <p class="muted">Las personas detrás de Aquino Studios.</p>
+          </div>
+        </div>
+        <div class="team-grid" id="teamGrid"></div>
       </div>
     </section>
 

@@ -1,6 +1,7 @@
 import {
   sb, $, $$, esc, safeUrl, formatNumber, formatDate, STATUS, robloxGameUrl, initials,
   renderLayout, toast, errorMsg, withLoading, fetchRobloxStats, thumbStyle, gameCardHtml,
+  avatarHtml, startCountdown, renderPolls,
 } from './common.js';
 
 const profile = await renderLayout('home');
@@ -80,6 +81,7 @@ async function loadGames() {
   }
   games = data;
   $('#statGames').textContent = games.length;
+  renderRelease();
   renderFeatured();
   renderGames();
 
@@ -97,6 +99,43 @@ async function loadGames() {
     $('#statPlaying').textContent = '0';
     $('#statVisits').textContent = '0';
   }
+}
+
+// Aviso del próximo lanzamiento: el juego con la fecha de salida más cercana
+function renderRelease() {
+  const next = games
+    .filter((g) => g.release_at && new Date(g.release_at) > new Date())
+    .sort((a, b) => new Date(a.release_at) - new Date(b.release_at))[0];
+  const box = $('#releaseBanner');
+  if (!next) return box.classList.add('hidden');
+  box.innerHTML = `
+    <div><span class="kicker" style="color:inherit">🚀 Próximo lanzamiento</span><h3>${esc(next.title)}</h3>
+      <p>${esc(next.short_description || 'Muy pronto en Roblox.')}</p></div>
+    <div class="countdown" id="homeCountdown"></div>
+    <a class="btn" href="proximamente.html">Ver más</a>`;
+  box.classList.remove('hidden');
+  startCountdown($('#homeCountdown'), next.release_at, () => box.classList.add('hidden'));
+}
+
+async function loadTeam() {
+  if (!sb) return;
+  const { data } = await sb.from('team_members').select('*').order('sort_order').order('created_at');
+  if (!data?.length) return;
+  $('#teamGrid').innerHTML = data.map((m) => `
+    <article class="member reveal">
+      ${avatarHtml({ avatar_url: m.avatar_url, username: m.name }, 96)}
+      <h3>${esc(m.name)}</h3>
+      ${m.role_title ? `<div class="role">${esc(m.role_title)}</div>` : ''}
+      ${m.bio ? `<p>${esc(m.bio)}</p>` : ''}
+      ${m.roblox_username ? `<a class="small" href="https://www.roblox.com/search/users?keyword=${encodeURIComponent(m.roblox_username)}" target="_blank" rel="noopener">@${esc(m.roblox_username)} en Roblox</a>` : ''}
+    </article>`).join('');
+  $('#equipo').classList.remove('hidden');
+  observeReveal();
+}
+
+async function loadPolls() {
+  const n = await renderPolls($('#pollsList'), profile, (q) => q.is('game_id', null));
+  if (n) $('#encuestas').classList.remove('hidden');
 }
 
 async function loadNews() {
@@ -152,3 +191,5 @@ $('#contactForm').addEventListener('submit', async (e) => {
 loadGames();
 loadNews();
 loadSiteStats();
+loadTeam();
+loadPolls();
