@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aquino Studios — Juegos de Roblox</title>
+  <meta name="description" content="Aquino Studios: estudio independiente de juegos de Roblox. Descubrí nuestros juegos, novedades y unite a la comunidad.">
+  <meta property="og:title" content="Aquino Studios">
+  <meta property="og:description" content="Juegos de Roblox creados por Aquino Studios.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='2' width='28' height='28' rx='7' fill='%238b5cf6'/><path d='M9 23 16 8l7 15h-4l-3-7-3 7z' fill='%230b0b12'/></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="eyebrow"><span class="dot"></span><span id="heroLive">Estudio de juegos en Roblox</span></div>
+        <h1>Bienvenido a<br><span class="gradient-text">Aquino Studios</span></h1>
+        <p>Creamos experiencias en Roblox para jugar con amigos. Descubrí nuestros juegos, seguí las novedades y sumate a la comunidad.</p>
+        <div class="hero-actions">
+          <a href="#juegos" class="btn btn-primary">Ver juegos</a>
+          <a href="login.html?tab=register" class="btn btn-ghost" id="heroJoin">Unite a la comunidad</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="container">
+      <div class="stats">
+        <div class="stat"><div class="stat-value" id="statGames">–</div><div class="stat-label">Juegos</div></div>
+        <div class="stat stat-live"><div class="stat-value" id="statPlaying">–</div><div class="stat-label">Jugando ahora</div></div>
+        <div class="stat"><div class="stat-value" id="statVisits">–</div><div class="stat-label">Visitas totales</div></div>
+        <div class="stat"><div class="stat-value" id="statMembers">–</div><div class="stat-label">Miembros</div></div>
+      </div>
+    </div>
+
+    <section id="juegos">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <h2>Nuestros juegos</h2>
+            <p class="muted">Todo lo que creamos en Roblox.</p>
+          </div>
+          <div class="filters" id="filters">
+            <button class="chip active" data-filter="all">Todos</button>
+            <button class="chip" data-filter="publicado">Disponibles</button>
+            <button class="chip" data-filter="en_desarrollo">En desarrollo</button>
+            <button class="chip" data-filter="proximamente">Próximamente</button>
+          </div>
+        </div>
+        <div id="featured"></div>
+        <div class="grid" id="gamesGrid">
+          <div class="skeleton" style="height:300px"></div>
+          <div class="skeleton" style="height:300px"></div>
+          <div class="skeleton" style="height:300px"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="noticias" style="background:var(--bg-2)">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <h2>Noticias</h2>
+            <p class="muted">Actualizaciones y anuncios del estudio.</p>
+          </div>
+        </div>
+        <div class="news-list" id="newsList">
+          <div class="skeleton" style="height:220px"></div>
+          <div class="skeleton" style="height:220px"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="nosotros">
+      <div class="container about">
+        <div class="reveal">
+          <span class="featured-tag">Sobre nosotros</span>
+          <h2 style="font-size:clamp(1.8rem,4vw,2.5rem)">Hacemos juegos que nos gustaría jugar</h2>
+          <p class="muted">Aquino Studios es un estudio independiente que desarrolla juegos en Roblox. Cada proyecto lo diseñamos, programamos y actualizamos escuchando a nuestra comunidad.</p>
+          <p class="muted">Creá tu cuenta para guardar tus juegos favoritos, comentar y enterarte primero de las novedades.</p>
+        </div>
+        <div class="features reveal">
+          <div class="feature"><div class="feature-icon">🎮</div><h4>Juegos originales</h4><p>Ideas propias, hechas desde cero.</p></div>
+          <div class="feature"><div class="feature-icon">🔄</div><h4>Actualizaciones</h4><p>Contenido nuevo seguido.</p></div>
+          <div class="feature"><div class="feature-icon">💬</div><h4>Comunidad</h4><p>Tus comentarios nos ayudan a mejorar.</p></div>
+          <div class="feature"><div class="feature-icon">⭐</div><h4>Favoritos</h4><p>Guardá los juegos que más te gustan.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contacto" style="background:var(--bg-2)">
+      <div class="container" style="max-width:720px">
+        <div class="section-head reveal" style="justify-content:center;text-align:center">
+          <div>
+            <h2>Contacto</h2>
+            <p class="muted">¿Encontraste un bug, tenés una idea o querés trabajar con nosotros? Escribinos.</p>
+          </div>
+        </div>
+        <form class="card form reveal" id="contactForm" novalidate>
+          <div class="form-row">
+            <div class="field"><label for="cName">Nombre</label><input id="cName" name="name" maxlength="80" required></div>
+            <div class="field"><label for="cEmail">Email</label><input id="cEmail" name="email" type="email" maxlength="200" required></div>
+          </div>
+          <div class="field"><label for="cMsg">Mensaje</label><textarea id="cMsg" name="message" maxlength="2000" required></textarea></div>
+          <div id="contactMsg"></div>
+          <button class="btn btn-primary" type="submit">Enviar mensaje</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/home.js"></script>
+</body>
+</html>

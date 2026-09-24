@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mi cuenta — Aquino Studios</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='2' width='28' height='28' rx='7' fill='%238b5cf6'/><path d='M9 23 16 8l7 15h-4l-3-7-3 7z' fill='%230b0b12'/></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="container layout-side hidden" id="page">
+    <nav class="side-nav" id="sideNav">
+      <button class="active" data-sec="perfil">👤 Perfil</button>
+      <button data-sec="favoritos">⭐ Favoritos</button>
+      <button data-sec="seguridad">🔒 Seguridad</button>
+    </nav>
+
+    <div>
+      <div class="profile-head">
+        <div id="bigAvatar"></div>
+        <div>
+          <h1 id="pName"></h1>
+          <p class="muted" style="margin:0" id="pMeta"></p>
+        </div>
+      </div>
+
+      <!-- PERFIL -->
+      <section class="card" data-sec="perfil" style="padding:28px">
+        <h2>Editar perfil</h2>
+        <form class="form" id="profileForm" novalidate>
+          <div class="form-row">
+            <div class="field">
+              <label for="fUser">Nombre de usuario</label>
+              <input id="fUser" maxlength="20" required>
+              <span class="hint">Letras, números o _ (3 a 20).</span>
+            </div>
+            <div class="field">
+              <label for="fRoblox">Usuario de Roblox</label>
+              <input id="fRoblox" maxlength="20" placeholder="Opcional">
+            </div>
+          </div>
+          <div class="field">
+            <label for="fAvatar">URL de tu foto de perfil</label>
+            <input id="fAvatar" type="url" placeholder="https://...">
+            <span class="hint">Tiene que empezar con https://. Dejalo vacío para usar tus iniciales.</span>
+          </div>
+          <div class="field">
+            <label for="fBio">Sobre vos</label>
+            <textarea id="fBio" maxlength="300" placeholder="Contá algo sobre vos..."></textarea>
+          </div>
+          <div class="msg"></div>
+          <div><button class="btn btn-primary" type="submit">Guardar cambios</button></div>
+        </form>
+      </section>
+
+      <!-- FAVORITOS -->
+      <section class="hidden" data-sec="favoritos" style="padding:0">
+        <h2>Mis favoritos</h2>
+        <div class="grid" id="favGrid"></div>
+      </section>
+
+      <!-- SEGURIDAD -->
+      <section class="hidden" data-sec="seguridad" style="padding:0;display:grid;gap:20px">
+        <div class="card">
+          <h2>Cambiar contraseña</h2>
+          <form class="form" id="passForm" novalidate>
+            <div class="form-row">
+              <div class="field"><label for="nPass">Nueva contraseña</label><input id="nPass" type="password" autocomplete="new-password" minlength="8"></div>
+              <div class="field"><label for="nPass2">Repetir contraseña</label><input id="nPass2" type="password" autocomplete="new-password"></div>
+            </div>
+            <div class="msg"></div>
+            <div><button class="btn btn-primary" type="submit">Actualizar contraseña</button></div>
+          </form>
+        </div>
+        <div class="card">
+          <h2>Cambiar email</h2>
+          <form class="form" id="emailForm" novalidate>
+            <div class="field"><label for="nEmail">Nuevo email</label><input id="nEmail" type="email" autocomplete="email"></div>
+            <div class="msg"></div>
+            <div><button class="btn btn-primary" type="submit">Cambiar email</button></div>
+          </form>
+        </div>
+        <div class="card">
+          <h2>Sesión</h2>
+          <p class="muted">Cerrá la sesión en todos los dispositivos donde hayas entrado.</p>
+          <button class="btn btn-danger" id="logoutAll">Cerrar sesión en todos lados</button>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="js/account.js"></script>
+</body>
+</html>

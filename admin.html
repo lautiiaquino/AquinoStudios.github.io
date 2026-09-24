@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin — Aquino Studios</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='2' width='28' height='28' rx='7' fill='%238b5cf6'/><path d='M9 23 16 8l7 15h-4l-3-7-3 7z' fill='%230b0b12'/></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="container layout-side hidden" id="page">
+    <nav class="side-nav" id="sideNav">
+      <button class="active" data-sec="juegos">🎮 Juegos</button>
+      <button data-sec="noticias">📰 Noticias</button>
+      <button data-sec="usuarios">👥 Usuarios</button>
+      <button data-sec="mensajes">✉️ Mensajes <span id="unreadBadge"></span></button>
+    </nav>
+
+    <div>
+      <section data-sec="juegos" style="padding:0">
+        <div class="section-head"><h2>Juegos</h2><button class="btn btn-primary" id="newGame">+ Nuevo juego</button></div>
+        <div class="card table-wrap"><table>
+          <thead><tr><th></th><th>Título</th><th>Estado</th><th>Place ID</th><th>Orden</th><th></th></tr></thead>
+          <tbody id="gamesBody"></tbody>
+        </table></div>
+      </section>
+
+      <section class="hidden" data-sec="noticias" style="padding:0">
+        <div class="section-head"><h2>Noticias</h2><button class="btn btn-primary" id="newNews">+ Nueva noticia</button></div>
+        <div class="card table-wrap"><table>
+          <thead><tr><th>Título</th><th>Juego</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
+          <tbody id="newsBody"></tbody>
+        </table></div>
+      </section>
+
+      <section class="hidden" data-sec="usuarios" style="padding:0">
+        <div class="section-head"><h2>Usuarios</h2><input id="userSearch" placeholder="Buscar usuario..." style="max-width:260px"></div>
+        <div class="card table-wrap"><table>
+          <thead><tr><th>Usuario</th><th>Roblox</th><th>Rol</th><th>Registro</th><th></th></tr></thead>
+          <tbody id="usersBody"></tbody>
+        </table></div>
+      </section>
+
+      <section class="hidden" data-sec="mensajes" style="padding:0">
+        <div class="section-head"><h2>Mensajes de contacto</h2></div>
+        <div id="messagesList"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Diálogo: juego -->
+  <dialog id="gameDialog">
+    <div class="dialog-head"><h3 id="gameDialogTitle">Juego</h3><button class="x-btn" data-close aria-label="Cerrar">×</button></div>
+    <form class="form dialog-body" id="gameForm" novalidate>
+      <div class="form-row">
+        <div class="field"><label for="gTitle">Título *</label><input id="gTitle" maxlength="80" required></div>
+        <div class="field"><label for="gSlug">Identificador (URL) *</label><input id="gSlug" maxlength="80" required><span class="hint">Minúsculas, números y guiones.</span></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label for="gStatus">Estado</label>
+          <select id="gStatus"><option value="publicado">Disponible</option><option value="en_desarrollo">En desarrollo</option><option value="proximamente">Próximamente</option></select>
+        </div>
+        <div class="field"><label for="gGenre">Género</label><input id="gGenre" maxlength="40" placeholder="Aventura, Obby, Simulador..."></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label for="gPlace">Place ID de Roblox</label><input id="gPlace" inputmode="numeric" placeholder="ej: 1818"><span class="hint">El número en la URL: roblox.com/games/<b>1818</b>/...</span></div>
+        <div class="field"><label for="gOrder">Orden</label><input id="gOrder" type="number" value="0"><span class="hint">Menor número = aparece primero.</span></div>
+      </div>
+      <div class="field"><label for="gThumb">URL de la imagen</label><input id="gThumb" type="url" placeholder="https://..."><span class="hint">Si lo dejás vacío se usa el ícono del juego en Roblox.</span></div>
+      <div class="field"><label for="gShort">Descripción corta</label><input id="gShort" maxlength="200"></div>
+      <div class="field"><label for="gDesc">Descripción completa</label><textarea id="gDesc" maxlength="5000"></textarea></div>
+      <label class="check"><input type="checkbox" id="gFeatured"> Juego destacado (aparece grande en el inicio)</label>
+      <div class="msg"></div>
+      <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar</button></div>
+    </form>
+  </dialog>
+
+  <!-- Diálogo: noticia -->
+  <dialog id="newsDialog">
+    <div class="dialog-head"><h3 id="newsDialogTitle">Noticia</h3><button class="x-btn" data-close aria-label="Cerrar">×</button></div>
+    <form class="form dialog-body" id="newsForm" novalidate>
+      <div class="field"><label for="nTitle">Título *</label><input id="nTitle" maxlength="120" required></div>
+      <div class="field"><label for="nBody">Contenido *</label><textarea id="nBody" maxlength="5000" style="min-height:160px" required></textarea></div>
+      <div class="form-row">
+        <div class="field"><label for="nGame">Juego relacionado</label><select id="nGame"></select></div>
+        <div class="field"><label for="nImage">URL de imagen</label><input id="nImage" type="url" placeholder="https://..."></div>
+      </div>
+      <label class="check"><input type="checkbox" id="nPublished" checked> Publicada (visible para todos)</label>
+      <div class="msg"></div>
+      <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar</button></div>
+    </form>
+  </dialog>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

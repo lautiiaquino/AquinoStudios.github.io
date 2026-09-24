@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar sesión — Aquino Studios</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='2' width='28' height='28' rx='7' fill='%238b5cf6'/><path d='M9 23 16 8l7 15h-4l-3-7-3 7z' fill='%230b0b12'/></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="auth-page">
+    <div class="auth-box">
+      <div class="card">
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="login" role="tab">Iniciar sesión</button>
+          <button class="tab" data-tab="register" role="tab">Crear cuenta</button>
+        </div>
+
+        <!-- LOGIN -->
+        <form class="form" id="loginForm" data-panel="login" novalidate>
+          <div class="field">
+            <label for="lEmail">Email</label>
+            <input id="lEmail" type="email" autocomplete="email" required>
+          </div>
+          <div class="field">
+            <label for="lPass">Contraseña</label>
+            <div class="pw-wrap">
+              <input id="lPass" type="password" autocomplete="current-password" required>
+              <button type="button" class="pw-toggle">Ver</button>
+            </div>
+          </div>
+          <div style="text-align:right;margin-top:-6px"><button type="button" class="link-btn" data-go="forgot">¿Olvidaste tu contraseña?</button></div>
+          <div class="msg"></div>
+          <button class="btn btn-primary btn-block" type="submit">Entrar</button>
+        </form>
+
+        <!-- REGISTRO -->
+        <form class="form hidden" id="registerForm" data-panel="register" novalidate>
+          <div class="field">
+            <label for="rUser">Nombre de usuario</label>
+            <input id="rUser" autocomplete="username" maxlength="20" required>
+            <span class="hint">3 a 20 caracteres: letras, números o guion bajo.</span>
+          </div>
+          <div class="field">
+            <label for="rEmail">Email</label>
+            <input id="rEmail" type="email" autocomplete="email" required>
+          </div>
+          <div class="field">
+            <label for="rPass">Contraseña</label>
+            <div class="pw-wrap">
+              <input id="rPass" type="password" autocomplete="new-password" minlength="8" required>
+              <button type="button" class="pw-toggle">Ver</button>
+            </div>
+            <div class="pw-meter"><span id="pwBar"></span></div>
+            <span class="hint" id="pwHint">Mínimo 8 caracteres.</span>
+          </div>
+          <div class="field">
+            <label for="rPass2">Repetir contraseña</label>
+            <input id="rPass2" type="password" autocomplete="new-password" required>
+          </div>
+          <label class="check"><input type="checkbox" id="rTerms"> Acepto usar la comunidad con respeto.</label>
+          <div class="msg"></div>
+          <button class="btn btn-primary btn-block" type="submit">Crear cuenta</button>
+        </form>
+
+        <!-- RECUPERAR -->
+        <form class="form hidden" id="forgotForm" data-panel="forgot" novalidate>
+          <div>
+            <h3>Recuperar contraseña</h3>
+            <p class="muted small">Te enviamos un email con un enlace para crear una contraseña nueva.</p>
+          </div>
+          <div class="field">
+            <label for="fEmail">Email</label>
+            <input id="fEmail" type="email" autocomplete="email" required>
+          </div>
+          <div class="msg"></div>
+          <button class="btn btn-primary btn-block" type="submit">Enviar enlace</button>
+          <button type="button" class="link-btn" data-go="login">← Volver a iniciar sesión</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="js/login.js"></script>
+</body>
+</html>
