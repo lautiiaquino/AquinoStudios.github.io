@@ -5,24 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Aquino Studios — Juegos de Roblox</title>
   <meta name="description" content="Aquino Studios: estudio independiente de juegos de Roblox. Descubrí nuestros juegos, novedades y unite a la comunidad.">
+  <meta name="theme-color" content="#0d0f1a">
   <meta property="og:title" content="Aquino Studios">
   <meta property="og:description" content="Juegos de Roblox creados por Aquino Studios.">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='2' width='28' height='28' rx='7' fill='%238b5cf6'/><path d='M9 23 16 8l7 15h-4l-3-7-3 7z' fill='%230b0b12'/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='3' y='3' width='26' height='26' rx='7' fill='%23b6ff3c' stroke='%2305060c' stroke-width='2'/><path d='M10 22 16 9l6 13h-3.5L16 16l-2.5 6z' fill='%2305060c'/></svg>">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
   <main>
+    <!-- HERO -->
     <section class="hero">
       <div class="container">
-        <div class="eyebrow"><span class="dot"></span><span id="heroLive">Estudio de juegos en Roblox</span></div>
-        <h1>Bienvenido a<br><span class="gradient-text">Aquino Studios</span></h1>
-        <p>Creamos experiencias en Roblox para jugar con amigos. Descubrí nuestros juegos, seguí las novedades y sumate a la comunidad.</p>
-        <div class="hero-actions">
-          <a href="#juegos" class="btn btn-primary">Ver juegos</a>
-          <a href="login.html?tab=register" class="btn btn-ghost" id="heroJoin">Unite a la comunidad</a>
+        <div>
+          <div class="eyebrow"><span class="dot"></span><span id="heroLive">Estudio de juegos en Roblox</span></div>
+          <h1>Creamos juegos<br>para <span class="gradient-text">jugar juntos</span></h1>
+          <p>Somos Aquino Studios, un estudio independiente de Roblox. Descubrí nuestros juegos, seguí las novedades y sumate a la comunidad.</p>
+          <div class="hero-actions">
+            <a href="#juegos" class="btn btn-primary">🎮 Ver juegos</a>
+            <a href="login.html?tab=register" class="btn btn-ghost" id="heroJoin">Crear cuenta gratis</a>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="block block-1"><span>A</span></div>
+          <div class="block block-2"><span>▶</span></div>
+          <div class="block block-3"><span>★</span></div>
+          <div class="block block-4"><span>♥</span></div>
         </div>
       </div>
     </section>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>Juegos originales</span><span>Actualizaciones seguidas</span><span>Comunidad activa</span><span>Hecho en Roblox</span>
+        <span>Juegos originales</span><span>Actualizaciones seguidas</span><span>Comunidad activa</span><span>Hecho en Roblox</span>
+      </div>
+    </div>
 
     <div class="container">
       <div class="stats">
@@ -33,10 +50,12 @@
       </div>
     </div>
 
+    <!-- JUEGOS -->
     <section id="juegos">
       <div class="container">
         <div class="section-head reveal">
           <div>
+            <span class="kicker">Catálogo</span>
             <h2>Nuestros juegos</h2>
             <p class="muted">Todo lo que creamos en Roblox.</p>
           </div>
@@ -56,10 +75,12 @@
       </div>
     </section>
 
-    <section id="noticias" style="background:var(--bg-2)">
+    <!-- NOTICIAS -->
+    <section id="noticias" class="section-alt">
       <div class="container">
         <div class="section-head reveal">
           <div>
+            <span class="kicker">Novedades</span>
             <h2>Noticias</h2>
             <p class="muted">Actualizaciones y anuncios del estudio.</p>
           </div>
@@ -71,13 +92,14 @@
       </div>
     </section>
 
+    <!-- NOSOTROS -->
     <section id="nosotros">
       <div class="container about">
         <div class="reveal">
-          <span class="featured-tag">Sobre nosotros</span>
-          <h2 style="font-size:clamp(1.8rem,4vw,2.5rem)">Hacemos juegos que nos gustaría jugar</h2>
-          <p class="muted">Aquino Studios es un estudio independiente que desarrolla juegos en Roblox. Cada proyecto lo diseñamos, programamos y actualizamos escuchando a nuestra comunidad.</p>
-          <p class="muted">Creá tu cuenta para guardar tus juegos favoritos, comentar y enterarte primero de las novedades.</p>
+          <span class="kicker">Sobre nosotros</span>
+          <h2>Hacemos los juegos que nos gustaría jugar</h2>
+          <p class="muted">Aquino Studios es un estudio independiente que desarrolla juegos en Roblox. Diseñamos, programamos y actualizamos cada proyecto escuchando a nuestra comunidad.</p>
+          <p class="muted">Con tu cuenta podés guardar tus juegos favoritos, comentar y enterarte primero de las novedades.</p>
         </div>
         <div class="features reveal">
           <div class="feature"><div class="feature-icon">🎮</div><h4>Juegos originales</h4><p>Ideas propias, hechas desde cero.</p></div>
@@ -88,22 +110,48 @@
       </div>
     </section>
 
-    <section id="contacto" style="background:var(--bg-2)">
-      <div class="container" style="max-width:720px">
+    <!-- UNITE -->
+    <section id="unite" class="section-alt">
+      <div class="container">
         <div class="section-head reveal" style="justify-content:center;text-align:center">
           <div>
-            <h2>Contacto</h2>
-            <p class="muted">¿Encontraste un bug, tenés una idea o querés trabajar con nosotros? Escribinos.</p>
+            <span class="kicker">Comunidad</span>
+            <h2>Unite en 3 pasos</h2>
           </div>
         </div>
-        <form class="card form reveal" id="contactForm" novalidate>
+        <div class="steps reveal">
+          <div class="step"><h4>Creá tu cuenta</h4><p>Solo necesitás un email y un nombre de usuario.</p></div>
+          <div class="step"><h4>Confirmá tu email</h4><p>Te mandamos un enlace para activar la cuenta.</p></div>
+          <div class="step"><h4>Jugá y comentá</h4><p>Guardá favoritos, dejá tu opinión y seguí las novedades.</p></div>
+        </div>
+        <div class="cta reveal" style="margin-top:56px" id="ctaBox">
+          <div>
+            <h2 id="ctaTitle">¿Listo para jugar?</h2>
+            <p id="ctaText">Creá tu cuenta gratis y sumate a Aquino Studios.</p>
+          </div>
+          <a href="login.html?tab=register" class="btn" id="ctaBtn">Crear cuenta →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACTO -->
+    <section id="contacto">
+      <div class="container" style="max-width:760px">
+        <div class="section-head reveal" style="justify-content:center;text-align:center">
+          <div>
+            <span class="kicker">Contacto</span>
+            <h2>Escribinos</h2>
+            <p class="muted">¿Encontraste un bug, tenés una idea o querés trabajar con nosotros?</p>
+          </div>
+        </div>
+        <form class="card card-hard form reveal" id="contactForm" novalidate>
           <div class="form-row">
             <div class="field"><label for="cName">Nombre</label><input id="cName" name="name" maxlength="80" required></div>
             <div class="field"><label for="cEmail">Email</label><input id="cEmail" name="email" type="email" maxlength="200" required></div>
           </div>
           <div class="field"><label for="cMsg">Mensaje</label><textarea id="cMsg" name="message" maxlength="2000" required></textarea></div>
           <div id="contactMsg"></div>
-          <button class="btn btn-primary" type="submit">Enviar mensaje</button>
+          <div><button class="btn btn-primary" type="submit">Enviar mensaje</button></div>
         </form>
       </div>
     </section>

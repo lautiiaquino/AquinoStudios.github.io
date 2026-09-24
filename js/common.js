@@ -131,7 +131,7 @@ export async function signOut() {
 }
 
 // ---------- Layout (barra superior + pie) ----------
-const LOGO = `<svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><rect x="2" y="2" width="28" height="28" rx="7" fill="var(--accent)"/><path d="M9 23 16 8l7 15h-4l-3-7-3 7z" fill="var(--bg)"/></svg>`;
+const LOGO = `<svg viewBox="0 0 32 32" width="34" height="34" aria-hidden="true"><rect x="3" y="3" width="26" height="26" rx="7" fill="var(--accent)" stroke="var(--ink)" stroke-width="2"/><path d="M10 22 16 9l6 13h-3.5L16 16l-2.5 6z" fill="var(--ink)"/></svg>`;
 
 const ICONS = {
   roblox: '<path d="M5.2 0 0 18.8 18.8 24 24 5.2zm8.4 14.9-4.5-1.2 1.2-4.5 4.5 1.2z"/>',
@@ -159,8 +159,12 @@ export async function renderLayout(active = '') {
         ${link('index.html', 'Inicio', 'home')}
         ${link('index.html#juegos', 'Juegos', 'games')}
         ${link('index.html#noticias', 'Noticias', 'news')}
+        ${link('index.html#nosotros', 'Nosotros', 'about')}
         ${link('index.html#contacto', 'Contacto', 'contact')}
-        <div class="nav-user" id="navUser"><a href="login.html" class="btn btn-sm btn-primary">Iniciar sesión</a></div>
+        <div class="nav-user" id="navUser">
+          <a href="login.html" class="btn btn-sm btn-ghost">Entrar</a>
+          <a href="login.html?tab=register" class="btn btn-sm btn-primary">Crear cuenta</a>
+        </div>
       </div>
     </nav>`;
   document.body.prepend(header);
@@ -176,13 +180,35 @@ export async function renderLayout(active = '') {
   const footer = document.createElement('footer');
   footer.className = 'site-footer';
   footer.innerHTML = `
-    <div class="container footer-inner">
-      <div>
-        <a href="index.html" class="brand">${LOGO}<span>Aquino<b>Studios</b></span></a>
-        <p class="muted">Creando experiencias en Roblox.</p>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="index.html" class="brand">${LOGO}<span>Aquino<b>Studios</b></span></a>
+          <p class="muted">Estudio independiente creando experiencias en Roblox para jugar con amigos.</p>
+          <div class="socials">${socialLinks()}</div>
+        </div>
+        <div>
+          <h4>Sitio</h4>
+          <ul>
+            <li><a href="index.html#juegos">Juegos</a></li>
+            <li><a href="index.html#noticias">Noticias</a></li>
+            <li><a href="index.html#nosotros">Nosotros</a></li>
+            <li><a href="index.html#contacto">Contacto</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Cuenta</h4>
+          <ul>
+            <li><a href="login.html">Iniciar sesión</a></li>
+            <li><a href="login.html?tab=register">Crear cuenta</a></li>
+            <li><a href="cuenta.html">Mi cuenta</a></li>
+          </ul>
+        </div>
       </div>
-      <div class="socials">${socialLinks()}</div>
-      <p class="muted small">© ${new Date().getFullYear()} Aquino Studios. No afiliado a Roblox Corporation.</p>
+      <div class="footer-bottom">
+        <span class="muted small">© ${new Date().getFullYear()} Aquino Studios</span>
+        <span class="muted small">No afiliado a Roblox Corporation.</span>
+      </div>
     </div>`;
   document.body.append(footer);
 

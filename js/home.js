@@ -15,6 +15,10 @@ observeReveal();
 if (profile) {
   $('#heroJoin').textContent = 'Mi cuenta';
   $('#heroJoin').href = 'cuenta.html';
+  $('#ctaTitle').textContent = `¡Hola, ${profile.username}!`;
+  $('#ctaText').textContent = 'Ya sos parte de la comunidad. Mirá tus favoritos o editá tu perfil.';
+  $('#ctaBtn').textContent = 'Ir a mi cuenta →';
+  $('#ctaBtn').href = 'cuenta.html';
   $('#cName').value = profile.username;
   $('#cEmail').value = (await sb.auth.getUser()).data.user?.email || '';
 }
