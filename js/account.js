@@ -26,7 +26,7 @@ function paintHeader() {
 paintHeader();
 
 if (profile.banned) {
-  $('#bannedBox').innerHTML = `<div class="notice notice-danger">🚫 Tu cuenta está suspendida${profile.banned_reason ? `: ${esc(profile.banned_reason)}` : ''}.
+  $('#bannedBox').innerHTML = `<div class="notice notice-danger">Tu cuenta está suspendida${profile.banned_reason ? `: ${esc(profile.banned_reason)}` : ''}.
     No podés comentar, votar ni mandar reportes. Si creés que es un error, escribinos desde el formulario de contacto.</div>`;
   $('#bannedBox').classList.remove('hidden');
 }
@@ -92,7 +92,7 @@ async function loadFavorites() {
   if (error) return (grid.innerHTML = `<div class="empty">${esc(errorMsg(error))}</div>`);
   const games = data.map((f) => f.games).filter(Boolean);
   if (!games.length) {
-    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">No tenés favoritos todavía. <a href="index.html#juegos">Explorá los juegos</a> y tocá ♡.</div>';
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">No tenés favoritos todavía. <a href="index.html#juegos">Explorá los juegos</a> y agregalos a favoritos.</div>';
     return;
   }
   grid.innerHTML = games.map((g) => gameCardHtml(g)).join('');

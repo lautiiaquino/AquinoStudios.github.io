@@ -9,7 +9,7 @@ const slug = new URLSearchParams(location.search).get('slug');
 const page = $('#page');
 
 function notFound(text = 'No encontramos este juego.') {
-  page.innerHTML = `<div class="container" style="padding:80px 0"><div class="empty"><h2>😕</h2><p>${esc(text)}</p><a class="btn btn-primary" href="index.html#juegos">Ver todos los juegos</a></div></div>`;
+  page.innerHTML = `<div class="container" style="padding:80px 0"><div class="empty"><h2>404</h2><p>${esc(text)}</p><a class="btn btn-primary" href="index.html#juegos">Ver todos los juegos</a></div></div>`;
 }
 
 if (!sb) notFound('El sitio todavía no está configurado.');
@@ -38,13 +38,13 @@ async function renderGame(game) {
           <h1>${esc(game.title)}</h1>
           <p class="muted">${esc(game.short_description || '')}</p>
           <div class="game-actions">
-            ${canPlay ? `<a class="btn btn-play" href="${robloxGameUrl(game.roblox_place_id)}" target="_blank" rel="noopener">▶ Jugar en Roblox</a>` : ''}
-            <button class="btn btn-ghost fav-btn" id="favBtn">♡ Favorito</button>
+            ${canPlay ? `<a class="btn btn-play" href="${robloxGameUrl(game.roblox_place_id)}" target="_blank" rel="noopener">Jugar en Roblox ↗</a>` : ''}
+            <button class="btn btn-ghost fav-btn" id="favBtn">+ Favoritos</button>
             <button class="btn btn-ghost" id="shareBtn">Compartir</button>
           </div>
           ${game.release_at && new Date(game.release_at) > new Date() ? `
             <div style="margin-top:22px" id="releaseBox">
-              <p class="muted small" style="margin-bottom:8px">🚀 Sale el ${formatDateTime(game.release_at)}</p>
+              <p class="muted small" style="margin-bottom:8px">Sale el ${formatDateTime(game.release_at)}</p>
               <div class="countdown" id="gameCountdown"></div>
             </div>` : ''}
           <div class="stat-row hidden" id="statRow"></div>
@@ -126,7 +126,7 @@ async function renderGame(game) {
   let isFav = false;
   const paintFav = () => {
     favBtn.classList.toggle('on', isFav);
-    favBtn.textContent = isFav ? '♥ En favoritos' : '♡ Favorito';
+    favBtn.textContent = isFav ? '✓ En favoritos' : '+ Favoritos';
   };
   if (profile) {
     const { data } = await sb.from('favorites').select('game_id').eq('user_id', profile.id).eq('game_id', game.id).maybeSingle();
@@ -149,7 +149,7 @@ async function renderGame(game) {
 
   // Formulario de comentario
   const banned = profile?.banned;
-  const bannedNotice = `<div class="notice notice-danger" style="margin:12px 0">🚫 Tu cuenta está suspendida${profile?.banned_reason ? `: ${esc(profile.banned_reason)}` : ''}. No podés comentar ni participar.</div>`;
+  const bannedNotice = `<div class="notice notice-danger" style="margin:12px 0">Tu cuenta está suspendida${profile?.banned_reason ? `: ${esc(profile.banned_reason)}` : ''}. No podés comentar ni participar.</div>`;
   $('#commentFormWrap').innerHTML = banned ? bannedNotice : profile
     ? `<form id="commentForm" class="form" style="margin:12px 0 8px">
         <textarea id="commentText" maxlength="500" placeholder="¿Qué te pareció el juego?" style="min-height:80px" required></textarea>

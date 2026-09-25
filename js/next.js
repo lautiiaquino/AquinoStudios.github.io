@@ -7,7 +7,7 @@ const profile = await renderLayout('next');
 const page = $('#page');
 
 function empty(text) {
-  page.innerHTML = `<div class="container launch"><div class="empty"><h2>🛠️</h2><p>${esc(text)}</p>
+  page.innerHTML = `<div class="container launch"><div class="empty"><h2>Pronto</h2><p>${esc(text)}</p>
     <a class="btn btn-primary" href="index.html#juegos">Ver nuestros juegos</a></div></div>`;
 }
 
@@ -31,14 +31,13 @@ async function render(game) {
 
   page.innerHTML = `
     <div class="container launch">
-      <span class="kicker">🚀 Próximo lanzamiento</span>
+      <span class="kicker">Próximo lanzamiento</span>
       <h1>${esc(game.title)}</h1>
       <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
         <span class="badge ${st.cls}">${st.label}</span>
         ${game.genre ? `<span class="badge badge-accent">${esc(game.genre)}</span>` : ''}
       </div>
-      <div class="game-hero-img" id="launchImg" ${thumbStyle(game)}>${safeUrl(game.thumbnail_url) ? '' : `<div class="thumb-placeholder" id="launchPh">${initials(game.title)}</div>`}</div>
-      <div id="whenBox">
+      <div id="whenBox" style="margin-top:44px">
         ${hasDate
           ? `<p class="muted" style="margin-bottom:12px">Sale el <strong>${formatDateTime(game.release_at)}</strong></p>
              <div class="countdown countdown-lg" id="bigCountdown"></div>`
@@ -46,16 +45,17 @@ async function render(game) {
       </div>
       <p class="muted" style="max-width:620px;margin:0 auto 28px">${esc(game.short_description || '')}</p>
       <div class="hero-actions" style="justify-content:center">
-        <button class="btn btn-primary" id="notifyBtn">🔔 Avisame cuando salga</button>
+        <button class="btn btn-primary" id="notifyBtn">Avisame cuando salga</button>
         <a class="btn btn-ghost" href="juego.html?slug=${encodeURIComponent(game.slug)}">Ver página del juego</a>
       </div>
+      <div class="game-hero-img" id="launchImg" ${thumbStyle(game)}>${safeUrl(game.thumbnail_url) ? '' : `<div class="thumb-placeholder" id="launchPh">${initials(game.title)}</div>`}</div>
       ${game.youtube_id ? `<div style="max-width:820px;margin:48px auto 0">${youtubeEmbedHtml(game.youtube_id)}</div>` : ''}
     </div>`;
 
   if (hasDate) {
     startCountdown($('#bigCountdown'), game.release_at, () => {
-      $('#whenBox').innerHTML = `<h2 style="margin-bottom:24px">🎉 ¡Ya salió!</h2>
-        ${game.roblox_place_id ? `<a class="btn btn-play" href="${robloxGameUrl(game.roblox_place_id)}" target="_blank" rel="noopener" style="margin-bottom:28px">▶ Jugar en Roblox</a>` : ''}`;
+      $('#whenBox').innerHTML = `<h2 style="margin-bottom:24px">¡Ya salió!</h2>
+        ${game.roblox_place_id ? `<a class="btn btn-play" href="${robloxGameUrl(game.roblox_place_id)}" target="_blank" rel="noopener" style="margin-bottom:28px">Jugar en Roblox ↗</a>` : ''}`;
     });
   }
 
@@ -67,7 +67,7 @@ async function render(game) {
   // "Avisame" = agregar a favoritos (así aparece en Mi cuenta y se entera de las novedades)
   const btn = $('#notifyBtn');
   let on = false;
-  const paint = () => { btn.textContent = on ? '✓ Te vamos a avisar' : '🔔 Avisame cuando salga'; btn.classList.toggle('btn-ghost', on); btn.classList.toggle('btn-primary', !on); };
+  const paint = () => { btn.textContent = on ? '✓ Te vamos a avisar' : 'Avisame cuando salga'; btn.classList.toggle('btn-ghost', on); btn.classList.toggle('btn-primary', !on); };
   if (profile) {
     const { data } = await sb.from('favorites').select('game_id').eq('user_id', profile.id).eq('game_id', game.id).maybeSingle();
     on = !!data;

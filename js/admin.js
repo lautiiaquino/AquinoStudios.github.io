@@ -64,7 +64,7 @@ document.addEventListener('change', async (e) => {
   const label = input.closest('label');
   label.classList.add('disabled');
   const text = label.firstChild.textContent;
-  label.firstChild.textContent = '⏳ Subiendo...';
+  label.firstChild.textContent = 'Subiendo...';
   try {
     $(`#${input.dataset.upload}`).value = await uploadImage(input.files[0], input.dataset.folder);
     toast('Imagen subida');
@@ -133,9 +133,9 @@ async function loadGames() {
   $('#gamesBody').innerHTML = games.length ? games.map((g) => `
     <tr>
       <td>${safeUrl(g.thumbnail_url) ? `<img class="thumb-sm" src="${esc(g.thumbnail_url)}" alt="">` : '<div class="thumb-sm"></div>'}</td>
-      <td><a href="juego.html?slug=${encodeURIComponent(g.slug)}" target="_blank">${esc(g.title)}</a>${g.featured ? ' ⭐' : ''}${g.youtube_id ? ' 🎬' : ''}</td>
+      <td><a href="juego.html?slug=${encodeURIComponent(g.slug)}" target="_blank">${esc(g.title)}</a>${g.featured ? ' <span class="badge badge-accent">Destacado</span>' : ''}${g.youtube_id ? ' <span class="badge">Video</span>' : ''}</td>
       <td><span class="badge ${STATUS[g.status].cls}">${STATUS[g.status].label}</span></td>
-      <td class="muted small">${g.release_at ? (new Date(g.release_at) > now ? '🚀 ' : '') + formatDate(g.release_at) : '—'}</td>
+      <td class="muted small">${g.release_at ? (new Date(g.release_at) > now ? 'Sale: ' : '') + formatDate(g.release_at) : '—'}</td>
       <td>${g.sort_order}</td>
       <td><div class="actions">
         <button class="btn btn-sm btn-ghost" data-content="${g.id}">Galería y cambios</button>

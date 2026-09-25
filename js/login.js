@@ -12,9 +12,9 @@ if (await getSession()) location.replace(next);
 const show = (msgEl, text, type = 'error') => (msgEl.innerHTML = text ? `<div class="form-msg ${type}">${esc(text)}</div>` : '');
 
 const SIDE = {
-  login: ['¡Hola de nuevo!', 'Entrá a tu cuenta de Aquino Studios para seguir donde lo dejaste.'],
-  register: ['Sumate a la comunidad', 'Creá tu cuenta gratis en menos de un minuto.'],
-  forgot: ['¿Te olvidaste?', 'No pasa nada: te ayudamos a recuperar tu cuenta.'],
+  login: ['Volviste.', 'Entrá a tu cuenta para seguir donde lo dejaste.'],
+  register: ['Sumate.', 'Creá tu cuenta gratis en menos de un minuto.'],
+  forgot: ['Sin drama.', 'Te mandamos un enlace para recuperar tu cuenta.'],
 };
 
 function openPanel(name) {
