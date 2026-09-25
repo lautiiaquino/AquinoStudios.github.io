@@ -6,6 +6,8 @@
   <title>Iniciar sesión — Aquino Studios</title>
   <meta name="theme-color" content="#0b0b0c">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23ff5a1f'/><path d='M8 25 16 6l8 19h-4.6L16 16.2 12.6 25z' fill='%230b0b0c'/></svg>">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <script src="js/theme.js"></script>
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -28,9 +30,9 @@
 
     <div class="auth-main">
       <div class="auth-box">
-        <div class="tabs" role="tablist">
-          <button class="tab active" data-tab="login" role="tab">Iniciar sesión</button>
-          <button class="tab" data-tab="register" role="tab">Crear cuenta</button>
+        <div class="tabs" role="tablist" aria-label="Cuenta">
+          <button class="tab active" data-tab="login" role="tab" aria-selected="true" aria-controls="loginForm" id="tab-login">Iniciar sesión</button>
+          <button class="tab" data-tab="register" role="tab" aria-selected="false" aria-controls="registerForm" id="tab-register">Crear cuenta</button>
         </div>
 
         <!-- Botones de Google / Discord (se muestran si están activados en js/config.js) -->
@@ -38,17 +40,18 @@
         <div class="divider hidden" id="oauthDivider" style="margin:18px 0">o con tu email</div>
 
         <!-- LOGIN -->
-        <form class="form" id="loginForm" data-panel="login" novalidate>
+        <form class="form" id="loginForm" data-panel="login" role="tabpanel" aria-labelledby="tab-login" novalidate>
           <div class="field">
             <label for="lEmail">Email</label>
-            <input id="lEmail" type="email" autocomplete="email" placeholder="tu@email.com" required>
+            <input id="lEmail" name="email" type="email" autocomplete="username" placeholder="tu@email.com" required data-msg="Escribí tu email.">
           </div>
           <div class="field">
             <label for="lPass">Contraseña</label>
             <div class="pw-wrap">
-              <input id="lPass" type="password" autocomplete="current-password" required>
-              <button type="button" class="pw-toggle">Ver</button>
+              <input id="lPass" name="password" type="password" autocomplete="current-password" required data-msg="Escribí tu contraseña.">
+              <button type="button" class="pw-toggle" aria-label="Mostrar contraseña">Ver</button>
             </div>
+            <span class="hint caps hidden" role="status">Bloq Mayús está activado</span>
           </div>
           <div style="text-align:right;margin-top:-6px"><button type="button" class="link-btn" data-go="forgot">¿Olvidaste tu contraseña?</button></div>
           <div class="msg"></div>
@@ -57,30 +60,32 @@
         </form>
 
         <!-- REGISTRO -->
-        <form class="form hidden" id="registerForm" data-panel="register" novalidate>
+        <form class="form hidden" id="registerForm" data-panel="register" role="tabpanel" aria-labelledby="tab-register" novalidate>
           <div class="field">
             <label for="rUser">Nombre de usuario</label>
-            <input id="rUser" autocomplete="username" maxlength="20" placeholder="ej: lauti_07" required>
-            <span class="hint">3 a 20 caracteres: letras, números o guion bajo.</span>
+            <input id="rUser" name="username" autocomplete="nickname" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" placeholder="ej: lauti_07" required
+              data-msg="El nombre de usuario debe tener entre 3 y 20 caracteres (letras, números o _).">
+            <span class="hint" id="userHint">3 a 20 caracteres: letras, números o guion bajo.</span>
           </div>
           <div class="field">
             <label for="rEmail">Email</label>
-            <input id="rEmail" type="email" autocomplete="email" placeholder="tu@email.com" required>
+            <input id="rEmail" name="email" type="email" autocomplete="email" placeholder="tu@email.com" required data-msg="Escribí un email válido.">
           </div>
           <div class="field">
             <label for="rPass">Contraseña</label>
             <div class="pw-wrap">
-              <input id="rPass" type="password" autocomplete="new-password" minlength="8" required>
-              <button type="button" class="pw-toggle">Ver</button>
+              <input id="rPass" name="password" type="password" autocomplete="new-password" minlength="8" required data-msg="La contraseña debe tener al menos 8 caracteres.">
+              <button type="button" class="pw-toggle" aria-label="Mostrar contraseña">Ver</button>
             </div>
-            <div class="pw-meter"><span id="pwBar"></span></div>
+            <meter id="pwMeter" min="0" max="5" low="2" high="4" optimum="5" value="0" aria-label="Seguridad de la contraseña"></meter>
             <span class="hint" id="pwHint">Mínimo 8 caracteres.</span>
+            <span class="hint caps hidden" role="status">Bloq Mayús está activado</span>
           </div>
           <div class="field">
             <label for="rPass2">Repetir contraseña</label>
-            <input id="rPass2" type="password" autocomplete="new-password" required>
+            <input id="rPass2" name="password2" type="password" autocomplete="new-password" required data-msg="Repetí la contraseña.">
           </div>
-          <label class="check"><input type="checkbox" id="rTerms"> Acepto usar la comunidad con respeto.</label>
+          <label class="check"><input type="checkbox" name="terms" required data-msg="Tenés que aceptar las reglas de la comunidad."> Acepto usar la comunidad con respeto.</label>
           <div class="msg"></div>
           <button class="btn btn-primary btn-block" type="submit">Crear cuenta</button>
           <p class="muted small center" style="margin:0">¿Ya tenés cuenta? <button type="button" class="link-btn" data-go="login">Iniciá sesión</button></p>
@@ -94,7 +99,7 @@
           </div>
           <div class="field">
             <label for="fEmail">Email</label>
-            <input id="fEmail" type="email" autocomplete="email" placeholder="tu@email.com" required>
+            <input id="fEmail" name="email" type="email" autocomplete="email" placeholder="tu@email.com" required data-msg="Ingresá un email válido.">
           </div>
           <div class="msg"></div>
           <button class="btn btn-primary btn-block" type="submit">Enviar enlace</button>
