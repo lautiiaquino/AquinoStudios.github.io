@@ -1,6 +1,6 @@
 import {
   sb, $, $$, esc, safeUrl, formatDate, avatarHtml, renderLayout, requireAuth, getProfile,
-  toast, errorMsg, withLoading, fetchRobloxStats, gameCardHtml,
+  toast, errorMsg, withLoading, fetchRobloxStats, gameCardHtml, REPORT_STATUS, REPORT_KIND, timeAgo,
 } from './common.js';
 
 let recovery = new URLSearchParams(location.search).get('reset') === '1';
@@ -25,11 +25,18 @@ function paintHeader() {
 }
 paintHeader();
 
+if (profile.banned) {
+  $('#bannedBox').innerHTML = `<div class="notice notice-danger">Tu cuenta está suspendida${profile.banned_reason ? `: ${esc(profile.banned_reason)}` : ''}.
+    No podés comentar, votar ni mandar reportes. Si creés que es un error, escribinos desde el formulario de contacto.</div>`;
+  $('#bannedBox').classList.remove('hidden');
+}
+
 // ---------- Navegación entre secciones ----------
 function openSection(name) {
   $$('#sideNav button').forEach((b) => b.classList.toggle('active', b.dataset.sec === name));
   $$('section[data-sec]').forEach((s) => s.classList.toggle('hidden', s.dataset.sec !== name));
   if (name === 'favoritos') loadFavorites();
+  if (name === 'reportes') loadReports();
   history.replaceState(null, '', `#${name}`);
 }
 $('#sideNav').addEventListener('click', (e) => e.target.dataset.sec && openSection(e.target.dataset.sec));
@@ -37,7 +44,7 @@ if (recovery) {
   openSection('seguridad');
   show($('#passForm'), 'Elegí tu nueva contraseña.', 'success');
   $('#nPass').focus();
-} else if (['favoritos', 'seguridad'].includes(location.hash.slice(1))) {
+} else if (['favoritos', 'reportes', 'seguridad'].includes(location.hash.slice(1))) {
   openSection(location.hash.slice(1));
 }
 
@@ -85,12 +92,34 @@ async function loadFavorites() {
   if (error) return (grid.innerHTML = `<div class="empty">${esc(errorMsg(error))}</div>`);
   const games = data.map((f) => f.games).filter(Boolean);
   if (!games.length) {
-    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">No tenés favoritos todavía. <a href="index.html#juegos">Explorá los juegos</a> y tocá ♡.</div>';
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">No tenés favoritos todavía. <a href="index.html#juegos">Explorá los juegos</a> y agregalos a favoritos.</div>';
     return;
   }
   grid.innerHTML = games.map((g) => gameCardHtml(g)).join('');
   const stats = await fetchRobloxStats(games.map((g) => g.roblox_place_id));
   if (Object.keys(stats).length) grid.innerHTML = games.map((g) => gameCardHtml(g, stats[g.roblox_place_id])).join('');
+}
+
+// ---------- Reportes ----------
+async function loadReports() {
+  const list = $('#reportsList');
+  list.innerHTML = '<div class="skeleton" style="height:100px"></div>';
+  const { data, error } = await sb.from('suggestions').select('*, games(title, slug)').eq('user_id', profile.id)
+    .order('created_at', { ascending: false });
+  if (error) return (list.innerHTML = `<div class="empty">${esc(errorMsg(error))}</div>`);
+  if (!data.length) return (list.innerHTML = '<div class="empty">Todavía no mandaste sugerencias ni reportes. Podés hacerlo desde la página de cada juego.</div>');
+  list.innerHTML = data.map((r) => {
+    const st = REPORT_STATUS[r.status] || REPORT_STATUS.nueva;
+    return `
+      <div class="report">
+        <div class="report-head">
+          <span class="badge ${st.cls}">${st.label}</span>
+          <strong>${esc(r.title)}</strong>
+          <span class="muted small">${REPORT_KIND[r.kind]} · ${r.games ? `<a href="juego.html?slug=${encodeURIComponent(r.games.slug)}">${esc(r.games.title)}</a> · ` : ''}${timeAgo(r.created_at)}</span>
+        </div>
+        <p>${esc(r.body)}</p>
+      </div>`;
+  }).join('');
 }
 
 // ---------- Seguridad ----------

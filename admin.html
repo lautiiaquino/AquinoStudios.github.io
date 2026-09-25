@@ -5,29 +5,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin — Aquino Studios</title>
   <meta name="robots" content="noindex">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='3' y='3' width='26' height='26' rx='7' fill='%23b6ff3c' stroke='%2305060c' stroke-width='2'/><path d='M10 22 16 9l6 13h-3.5L16 16l-2.5 6z' fill='%2305060c'/></svg>">
-  <meta name="theme-color" content="#0d0f1a">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23ff5a1f'/><path d='M8 25 16 6l8 19h-4.6L16 16.2 12.6 25z' fill='%230b0b0c'/></svg>">
+  <meta name="theme-color" content="#0b0b0c">
+  <script src="js/theme.js"></script>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
   <main class="container layout-side hidden" id="page">
     <nav class="side-nav" id="sideNav">
-      <button class="active" data-sec="juegos">🎮 Juegos</button>
-      <button data-sec="noticias">📰 Noticias</button>
-      <button data-sec="usuarios">👥 Usuarios</button>
-      <button data-sec="mensajes">✉️ Mensajes <span id="unreadBadge"></span></button>
+      <button class="active" data-sec="stats">Estadísticas</button>
+      <button data-sec="juegos">Juegos</button>
+      <button data-sec="noticias">Noticias</button>
+      <button data-sec="encuestas">Encuestas</button>
+      <button data-sec="reportes">Reportes <span id="reportsBadge"></span></button>
+      <button data-sec="comentarios">Comentarios</button>
+      <button data-sec="usuarios">Usuarios</button>
+      <button data-sec="equipo">Equipo</button>
+      <button data-sec="mensajes">Mensajes <span id="unreadBadge"></span></button>
     </nav>
 
     <div>
-      <section data-sec="juegos" style="padding:0">
+      <!-- ESTADÍSTICAS -->
+      <section data-sec="stats">
+        <div class="section-head"><h2>Estadísticas</h2><button class="btn btn-sm btn-ghost" id="refreshStats">Actualizar</button></div>
+        <div class="stats stats-sm" id="statTiles"></div>
+        <div class="card" style="margin-bottom:20px">
+          <h3>Registros por día <span class="muted small" style="font-family:var(--font-body)">(últimos 30 días)</span></h3>
+          <div class="spark" id="signupChart" role="img"></div>
+          <div class="spark-axis" id="signupAxis"></div>
+          <details style="margin-top:12px"><summary class="muted small" style="cursor:pointer">Ver como tabla</summary><div id="signupTable" class="table-wrap"></div></details>
+        </div>
+        <div class="admin-grid">
+          <div class="card"><h3>Juegos más favoriteados</h3><div class="bar-list" id="topFavs"></div></div>
+          <div class="card"><h3>Juegos más comentados</h3><div class="bar-list" id="topComments"></div></div>
+        </div>
+      </section>
+
+      <!-- JUEGOS -->
+      <section class="hidden" data-sec="juegos">
         <div class="section-head"><h2>Juegos</h2><button class="btn btn-primary" id="newGame">+ Nuevo juego</button></div>
         <div class="card table-wrap"><table>
-          <thead><tr><th></th><th>Título</th><th>Estado</th><th>Place ID</th><th>Orden</th><th></th></tr></thead>
+          <thead><tr><th></th><th>Título</th><th>Estado</th><th>Lanzamiento</th><th>Orden</th><th></th></tr></thead>
           <tbody id="gamesBody"></tbody>
         </table></div>
       </section>
 
-      <section class="hidden" data-sec="noticias" style="padding:0">
+      <!-- NOTICIAS -->
+      <section class="hidden" data-sec="noticias">
         <div class="section-head"><h2>Noticias</h2><button class="btn btn-primary" id="newNews">+ Nueva noticia</button></div>
         <div class="card table-wrap"><table>
           <thead><tr><th>Título</th><th>Juego</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
@@ -35,15 +59,73 @@
         </table></div>
       </section>
 
-      <section class="hidden" data-sec="usuarios" style="padding:0">
+      <!-- ENCUESTAS -->
+      <section class="hidden" data-sec="encuestas">
+        <div class="section-head"><h2>Encuestas</h2><button class="btn btn-primary" id="newPoll">+ Nueva encuesta</button></div>
+        <div class="card table-wrap"><table>
+          <thead><tr><th>Pregunta</th><th>Dónde</th><th>Votos</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="pollsBody"></tbody>
+        </table></div>
+      </section>
+
+      <!-- REPORTES -->
+      <section class="hidden" data-sec="reportes">
+        <div class="section-head">
+          <h2>Sugerencias y bugs</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select id="repKind" style="width:auto"><option value="">Todos los tipos</option><option value="sugerencia">Sugerencias</option><option value="bug">Bugs</option></select>
+            <select id="repStatus" style="width:auto"><option value="abiertos">Abiertos</option><option value="">Todos</option><option value="nueva">Nuevas</option><option value="en_revision">En revisión</option><option value="planeada">Planeadas</option><option value="resuelta">Resueltas</option><option value="descartada">Descartadas</option></select>
+            <select id="repGame" style="width:auto"></select>
+          </div>
+        </div>
+        <div id="reportsList"></div>
+      </section>
+
+      <!-- COMENTARIOS -->
+      <section class="hidden" data-sec="comentarios">
+        <div class="section-head">
+          <h2>Comentarios</h2>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <label class="check"><input type="checkbox" id="onlyHidden"> Solo ocultos</label>
+            <input id="commentSearch" placeholder="Buscar texto o usuario..." style="max-width:240px">
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:20px">
+          <h3>Palabras prohibidas</h3>
+          <p class="muted small">Los comentarios y reportes que tengan alguna de estas palabras se rechazan automáticamente.</p>
+          <form id="wordForm" class="upload-row" style="max-width:420px;margin-bottom:14px">
+            <input id="newWord" maxlength="40" placeholder="Nueva palabra (sin espacios)">
+            <button class="btn btn-sm btn-primary" type="submit">Agregar</button>
+          </form>
+          <div class="tag-list" id="wordList"></div>
+        </div>
+        <div class="card table-wrap"><table>
+          <thead><tr><th>Usuario</th><th>Comentario</th><th>Juego</th><th>Fecha</th><th></th></tr></thead>
+          <tbody id="commentsBody"></tbody>
+        </table></div>
+      </section>
+
+      <!-- USUARIOS -->
+      <section class="hidden" data-sec="usuarios">
         <div class="section-head"><h2>Usuarios</h2><input id="userSearch" placeholder="Buscar usuario..." style="max-width:260px"></div>
         <div class="card table-wrap"><table>
-          <thead><tr><th>Usuario</th><th>Roblox</th><th>Rol</th><th>Registro</th><th></th></tr></thead>
+          <thead><tr><th>Usuario</th><th>Roblox</th><th>Rol</th><th>Estado</th><th>Registro</th><th></th></tr></thead>
           <tbody id="usersBody"></tbody>
         </table></div>
       </section>
 
-      <section class="hidden" data-sec="mensajes" style="padding:0">
+      <!-- EQUIPO -->
+      <section class="hidden" data-sec="equipo">
+        <div class="section-head"><h2>Equipo</h2><button class="btn btn-primary" id="newMember">+ Agregar miembro</button></div>
+        <p class="muted">Aparecen en la sección "Quiénes somos" del inicio.</p>
+        <div class="card table-wrap"><table>
+          <thead><tr><th></th><th>Nombre</th><th>Rol</th><th>Roblox</th><th>Orden</th><th></th></tr></thead>
+          <tbody id="teamBody"></tbody>
+        </table></div>
+      </section>
+
+      <!-- MENSAJES -->
+      <section class="hidden" data-sec="mensajes">
         <div class="section-head"><h2>Mensajes de contacto</h2></div>
         <div id="messagesList"></div>
       </section>
@@ -68,7 +150,13 @@
         <div class="field"><label for="gPlace">Place ID de Roblox</label><input id="gPlace" inputmode="numeric" placeholder="ej: 1818"><span class="hint">El número en la URL: roblox.com/games/<b>1818</b>/...</span></div>
         <div class="field"><label for="gOrder">Orden</label><input id="gOrder" type="number" value="0"><span class="hint">Menor número = aparece primero.</span></div>
       </div>
-      <div class="field"><label for="gThumb">URL de la imagen</label><input id="gThumb" type="url" placeholder="https://..."><span class="hint">Si lo dejás vacío se usa el ícono del juego en Roblox.</span></div>
+      <div class="form-row">
+        <div class="field"><label for="gRelease">Fecha de lanzamiento</label><input id="gRelease" type="datetime-local"><span class="hint">Si es futura, se muestra la cuenta regresiva.</span></div>
+        <div class="field"><label for="gYoutube">Video de YouTube</label><input id="gYoutube" placeholder="https://youtu.be/..."><span class="hint">Link del tráiler (opcional).</span></div>
+      </div>
+      <div class="field"><label for="gThumb">Imagen principal</label>
+        <div class="upload-row"><input id="gThumb" type="url" placeholder="https://..."><label class="btn btn-sm btn-ghost file-btn">Subir<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-upload="gThumb" data-folder="juegos"></label></div>
+        <span class="hint">Subí una imagen o pegá un link. Si la dejás vacía se usa el ícono del juego en Roblox.</span></div>
       <div class="field"><label for="gShort">Descripción corta</label><input id="gShort" maxlength="200"></div>
       <div class="field"><label for="gDesc">Descripción completa</label><textarea id="gDesc" maxlength="5000"></textarea></div>
       <label class="check"><input type="checkbox" id="gFeatured"> Juego destacado (aparece grande en el inicio)</label>
@@ -77,17 +165,92 @@
     </form>
   </dialog>
 
+  <!-- Diálogo: galería y cambios de un juego -->
+  <dialog id="contentDialog">
+    <div class="dialog-head"><h3 id="contentTitle">Contenido</h3><button class="x-btn" data-close aria-label="Cerrar">×</button></div>
+    <div class="dialog-body">
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-ctab="galeria" type="button">Galería</button>
+        <button class="tab" data-ctab="cambios" type="button">Registro de cambios</button>
+      </div>
+      <div data-cpanel="galeria">
+        <div class="media-admin" id="mediaGrid"></div>
+        <form class="form" id="mediaForm" style="margin-top:18px" novalidate>
+          <div class="field"><label>Agregar imágenes</label>
+            <div class="upload-row">
+              <input id="mUrl" type="url" placeholder="Pegá un link https://... o subí archivos →">
+              <label class="btn btn-sm btn-ghost file-btn">Subir<input type="file" id="mFiles" accept="image/png,image/jpeg,image/webp,image/gif" multiple></label>
+            </div>
+            <span class="hint">Podés subir varias a la vez (máx. 5 MB cada una).</span>
+          </div>
+          <div class="field"><label for="mCaption">Descripción (opcional)</label><input id="mCaption" maxlength="120"></div>
+          <div class="msg"></div>
+          <div><button class="btn btn-sm btn-primary" type="submit">Agregar link</button></div>
+        </form>
+      </div>
+      <div data-cpanel="cambios" class="hidden">
+        <form class="form" id="updateForm" novalidate>
+          <div class="form-row">
+            <div class="field"><label for="uVersion">Versión</label><input id="uVersion" maxlength="20" placeholder="v1.2"></div>
+            <div class="field"><label for="uTitle">Título *</label><input id="uTitle" maxlength="120" placeholder="Nuevo mapa de invierno"></div>
+          </div>
+          <div class="field"><label for="uBody">Qué cambió</label><textarea id="uBody" maxlength="3000" placeholder="- Nuevo mapa&#10;- Arreglamos el bug de..."></textarea></div>
+          <div class="msg"></div>
+          <div style="display:flex;gap:8px"><button class="btn btn-sm btn-primary" type="submit" id="uSubmit">Publicar cambio</button><button class="btn btn-sm btn-ghost hidden" type="button" id="uCancel">Cancelar edición</button></div>
+        </form>
+        <div class="changelog" id="updatesList" style="margin-top:24px"></div>
+      </div>
+    </div>
+  </dialog>
+
   <!-- Diálogo: noticia -->
   <dialog id="newsDialog">
     <div class="dialog-head"><h3 id="newsDialogTitle">Noticia</h3><button class="x-btn" data-close aria-label="Cerrar">×</button></div>
     <form class="form dialog-body" id="newsForm" novalidate>
       <div class="field"><label for="nTitle">Título *</label><input id="nTitle" maxlength="120" required></div>
       <div class="field"><label for="nBody">Contenido *</label><textarea id="nBody" maxlength="5000" style="min-height:160px" required></textarea></div>
-      <div class="form-row">
-        <div class="field"><label for="nGame">Juego relacionado</label><select id="nGame"></select></div>
-        <div class="field"><label for="nImage">URL de imagen</label><input id="nImage" type="url" placeholder="https://..."></div>
-      </div>
+      <div class="field"><label for="nGame">Juego relacionado</label><select id="nGame"></select></div>
+      <div class="field"><label for="nImage">Imagen</label>
+        <div class="upload-row"><input id="nImage" type="url" placeholder="https://..."><label class="btn btn-sm btn-ghost file-btn">Subir<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-upload="nImage" data-folder="noticias"></label></div></div>
       <label class="check"><input type="checkbox" id="nPublished" checked> Publicada (visible para todos)</label>
+      <div class="msg"></div>
+      <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar</button></div>
+    </form>
+  </dialog>
+
+  <!-- Diálogo: encuesta -->
+  <dialog id="pollDialog">
+    <div class="dialog-head"><h3 id="pollDialogTitle">Encuesta</h3><button class="x-btn" data-close aria-label="Cerrar">×</button></div>
+    <form class="form dialog-body" id="pollForm" novalidate>
+      <div class="field"><label for="pQuestion">Pregunta *</label><input id="pQuestion" maxlength="200" placeholder="¿Qué agregamos en la próxima actualización?"></div>
+      <div class="field"><label for="pOptions">Opciones * <span class="muted">(una por línea, de 2 a 8)</span></label>
+        <textarea id="pOptions" placeholder="Nuevo mapa&#10;Más autos&#10;Modo por equipos"></textarea>
+        <span class="hint" id="pOptionsHint"></span></div>
+      <div class="form-row">
+        <div class="field"><label for="pGame">Dónde se muestra</label><select id="pGame"></select></div>
+        <div class="field"><label for="pCloses">Cierra el (opcional)</label><input id="pCloses" type="datetime-local"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="pActive" checked> Activa (se puede votar)</label>
+      <div class="msg"></div>
+      <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar</button></div>
+    </form>
+  </dialog>
+
+  <!-- Diálogo: miembro del equipo -->
+  <dialog id="memberDialog">
+    <div class="dialog-head"><h3 id="memberDialogTitle">Miembro</h3><button class="x-btn" data-close aria-label="Cerrar">×</button></div>
+    <form class="form dialog-body" id="memberForm" novalidate>
+      <div class="form-row">
+        <div class="field"><label for="tName">Nombre *</label><input id="tName" maxlength="60"></div>
+        <div class="field"><label for="tRole">Rol</label><input id="tRole" maxlength="60" placeholder="Programador, Builder, Fundador..."></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label for="tRoblox">Usuario de Roblox</label><input id="tRoblox" maxlength="20"></div>
+        <div class="field"><label for="tOrder">Orden</label><input id="tOrder" type="number" value="0"></div>
+      </div>
+      <div class="field"><label for="tAvatar">Foto</label>
+        <div class="upload-row"><input id="tAvatar" type="url" placeholder="https://..."><label class="btn btn-sm btn-ghost file-btn">Subir<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-upload="tAvatar" data-folder="equipo"></label></div></div>
+      <div class="field"><label for="tBio">Descripción</label><textarea id="tBio" maxlength="300" style="min-height:80px"></textarea></div>
       <div class="msg"></div>
       <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar</button></div>
     </form>

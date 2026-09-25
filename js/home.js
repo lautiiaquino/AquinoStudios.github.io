@@ -1,6 +1,7 @@
 import {
   sb, $, $$, esc, safeUrl, formatNumber, formatDate, STATUS, robloxGameUrl, initials,
   renderLayout, toast, errorMsg, withLoading, fetchRobloxStats, thumbStyle, gameCardHtml,
+  avatarHtml, startCountdown, renderPolls,
 } from './common.js';
 
 const profile = await renderLayout('home');
@@ -15,9 +16,8 @@ observeReveal();
 if (profile) {
   $('#heroJoin').textContent = 'Mi cuenta';
   $('#heroJoin').href = 'cuenta.html';
-  $('#ctaTitle').textContent = `¡Hola, ${profile.username}!`;
-  $('#ctaText').textContent = 'Ya sos parte de la comunidad. Mirá tus favoritos o editá tu perfil.';
-  $('#ctaBtn').textContent = 'Ir a mi cuenta →';
+  $('#ctaTitle').textContent = 'Tu cuenta';
+  $('#ctaText').textContent = `Hola, ${profile.username} — favoritos, reportes y perfil`;
   $('#ctaBtn').href = 'cuenta.html';
   $('#cName').value = profile.username;
   $('#cEmail').value = (await sb.auth.getUser()).data.user?.email || '';
@@ -26,17 +26,36 @@ if (profile) {
 let games = [];
 let stats = {};
 
+// Contador animado para los números del HUD
+function countUp(el, target) {
+  target = Number(target) || 0;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || target === 0) return (el.textContent = formatNumber(target));
+  const start = performance.now();
+  const step = (t) => {
+    const k = Math.min(1, (t - start) / 1200);
+    el.textContent = formatNumber(Math.round(target * (1 - Math.pow(1 - k, 3))));
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
 function renderFeatured() {
   const g = games.find((x) => x.featured);
   if (!g) return ($('#featured').innerHTML = '');
   const s = stats[g.roblox_place_id];
+  // La imagen del juego destacado queda de fondo en el hero
+  const heroImg = safeUrl(g.thumbnail_url) || safeUrl(s?.icon);
+  if (heroImg) {
+    $('#heroBg').style.backgroundImage = `url('${heroImg}')`;
+    $('#heroBg').classList.add('on');
+  }
   const st = STATUS[g.status] || STATUS.publicado;
   const hasImg = safeUrl(g.thumbnail_url) || safeUrl(s?.icon);
   $('#featured').innerHTML = `
     <article class="featured reveal">
       <div class="featured-img" ${thumbStyle(g, s)}>${hasImg ? '' : `<div class="thumb-placeholder">${initials(g.title)}</div>`}</div>
       <div class="featured-body">
-        <div class="featured-tag">⭐ Juego destacado</div>
+        <div class="featured-tag">Juego destacado</div>
         <h3>${esc(g.title)}</h3>
         <div><span class="badge ${st.cls}">${st.label}</span> ${g.genre ? `<span class="badge badge-accent">${esc(g.genre)}</span>` : ''}</div>
         <p class="muted" style="margin-top:14px">${esc(g.short_description || '')}</p>
@@ -46,7 +65,7 @@ function renderFeatured() {
           <div><strong>${formatNumber(s.favorites)}</strong>favoritos</div>
         </div>` : ''}
         <div class="hero-actions" style="justify-content:flex-start">
-          ${g.roblox_place_id && g.status === 'publicado' ? `<a class="btn btn-play" href="${robloxGameUrl(g.roblox_place_id)}" target="_blank" rel="noopener">▶ Jugar en Roblox</a>` : ''}
+          ${g.roblox_place_id && g.status === 'publicado' ? `<a class="btn btn-play" href="${robloxGameUrl(g.roblox_place_id)}" target="_blank" rel="noopener">Jugar en Roblox ↗</a>` : ''}
           <a class="btn btn-ghost" href="juego.html?slug=${encodeURIComponent(g.slug)}">Ver más</a>
         </div>
       </div>
@@ -79,7 +98,8 @@ async function loadGames() {
     return;
   }
   games = data;
-  $('#statGames').textContent = games.length;
+  countUp($('#statGames'), games.length);
+  renderRelease();
   renderFeatured();
   renderGames();
 
@@ -88,15 +108,52 @@ async function loadGames() {
   const values = Object.values(stats);
   if (values.length) {
     const playing = values.reduce((a, s) => a + (s.playing || 0), 0);
-    $('#statPlaying').textContent = formatNumber(playing);
-    $('#statVisits').textContent = formatNumber(values.reduce((a, s) => a + (s.visits || 0), 0));
-    if (playing > 0) $('#heroLive').textContent = `${formatNumber(playing)} jugando ahora mismo`;
+    countUp($('#statPlaying'), playing);
+    countUp($('#statVisits'), values.reduce((a, s) => a + (s.visits || 0), 0));
+    if (playing > 0) $('#heroLive').textContent = `${formatNumber(playing)} jugando ahora`;
     renderFeatured();
     renderGames($('.chip.active').dataset.filter);
   } else {
     $('#statPlaying').textContent = '0';
     $('#statVisits').textContent = '0';
   }
+}
+
+// Aviso del próximo lanzamiento: el juego con la fecha de salida más cercana
+function renderRelease() {
+  const next = games
+    .filter((g) => g.release_at && new Date(g.release_at) > new Date())
+    .sort((a, b) => new Date(a.release_at) - new Date(b.release_at))[0];
+  const box = $('#releaseBanner');
+  if (!next) return box.classList.add('hidden');
+  box.innerHTML = `
+    <div><span class="kicker">Próximo lanzamiento</span><h3>${esc(next.title)}</h3>
+      <p>${esc(next.short_description || 'Muy pronto en Roblox.')}</p></div>
+    <div class="countdown" id="homeCountdown"></div>
+    <a class="btn btn-primary" href="proximamente.html">Ver más</a>`;
+  box.classList.remove('hidden');
+  startCountdown($('#homeCountdown'), next.release_at, () => box.classList.add('hidden'));
+}
+
+async function loadTeam() {
+  if (!sb) return;
+  const { data } = await sb.from('team_members').select('*').order('sort_order').order('created_at');
+  if (!data?.length) return;
+  $('#teamGrid').innerHTML = data.map((m) => `
+    <article class="member reveal">
+      ${avatarHtml({ avatar_url: m.avatar_url, username: m.name }, 96)}
+      <h3>${esc(m.name)}</h3>
+      ${m.role_title ? `<div class="role">${esc(m.role_title)}</div>` : ''}
+      ${m.bio ? `<p>${esc(m.bio)}</p>` : ''}
+      ${m.roblox_username ? `<a class="small" href="https://www.roblox.com/search/users?keyword=${encodeURIComponent(m.roblox_username)}" target="_blank" rel="noopener">@${esc(m.roblox_username)} en Roblox</a>` : ''}
+    </article>`).join('');
+  $('#equipo').classList.remove('hidden');
+  observeReveal();
+}
+
+async function loadPolls() {
+  const n = await renderPolls($('#pollsList'), profile, (q) => q.is('game_id', null));
+  if (n) $('#encuestas').classList.remove('hidden');
 }
 
 async function loadNews() {
@@ -122,7 +179,7 @@ async function loadNews() {
 async function loadSiteStats() {
   if (!sb) return;
   const { data } = await sb.rpc('site_stats');
-  if (data) $('#statMembers').textContent = formatNumber(data.members);
+  if (data) countUp($('#statMembers'), data.members);
 }
 
 $('#contactForm').addEventListener('submit', async (e) => {
@@ -152,3 +209,5 @@ $('#contactForm').addEventListener('submit', async (e) => {
 loadGames();
 loadNews();
 loadSiteStats();
+loadTeam();
+loadPolls();

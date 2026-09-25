@@ -87,7 +87,11 @@ export function errorMsg(err) {
   if (m.includes('rate limit') || m.includes('too many')) return 'Demasiados intentos. Esperá un momento y probá de nuevo.';
   if (m.includes('duplicate key') && m.includes('username')) return 'Ese nombre de usuario ya está en uso.';
   if (m.includes('duplicate key') && m.includes('slug')) return 'Ya existe un juego con ese identificador (slug).';
+  if (m.includes('duplicate key') && m.includes('banned_words')) return 'Esa palabra ya está en la lista.';
   if (m.includes('violates check constraint')) return 'Algún dato no tiene el formato correcto.';
+  if (m.includes('row-level security')) return 'No tenés permiso para hacer esto (si tu cuenta está suspendida, no podés participar).';
+  if (m.includes('exceeded the maximum allowed size') || m.includes('payload too large')) return 'La imagen pesa más de 5 MB.';
+  if (m.includes('mime type')) return 'Formato de imagen no permitido (usá PNG, JPG, WEBP o GIF).';
   if (m.includes('failed to fetch') || m.includes('network')) return 'Error de conexión. Revisá tu internet.';
   return err?.message || 'Ocurrió un error inesperado.';
 }
@@ -131,7 +135,10 @@ export async function signOut() {
 }
 
 // ---------- Layout (barra superior + pie) ----------
-const LOGO = `<svg viewBox="0 0 32 32" width="34" height="34" aria-hidden="true"><rect x="3" y="3" width="26" height="26" rx="7" fill="var(--accent)" stroke="var(--ink)" stroke-width="2"/><path d="M10 22 16 9l6 13h-3.5L16 16l-2.5 6z" fill="var(--ink)"/></svg>`;
+const LOGO = `<svg viewBox="0 0 32 32" width="36" height="36" aria-hidden="true"><rect width="32" height="32" rx="4" fill="var(--accent)"/><path d="M8 25 16 6l8 19h-4.6L16 16.2 12.6 25z" fill="var(--accent-ink)"/></svg>`;
+const BRAND = `${LOGO}<span class="brand-word"><b>Aquino</b><small>Studios</small></span>`;
+const SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
 
 const ICONS = {
   roblox: '<path d="M5.2 0 0 18.8 18.8 24 24 5.2zm8.4 14.9-4.5-1.2 1.2-4.5 4.5 1.2z"/>',
@@ -153,14 +160,15 @@ export async function renderLayout(active = '') {
   const link = (href, text, key) => `<a href="${href}" class="${active === key ? 'active' : ''}">${text}</a>`;
   header.innerHTML = `
     <nav class="nav container">
-      <a href="index.html" class="brand">${LOGO}<span>Aquino<b>Studios</b></span></a>
+      <a href="index.html" class="brand" aria-label="Aquino Studios, inicio">${BRAND}</a>
       <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
       <div class="nav-links">
-        ${link('index.html', 'Inicio', 'home')}
         ${link('index.html#juegos', 'Juegos', 'games')}
         ${link('index.html#noticias', 'Noticias', 'news')}
+        ${link('proximamente.html', 'Próximo', 'next')}
         ${link('index.html#nosotros', 'Nosotros', 'about')}
         ${link('index.html#contacto', 'Contacto', 'contact')}
+        <button class="theme-btn" id="themeBtn" type="button"></button>
         <div class="nav-user" id="navUser">
           <a href="login.html" class="btn btn-sm btn-ghost">Entrar</a>
           <a href="login.html?tab=register" class="btn btn-sm btn-primary">Crear cuenta</a>
@@ -175,7 +183,25 @@ export async function renderLayout(active = '') {
     toggle.setAttribute('aria-expanded', open);
   });
   $$('.nav-links a', header).forEach((a) => a.addEventListener('click', () => header.classList.remove('open')));
+  enableTilt();
   addEventListener('scroll', () => header.classList.toggle('scrolled', scrollY > 10), { passive: true });
+
+  // Modo claro / oscuro (el tema inicial lo pone js/theme.js)
+  const themeBtn = $('#themeBtn', header);
+  const paintTheme = () => {
+    const dark = document.documentElement.dataset.theme !== 'light';
+    themeBtn.innerHTML = dark ? SUN : MOON;
+    themeBtn.dataset.label = dark ? 'Modo claro' : 'Modo oscuro';
+    themeBtn.setAttribute('aria-label', themeBtn.dataset.label);
+    themeBtn.title = themeBtn.dataset.label;
+  };
+  themeBtn.addEventListener('click', () => {
+    const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('theme', next); } catch {}
+    paintTheme();
+  });
+  paintTheme();
 
   const footer = document.createElement('footer');
   footer.className = 'site-footer';
@@ -183,8 +209,8 @@ export async function renderLayout(active = '') {
     <div class="container">
       <div class="footer-grid">
         <div>
-          <a href="index.html" class="brand">${LOGO}<span>Aquino<b>Studios</b></span></a>
-          <p class="muted">Estudio independiente creando experiencias en Roblox para jugar con amigos.</p>
+          <a href="index.html" class="brand" aria-label="Aquino Studios, inicio">${BRAND}</a>
+          <p class="muted">Estudio independiente de juegos de Roblox. Hechos para jugar con amigos.</p>
           <div class="socials">${socialLinks()}</div>
         </div>
         <div>
@@ -192,7 +218,8 @@ export async function renderLayout(active = '') {
           <ul>
             <li><a href="index.html#juegos">Juegos</a></li>
             <li><a href="index.html#noticias">Noticias</a></li>
-            <li><a href="index.html#nosotros">Nosotros</a></li>
+            <li><a href="proximamente.html">Próximo lanzamiento</a></li>
+            <li><a href="index.html#equipo">Equipo</a></li>
             <li><a href="index.html#contacto">Contacto</a></li>
           </ul>
         </div>
@@ -205,17 +232,18 @@ export async function renderLayout(active = '') {
           </ul>
         </div>
       </div>
-      <div class="footer-bottom">
-        <span class="muted small">© ${new Date().getFullYear()} Aquino Studios</span>
-        <span class="muted small">No afiliado a Roblox Corporation.</span>
+      <div class="footer-bottom mono">
+        <span>© ${new Date().getFullYear()} Aquino Studios</span>
+        <span>No afiliado a Roblox Corporation</span>
       </div>
-    </div>`;
+    </div>
+    <div class="footer-mark" aria-hidden="true">Aquino</div>`;
   document.body.append(footer);
 
   if (!configured) {
     const warn = document.createElement('div');
     warn.className = 'config-warning';
-    warn.innerHTML = '⚠️ Falta configurar Supabase en <code>js/config.js</code>. Mirá el archivo <code>README.md</code>.';
+    warn.innerHTML = 'Falta configurar Supabase en <code>js/config.js</code>. Mirá el archivo <code>README.md</code>.';
     header.after(warn);
     return null;
   }
@@ -292,4 +320,136 @@ export async function fetchRobloxStats(placeIds) {
   } catch {
     return {};
   }
+}
+
+// ---------- YouTube ----------
+// Acepta un link de YouTube (watch, youtu.be, shorts, embed) o el ID de 11 caracteres.
+export function youtubeId(input) {
+  const v = String(input || '').trim();
+  if (/^[A-Za-z0-9_-]{11}$/.test(v)) return v;
+  const m = v.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+export function youtubeEmbedHtml(id) {
+  if (!/^[A-Za-z0-9_-]{11}$/.test(id || '')) return '';
+  return `<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${id}" title="Video del juego"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
+}
+
+// ---------- Cuenta regresiva ----------
+// Dibuja días/horas/minutos/segundos en `el` hasta `date`. Llama a onEnd cuando llega a cero.
+export function startCountdown(el, date, onEnd) {
+  const target = new Date(date).getTime();
+  const pad = (n) => String(n).padStart(2, '0');
+  let timer;
+  const tick = () => {
+    const left = Math.max(0, target - Date.now());
+    const d = Math.floor(left / 86400000);
+    const h = Math.floor(left / 3600000) % 24;
+    const m = Math.floor(left / 60000) % 60;
+    const sec = Math.floor(left / 1000) % 60;
+    el.innerHTML = [[d, d === 1 ? 'día' : 'días'], [pad(h), 'horas'], [pad(m), 'min'], [pad(sec), 'seg']]
+      .map(([v, l]) => `<div class="cd-box"><b>${v}</b><span>${l}</span></div>`).join('');
+    if (left === 0) { clearInterval(timer); onEnd?.(); }
+  };
+  tick();
+  timer = setInterval(tick, 1000);
+  return () => clearInterval(timer);
+}
+
+export function formatDateTime(iso) {
+  return new Date(iso).toLocaleString('es-AR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+// ---------- Sugerencias / bugs ----------
+export const REPORT_STATUS = {
+  nueva: { label: 'Nueva', cls: 'badge-blue' },
+  en_revision: { label: 'En revisión', cls: 'badge-amber' },
+  planeada: { label: 'Planeada', cls: 'badge-accent' },
+  resuelta: { label: 'Resuelta', cls: 'badge-green' },
+  descartada: { label: 'Descartada', cls: '' },
+};
+export const REPORT_KIND = { sugerencia: 'Sugerencia', bug: 'Bug' };
+
+// ---------- Encuestas ----------
+const pollOpen = (p) => p.active && (!p.closes_at || new Date(p.closes_at) > new Date());
+
+// Carga y dibuja encuestas en `container`. `filter` recibe la consulta de Supabase para filtrarla.
+// Devuelve la cantidad de encuestas mostradas.
+export async function renderPolls(container, profile, filter) {
+  if (!sb) return 0;
+  const { data: polls } = await filter(sb.from('polls').select('*, poll_options(id, label, sort_order)'))
+    .order('created_at', { ascending: false }).limit(6);
+  if (!polls?.length) return 0;
+
+  const ids = polls.map((p) => p.id);
+  const [{ data: counts }, { data: mine }] = await Promise.all([
+    sb.rpc('poll_counts', { ids }),
+    profile ? sb.from('poll_votes').select('poll_id, option_id').in('poll_id', ids).eq('user_id', profile.id) : { data: [] },
+  ]);
+  const votes = Object.fromEntries((counts || []).map((c) => [c.option_id, Number(c.votes)]));
+  const myVote = Object.fromEntries((mine || []).map((v) => [v.poll_id, v.option_id]));
+
+  container.innerHTML = polls.map((p) => {
+    const opts = [...p.poll_options].sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+    const total = opts.reduce((a, o) => a + (votes[o.id] || 0), 0);
+    const open = pollOpen(p);
+    const voted = myVote[p.id];
+    const showResults = voted || !open || !profile;
+    return `
+      <article class="poll" data-poll="${p.id}">
+        <h3>${esc(p.question)}</h3>
+        <div class="poll-options">
+          ${opts.map((o) => {
+            const pct = total ? Math.round(((votes[o.id] || 0) / total) * 100) : 0;
+            const tag = open && profile ? 'button' : 'div';
+            return `<${tag} class="poll-option ${voted === o.id ? 'mine' : ''}" ${tag === 'button' ? `type="button" data-option="${o.id}"` : ''}>
+              ${showResults ? `<span class="fill" style="width:${pct}%"></span>` : ''}
+              <span>${voted === o.id ? '✓ ' : ''}${esc(o.label)}</span>
+              ${showResults ? `<span class="pct">${pct}%</span>` : ''}
+            </${tag}>`;
+          }).join('')}
+        </div>
+        <div class="poll-foot">
+          <span>${total} ${total === 1 ? 'voto' : 'votos'}</span>
+          <span>${!open ? 'Encuesta cerrada' : !profile ? '<a href="login.html">Iniciá sesión</a> para votar'
+            : voted ? 'Podés cambiar tu voto' : p.closes_at ? `Cierra el ${formatDate(p.closes_at)}` : 'Tocá una opción para votar'}</span>
+        </div>
+      </article>`;
+  }).join('');
+
+  if (profile && !container.dataset.bound) {
+    container.dataset.bound = '1';
+    container.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-option]');
+      if (!btn) return;
+      const pollId = Number(btn.closest('[data-poll]').dataset.poll);
+      const { error } = await sb.from('poll_votes').upsert(
+        { poll_id: pollId, option_id: Number(btn.dataset.option), user_id: profile.id },
+        { onConflict: 'poll_id,user_id' });
+      if (error) return toast(errorMsg(error), 'error');
+      toast('¡Voto registrado!');
+      renderPolls(container, profile, filter);
+    });
+  }
+  return polls.length;
+}
+
+// ---------- Efecto 3D en las tarjetas de juegos ----------
+// Inclina la tarjeta siguiendo el mouse. Se desactiva en pantallas táctiles y con "reducir movimiento".
+function enableTilt() {
+  if (!matchMedia('(hover: hover) and (pointer: fine)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let current = null;
+  document.addEventListener('pointermove', (e) => {
+    const card = e.target.closest?.('.game-card');
+    if (current && current !== card) current.style.transform = '';
+    current = card;
+    if (!card) return;
+    const r = card.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
+    card.style.transform = `perspective(900px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) translateY(-4px)`;
+  }, { passive: true });
+  document.addEventListener('pointerleave', () => { if (current) current.style.transform = ''; });
 }

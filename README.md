@@ -13,7 +13,8 @@ Sitio oficial de Aquino Studios, un estudio de juegos de Roblox.
 | `login.html` | Iniciar sesión, crear cuenta (con verificación de email) y recuperar contraseña |
 | `juego.html?slug=...` | Página de cada juego: estadísticas de Roblox, botón "Jugar", favoritos y comentarios |
 | `cuenta.html` | Mi cuenta: editar perfil, ver favoritos, cambiar contraseña o email, cerrar sesión en todos los dispositivos |
-| `admin.html` | Panel de admin: crear, editar y borrar juegos y noticias; gestionar usuarios y roles; leer mensajes de contacto |
+| `proximamente.html` | Cuenta regresiva para el próximo lanzamiento (el juego con la fecha de salida más cercana) |
+| `admin.html` | Panel de admin: estadísticas, juegos (con galería, video y registro de cambios), noticias, encuestas, sugerencias y bugs, moderación de comentarios y palabras prohibidas, usuarios (roles y suspensiones), equipo y mensajes de contacto. Las imágenes se pueden subir directo desde el panel |
 
 **Backend (`supabase/`):**
 - `schema.sql`: tablas, reglas de seguridad (RLS), triggers y datos de ejemplo.
@@ -74,6 +75,11 @@ Sin este paso el sitio funciona igual, pero no muestra jugadores activos ni visi
 
 ---
 
+## Actualizar la base de datos
+Cuando el sitio agrega funciones nuevas, `supabase/schema.sql` trae las tablas nuevas.
+Volvé a pegar **todo** el archivo en **SQL Editor** y tocá **Run**. Se puede ejecutar
+las veces que quieras: no borra tus juegos, usuarios ni comentarios.
+
 ## Probar en tu PC
 Como el sitio usa módulos de JavaScript, no alcanza con abrir el `.html` con doble clic. Hay que levantar un servidor local:
 ```
@@ -82,6 +88,6 @@ python -m http.server 8000
 Después abrí http://localhost:8000
 
 ## Personalizar
-- **Colores:** variables al principio de `css/styles.css` (`--accent`, `--accent-2`, etc.).
+- **Colores:** variables al principio de `css/styles.css` (`--accent`, `--accent-2`, etc.). El modo claro tiene sus propias variables en el bloque `[data-theme="light"]`.
 - **Textos del inicio:** `index.html`.
 - **Juegos y noticias:** desde el panel de admin, sin tocar código.
