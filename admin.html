@@ -7,21 +7,23 @@
   <meta name="robots" content="noindex">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23ff5a1f'/><path d='M8 25 16 6l8 19h-4.6L16 16.2 12.6 25z' fill='%230b0b0c'/></svg>">
   <meta name="theme-color" content="#0b0b0c">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <script src="js/theme.js"></script>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
   <main class="container layout-side hidden" id="page">
-    <nav class="side-nav" id="sideNav">
-      <button class="active" data-sec="stats">Estadísticas</button>
-      <button data-sec="juegos">Juegos</button>
-      <button data-sec="noticias">Noticias</button>
-      <button data-sec="encuestas">Encuestas</button>
-      <button data-sec="reportes">Reportes <span id="reportsBadge"></span></button>
-      <button data-sec="comentarios">Comentarios</button>
-      <button data-sec="usuarios">Usuarios</button>
-      <button data-sec="equipo">Equipo</button>
-      <button data-sec="mensajes">Mensajes <span id="unreadBadge"></span></button>
+    <nav class="side-nav" id="sideNav" aria-label="Secciones del panel">
+      <a href="#stats" data-sec="stats">Estadísticas</a>
+      <a href="#juegos" data-sec="juegos">Juegos</a>
+      <a href="#noticias" data-sec="noticias">Noticias</a>
+      <a href="#encuestas" data-sec="encuestas">Encuestas</a>
+      <a href="#reportes" data-sec="reportes">Reportes <span id="reportsBadge"></span></a>
+      <a href="#comentarios" data-sec="comentarios">Comentarios</a>
+      <a href="#usuarios" data-sec="usuarios">Usuarios</a>
+      <a href="#equipo" data-sec="equipo">Equipo</a>
+      <a href="#mensajes" data-sec="mensajes">Mensajes <span id="unreadBadge"></span></a>
     </nav>
 
     <div>
@@ -76,6 +78,7 @@
             <select id="repKind" style="width:auto"><option value="">Todos los tipos</option><option value="sugerencia">Sugerencias</option><option value="bug">Bugs</option></select>
             <select id="repStatus" style="width:auto"><option value="abiertos">Abiertos</option><option value="">Todos</option><option value="nueva">Nuevas</option><option value="en_revision">En revisión</option><option value="planeada">Planeadas</option><option value="resuelta">Resueltas</option><option value="descartada">Descartadas</option></select>
             <select id="repGame" style="width:auto"></select>
+            <button class="btn btn-sm btn-ghost" id="exportReports" type="button">Exportar CSV</button>
           </div>
         </div>
         <div id="reportsList"></div>
@@ -87,7 +90,7 @@
           <h2>Comentarios</h2>
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
             <label class="check"><input type="checkbox" id="onlyHidden"> Solo ocultos</label>
-            <input id="commentSearch" placeholder="Buscar texto o usuario..." style="max-width:240px">
+            <input id="commentSearch" type="search" placeholder="Buscar texto o usuario... (tecla /)" style="max-width:240px">
           </div>
         </div>
         <div class="card" style="margin-bottom:20px">
@@ -107,7 +110,7 @@
 
       <!-- USUARIOS -->
       <section class="hidden" data-sec="usuarios">
-        <div class="section-head"><h2>Usuarios</h2><input id="userSearch" placeholder="Buscar usuario..." style="max-width:260px"></div>
+        <div class="section-head"><h2>Usuarios</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="userSearch" type="search" placeholder="Buscar usuario... (tecla /)" style="max-width:260px"><button class="btn btn-sm btn-ghost" id="exportUsers" type="button">Exportar CSV</button></div></div>
         <div class="card table-wrap"><table>
           <thead><tr><th>Usuario</th><th>Roblox</th><th>Rol</th><th>Estado</th><th>Registro</th><th></th></tr></thead>
           <tbody id="usersBody"></tbody>
@@ -155,7 +158,8 @@
         <div class="field"><label for="gYoutube">Video de YouTube</label><input id="gYoutube" placeholder="https://youtu.be/..."><span class="hint">Link del tráiler (opcional).</span></div>
       </div>
       <div class="field"><label for="gThumb">Imagen principal</label>
-        <div class="upload-row"><input id="gThumb" type="url" placeholder="https://..."><label class="btn btn-sm btn-ghost file-btn">Subir<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-upload="gThumb" data-folder="juegos"></label></div>
+        <input id="gThumb" type="url" placeholder="https://... (o subí una imagen abajo)">
+        <image-drop for="gThumb" folder="juegos"></image-drop>
         <span class="hint">Subí una imagen o pegá un link. Si la dejás vacía se usa el ícono del juego en Roblox.</span></div>
       <div class="field"><label for="gShort">Descripción corta</label><input id="gShort" maxlength="200"></div>
       <div class="field"><label for="gDesc">Descripción completa</label><textarea id="gDesc" maxlength="5000"></textarea></div>
@@ -176,12 +180,10 @@
       <div data-cpanel="galeria">
         <div class="media-admin" id="mediaGrid"></div>
         <form class="form" id="mediaForm" style="margin-top:18px" novalidate>
-          <div class="field"><label>Agregar imágenes</label>
-            <div class="upload-row">
-              <input id="mUrl" type="url" placeholder="Pegá un link https://... o subí archivos →">
-              <label class="btn btn-sm btn-ghost file-btn">Subir<input type="file" id="mFiles" accept="image/png,image/jpeg,image/webp,image/gif" multiple></label>
-            </div>
-            <span class="hint">Podés subir varias a la vez (máx. 5 MB cada una).</span>
+          <image-drop multiple folder="galeria" id="mediaDrop"></image-drop>
+          <div class="field"><label for="mUrl">…o agregá una imagen por link</label>
+            <input id="mUrl" type="url" placeholder="https://...">
+            <span class="hint">Arrastrá las imágenes de la galería para cambiar el orden.</span>
           </div>
           <div class="field"><label for="mCaption">Descripción (opcional)</label><input id="mCaption" maxlength="120"></div>
           <div class="msg"></div>
@@ -211,7 +213,8 @@
       <div class="field"><label for="nBody">Contenido *</label><textarea id="nBody" maxlength="5000" style="min-height:160px" required></textarea></div>
       <div class="field"><label for="nGame">Juego relacionado</label><select id="nGame"></select></div>
       <div class="field"><label for="nImage">Imagen</label>
-        <div class="upload-row"><input id="nImage" type="url" placeholder="https://..."><label class="btn btn-sm btn-ghost file-btn">Subir<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-upload="nImage" data-folder="noticias"></label></div></div>
+        <input id="nImage" type="url" placeholder="https://... (o subí una imagen abajo)">
+        <image-drop for="nImage" folder="noticias"></image-drop></div>
       <label class="check"><input type="checkbox" id="nPublished" checked> Publicada (visible para todos)</label>
       <div class="msg"></div>
       <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar</button></div>
@@ -249,7 +252,8 @@
         <div class="field"><label for="tOrder">Orden</label><input id="tOrder" type="number" value="0"></div>
       </div>
       <div class="field"><label for="tAvatar">Foto</label>
-        <div class="upload-row"><input id="tAvatar" type="url" placeholder="https://..."><label class="btn btn-sm btn-ghost file-btn">Subir<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-upload="tAvatar" data-folder="equipo"></label></div></div>
+        <input id="tAvatar" type="url" placeholder="https://... (o subí una imagen abajo)">
+        <image-drop for="tAvatar" folder="equipo"></image-drop></div>
       <div class="field"><label for="tBio">Descripción</label><textarea id="tBio" maxlength="300" style="min-height:80px"></textarea></div>
       <div class="msg"></div>
       <div class="dialog-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar</button></div>

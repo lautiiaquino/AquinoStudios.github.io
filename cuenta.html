@@ -6,16 +6,18 @@
   <title>Mi cuenta — Aquino Studios</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23ff5a1f'/><path d='M8 25 16 6l8 19h-4.6L16 16.2 12.6 25z' fill='%230b0b0c'/></svg>">
   <meta name="theme-color" content="#0b0b0c">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <script src="js/theme.js"></script>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
   <main class="container layout-side hidden" id="page">
-    <nav class="side-nav" id="sideNav">
-      <button class="active" data-sec="perfil">Perfil</button>
-      <button data-sec="favoritos">Favoritos</button>
-      <button data-sec="reportes">Mis reportes</button>
-      <button data-sec="seguridad">Seguridad</button>
+    <nav class="side-nav" id="sideNav" aria-label="Secciones de la cuenta">
+      <a href="#perfil" data-sec="perfil">Perfil</a>
+      <a href="#favoritos" data-sec="favoritos">Favoritos</a>
+      <a href="#reportes" data-sec="reportes">Mis reportes</a>
+      <a href="#seguridad" data-sec="seguridad">Seguridad</a>
     </nav>
 
     <div>
@@ -36,22 +38,23 @@
           <div class="form-row">
             <div class="field">
               <label for="fUser">Nombre de usuario</label>
-              <input id="fUser" maxlength="20" required>
+              <input id="fUser" name="username" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" required autocomplete="nickname" data-msg="Nombre de usuario inválido: 3 a 20 letras, números o _.">
               <span class="hint">Letras, números o _ (3 a 20).</span>
             </div>
             <div class="field">
               <label for="fRoblox">Usuario de Roblox</label>
-              <input id="fRoblox" maxlength="20" placeholder="Opcional">
+              <input id="fRoblox" name="roblox_username" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" placeholder="Opcional" data-msg="Usuario de Roblox inválido.">
             </div>
           </div>
           <div class="field">
             <label for="fAvatar">URL de tu foto de perfil</label>
-            <input id="fAvatar" type="url" placeholder="https://...">
+            <input id="fAvatar" name="avatar_url" type="url" pattern="https://.+" placeholder="https://..." data-msg="La URL de la foto tiene que empezar con https://">
             <span class="hint">Tiene que empezar con https://. Dejalo vacío para usar tus iniciales.</span>
           </div>
           <div class="field">
             <label for="fBio">Sobre vos</label>
-            <textarea id="fBio" maxlength="300" placeholder="Contá algo sobre vos..."></textarea>
+            <textarea id="fBio" name="bio" maxlength="300" placeholder="Contá algo sobre vos..."></textarea>
+            <output class="hint" id="bioCount" for="fBio">0/300</output>
           </div>
           <div class="msg"></div>
           <div><button class="btn btn-primary" type="submit">Guardar cambios</button></div>
@@ -77,8 +80,8 @@
           <h2>Cambiar contraseña</h2>
           <form class="form" id="passForm" novalidate>
             <div class="form-row">
-              <div class="field"><label for="nPass">Nueva contraseña</label><input id="nPass" type="password" autocomplete="new-password" minlength="8"></div>
-              <div class="field"><label for="nPass2">Repetir contraseña</label><input id="nPass2" type="password" autocomplete="new-password"></div>
+              <div class="field"><label for="nPass">Nueva contraseña</label><input id="nPass" name="password" type="password" autocomplete="new-password" minlength="8" required data-msg="La contraseña debe tener al menos 8 caracteres."></div>
+              <div class="field"><label for="nPass2">Repetir contraseña</label><input id="nPass2" name="password2" type="password" autocomplete="new-password" required data-msg="Repetí la contraseña."></div>
             </div>
             <div class="msg"></div>
             <div><button class="btn btn-primary" type="submit">Actualizar contraseña</button></div>
@@ -87,7 +90,7 @@
         <div class="card">
           <h2>Cambiar email</h2>
           <form class="form" id="emailForm" novalidate>
-            <div class="field"><label for="nEmail">Nuevo email</label><input id="nEmail" type="email" autocomplete="email"></div>
+            <div class="field"><label for="nEmail">Nuevo email</label><input id="nEmail" name="email" type="email" autocomplete="email" required data-msg="Escribí un email válido."></div>
             <div class="msg"></div>
             <div><button class="btn btn-primary" type="submit">Cambiar email</button></div>
           </form>
@@ -95,7 +98,7 @@
         <div class="card">
           <h2>Sesión</h2>
           <p class="muted">Cerrá la sesión en todos los dispositivos donde hayas entrado.</p>
-          <button class="btn btn-danger" id="logoutAll">Cerrar sesión en todos lados</button>
+          <button class="btn btn-danger" id="logoutAll" type="button">Cerrar sesión en todos lados</button>
         </div>
       </section>
     </div>

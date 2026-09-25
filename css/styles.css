@@ -567,19 +567,19 @@ input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
 .profile-head { display: flex; align-items: center; gap: 22px; margin-bottom: 36px; flex-wrap: wrap; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
 .profile-head h1 { margin: 0 0 6px; font-size: clamp(2.8rem, 6vw, 4.5rem); }
 .side-nav { display: flex; flex-direction: column; gap: 2px; position: sticky; top: 96px; }
-.side-nav button {
+.side-nav a, .side-nav button {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   text-align: left; padding: 12px 14px; border-radius: var(--radius); border: 0; background: none; color: var(--muted);
   font: 500 .72rem var(--font-mono); text-transform: uppercase; letter-spacing: .12em; cursor: pointer; transition: .2s;
 }
-.side-nav button:hover { color: var(--text); background: var(--card); }
-.side-nav button.active { background: var(--text); color: var(--bg); }
+.side-nav a:hover, .side-nav button:hover { color: var(--text); background: var(--card); text-decoration: none; }
+.side-nav a.active, .side-nav button.active { background: var(--text); color: var(--bg); }
 .layout-side { display: grid; grid-template-columns: 220px 1fr; gap: 40px; align-items: start; padding: 48px 0 100px; }
 .layout-side section { padding: 0; }
 @media (max-width: 860px) {
   .layout-side { grid-template-columns: 1fr; }
   .side-nav { flex-direction: row; overflow-x: auto; position: static; padding-bottom: 6px; }
-  .side-nav button { white-space: nowrap; }
+  .side-nav a, .side-nav button { white-space: nowrap; }
 }
 
 /* ---------- Admin ---------- */
@@ -617,7 +617,7 @@ dialog::backdrop { background: rgba(5, 5, 6, .72); backdrop-filter: blur(6px); }
 .toast {
   background: var(--text); color: var(--bg); border-left: 4px solid var(--accent);
   padding: 13px 18px; border-radius: var(--radius); box-shadow: var(--shadow); max-width: 360px;
-  font: 500 .78rem var(--font-mono); letter-spacing: .04em; animation: slidein .35s var(--ease); transition: opacity .4s, transform .4s;
+  font: 500 .78rem var(--font-mono); letter-spacing: .04em;
 }
 .toast-error { border-left-color: var(--red); }
 .toast.out { opacity: 0; transform: translateX(20px); }
@@ -770,3 +770,99 @@ dialog.lightbox { width: min(1200px, calc(100% - 24px)); background: #000; borde
   .reveal { opacity: 1; transform: none; }
   html { scroll-behavior: auto; }
 }
+
+/* =====================================================================
+   VERSIÓN 3 — APIs modernas de HTML5
+   ===================================================================== */
+
+/* ---------- View Transitions: navegación animada entre páginas ---------- */
+@view-transition { navigation: auto; }
+.site-header { view-transition-name: header; }
+.game-hero-img { view-transition-name: game-art; }
+::view-transition-group(game-art) { animation-duration: .55s; animation-timing-function: cubic-bezier(.2, .7, .1, 1); }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .3s; }
+/* Cambio de tema: el círculo lo anima JavaScript */
+html.theme-switch::view-transition-old(root), html.theme-switch::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html.theme-switch::view-transition-group(header) { animation: none; }
+
+.scroll-sentinel { position: absolute; top: 0; left: 0; width: 1px; height: 1px; pointer-events: none; }
+html.no-scroll { overflow: hidden; }
+
+/* ---------- Canvas del hero ---------- */
+.hero-canvas { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.hero.has-canvas::after { display: none; }
+
+/* ---------- Menú de usuario (Popover API) ---------- */
+.user-menu[popover] {
+  position: fixed; inset: auto; margin: 0; opacity: 1; visibility: visible; transform: none; display: none;
+  transition: opacity .2s, transform .2s var(--ease), display .2s allow-discrete, overlay .2s allow-discrete;
+}
+.user-menu[popover]:popover-open { display: block; }
+@starting-style { .user-menu[popover]:popover-open { opacity: 0; transform: translateY(-6px); } }
+
+/* ---------- Diálogo de confirmación ---------- */
+dialog.ask { width: min(440px, calc(100% - 32px)); }
+.ask-text { font: 800 1.7rem/1.05 var(--font-display); text-transform: uppercase; margin: 0; }
+
+/* ---------- Formularios: validación nativa ---------- */
+input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"],
+input:user-invalid, textarea:user-invalid { border-color: var(--red); }
+.hint.ok { color: var(--green); }
+.hint.bad { color: var(--red); }
+meter { width: 100%; height: 6px; border: 0; border-radius: 3px; background: var(--card-2); }
+meter::-webkit-meter-bar { background: var(--card-2); border: 0; border-radius: 3px; height: 6px; }
+meter::-webkit-meter-optimum-value { background: var(--green); border-radius: 3px; }
+meter::-webkit-meter-suboptimum-value { background: var(--amber); border-radius: 3px; }
+meter::-webkit-meter-even-less-good-value { background: var(--red); border-radius: 3px; }
+meter:-moz-meter-optimum::-moz-meter-bar { background: var(--green); }
+meter:-moz-meter-sub-optimum::-moz-meter-bar { background: var(--amber); }
+meter:-moz-meter-sub-sub-optimum::-moz-meter-bar { background: var(--red); }
+output { display: inline-block; }
+
+/* ---------- Web Components ---------- */
+count-up { display: block; font-variant-numeric: tabular-nums; }
+count-down { display: flex; }
+
+lite-youtube { display: block; position: relative; cursor: pointer; }
+lite-youtube img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: filter .3s; }
+lite-youtube:hover img { filter: brightness(.8); }
+.yt-play { position: absolute; inset: 0; margin: auto; width: 76px; height: 54px; border: 0; background: none; cursor: pointer; padding: 0; }
+.yt-play svg { width: 100%; height: 100%; }
+.yt-play path:first-child { fill: rgba(11, 11, 12, .8); transition: fill .2s; }
+lite-youtube:hover .yt-play path:first-child { fill: var(--accent); }
+
+image-drop {
+  display: flex; align-items: center; gap: 14px; margin-top: 8px; padding: 14px 16px; cursor: pointer;
+  border: 1px dashed var(--border); border-radius: var(--radius); background: var(--bg-2); transition: border-color .2s, background .2s;
+}
+image-drop:hover, image-drop:focus-visible { border-color: var(--text); outline: none; }
+image-drop.over { border-color: var(--accent); border-style: solid; background: var(--accent-soft); }
+image-drop.busy { pointer-events: none; opacity: .7; }
+image-drop.busy .drop-preview { animation: blink 1s infinite; }
+.drop-preview {
+  width: 56px; height: 40px; flex-shrink: 0; border-radius: 4px; background: var(--card-2) center/cover;
+  display: grid; place-items: center;
+}
+image-drop:not(.has-image) .drop-preview::before { content: '+'; font: 700 1.3rem var(--font-mono); color: var(--muted); }
+.drop-text { display: grid; gap: 2px; }
+.drop-text b { font-weight: 600; font-size: .9rem; }
+.drop-text small { color: var(--muted); font-size: .75rem; }
+
+/* ---------- Galería del admin: ordenar arrastrando ---------- */
+.media-admin figure[draggable="true"] { cursor: grab; }
+.media-admin figure.dragging { opacity: .35; outline: 2px dashed var(--accent); }
+
+/* ---------- Tooltip de los gráficos ---------- */
+.chart-tip {
+  position: fixed; left: 0; top: 0; z-index: 1001; pointer-events: none; opacity: 0; transition: opacity .15s;
+  background: var(--text); color: var(--bg); padding: 6px 10px; border-radius: 4px; font: 500 .72rem var(--font-mono); white-space: nowrap;
+}
+.chart-tip.on { opacity: 1; }
+
+/* ---------- Comentarios en vivo ---------- */
+.live-dot {
+  display: inline-flex; align-items: center; gap: 6px; vertical-align: middle; margin-left: 6px;
+  font: 500 .6rem var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent);
+}
+.live-dot::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: blink 1.4s infinite; }
+.comment:target { background: var(--accent-soft); }

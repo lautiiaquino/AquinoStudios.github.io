@@ -458,6 +458,19 @@ create policy "media_admin_delete" on storage.objects for delete
   using (bucket_id = 'media' and public.is_admin());
 
 -- =====================================================================
+-- TIEMPO REAL: los comentarios nuevos aparecen sin recargar la página.
+-- (Respeta las mismas reglas de seguridad: cada uno solo recibe lo que puede ver.)
+-- =====================================================================
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+     and not exists (select 1 from pg_publication_tables
+                     where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'comments') then
+    alter publication supabase_realtime add table public.comments;
+  end if;
+end $$;
+
+-- =====================================================================
 -- DATOS DE EJEMPLO (podés borrarlos desde el panel de admin)
 -- =====================================================================
 insert into public.games (title, slug, genre, status, short_description, description, featured, sort_order)
