@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sin conexión — Aquino Studios</title>
-  <meta name="theme-color" content="#0b0b0c">
+  <meta name="theme-color" content="#191b1d">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -13,9 +13,9 @@
 </head>
 <body>
   <main class="container launch">
-    <span class="kicker">Sin conexión</span>
-    <h1>Se cortó.</h1>
-    <p class="muted" style="max-width:460px;margin:0 auto 32px">No hay internet en este momento. Cuando vuelva la conexión, la página se recarga sola.</p>
+    <span class="pill pill-red">Sin conexión</span>
+    <h1 class="stroke-title">Sin internet</h1>
+    <p class="muted" style="max-width:460px;margin:0 auto 32px">No hay conexión ahora. Cuando vuelva, la página se recarga sola.</p>
     <button class="btn btn-primary" onclick="location.reload()">Reintentar</button>
   </main>
   <script>addEventListener('online', () => location.reload());</script>

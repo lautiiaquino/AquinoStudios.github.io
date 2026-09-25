@@ -8,6 +8,7 @@ import { mountPolls } from './core/polls.js';
 import { toast, busy, say, validate, ask, errorMsg } from './core/ui.js';
 import {
   statusBadge, avatar, robloxGameUrl, gameImage, bgStyle, placeholder, fetchRobloxStats, bannedNotice, releaseIcs, REPORT_KIND,
+  ICON, likePct,
 } from './core/view.js';
 import * as fmt from './core/format.js';
 
@@ -44,16 +45,19 @@ function renderGame(game) {
             ${statusBadge(game.status)}
             ${game.genre ? html`<span class="badge badge-accent">${game.genre}</span>` : ''}
           </div>
-          <h1>${game.title}</h1>
+          <h1 class="stroke-title">${game.title}</h1>
+          <p class="by">Por <b>Aquino Studios</b></p>
           <p class="muted">${game.short_description ?? ''}</p>
           <div class="game-actions">
-            ${canPlay ? html`<a class="btn btn-play" href="${robloxGameUrl(game.roblox_place_id)}" target="_blank" rel="noopener">Jugar en Roblox ↗</a>` : ''}
-            <button class="btn btn-ghost fav-btn" id="favBtn" type="button" aria-pressed="false">+ Favoritos</button>
+            ${canPlay
+              ? html`<a class="btn btn-play btn-lg btn-wide" href="${robloxGameUrl(game.roblox_place_id)}" target="_blank" rel="noopener">${ICON.play} Jugar</a>`
+              : html`<span class="btn btn-lg btn-wide btn-disabled">${game.status === 'en_desarrollo' ? 'En desarrollo' : 'Próximamente'}</span>`}
+            <button class="btn btn-ghost fav-btn" id="favBtn" type="button" aria-pressed="false">${ICON.star} Favorito</button>
             <button class="btn btn-ghost" id="shareBtn" type="button">Compartir</button>
           </div>
           ${upcoming ? html`
             <div style="margin-top:26px" id="releaseBox">
-              <p class="mono muted" style="margin-bottom:10px">Sale el <time datetime="${game.release_at}">${fmt.dateTime(game.release_at)}</time></p>
+              <p class="muted small" style="margin-bottom:10px">Sale el <time datetime="${game.release_at}">${fmt.dateTime(game.release_at)}</time></p>
               <count-down to="${game.release_at}"></count-down>
               <button class="link-btn" id="icsBtn" type="button" style="margin-top:12px">+ Agregar a mi calendario</button>
             </div>` : ''}
@@ -71,7 +75,7 @@ function renderGame(game) {
             <div class="gallery" id="gallery"></div>
           </section>
           <section class="card" aria-labelledby="comTitle" style="padding:28px">
-            <h2 id="comTitle">Comentarios <span class="muted" id="commentCount"></span> <span class="live-dot hidden" id="liveDot" title="Se actualiza en vivo">en vivo</span></h2>
+            <h2 id="comTitle">Comentarios <span class="muted" id="commentCount"></span> <span class="live-dot hidden" id="liveDot" title="Se actualiza solo">en vivo</span></h2>
             <div id="commentFormWrap"></div>
             <div id="comments" aria-live="polite"><div class="skeleton" style="height:80px;margin-top:16px"></div></div>
           </section>
@@ -89,7 +93,7 @@ function renderGame(game) {
             <div class="changelog" id="changelog"></div>
           </aside>
           <aside class="card">
-            <h3>¿Una idea o un bug?</h3>
+            <h3>Sugerencias y bugs</h3>
             <div id="reportWrap"></div>
           </aside>
         </div>
@@ -134,11 +138,11 @@ async function setupStats(game) {
     $('#heroImg').style.backgroundImage = $('.game-hero-bg').style.backgroundImage = cssUrl(s.icon);
     $('#heroPh')?.remove();
   }
-  const votes = s.upVotes + s.downVotes;
+  const like = likePct(s);
   render($('#statRow'), [
-    [fmt.number(s.playing), 'Jugando'], [fmt.number(s.visits), 'Visitas'],
-    [fmt.number(s.favorites), 'Favoritos'], [votes ? `${Math.round((s.upVotes / votes) * 100)}%` : '–', 'Me gusta'],
-  ].map(([v, l]) => html`<div class="stat"><div class="stat-value">${v}</div><div class="stat-label">${l}</div></div>`));
+    ['Activos', fmt.number(s.playing)], ['Visitas', fmt.number(s.visits)],
+    ['Favoritos', fmt.number(s.favorites)], ['Me gusta', like === null ? '--' : `${like}%`],
+  ].map(([l, v]) => html`<div class="stat"><div class="stat-label">${l}</div><div class="stat-value">${v}</div></div>`));
   $('#statRow').classList.remove('hidden');
 }
 
@@ -159,7 +163,7 @@ async function setupFavorite(game) {
   const paint = () => {
     btn.classList.toggle('on', fav);
     btn.setAttribute('aria-pressed', fav);
-    btn.textContent = fav ? '✓ En favoritos' : '+ Favoritos';
+    render(btn, html`${ICON.star} ${fav ? 'En favoritos' : 'Favorito'}`);
   };
   if (profile) {
     const { data } = await sb.from('favorites').select('game_id').eq('user_id', profile.id).eq('game_id', game.id).maybeSingle();

@@ -16,10 +16,12 @@ Sitio oficial de Aquino Studios, un estudio de juegos de Roblox.
 | `proximamente.html` | Cuenta regresiva para el próximo lanzamiento (el juego con la fecha de salida más cercana) |
 | `admin.html` | Panel de admin: estadísticas, juegos (con galería, video y registro de cambios), noticias, encuestas, sugerencias y bugs, moderación de comentarios y palabras prohibidas, usuarios (roles y suspensiones), equipo y mensajes de contacto. Las imágenes se pueden subir directo desde el panel |
 
+**Estilo:** GUI de Roblox: tipografía Fredoka/Nunito, títulos con borde negro, botones con profundidad y fondo de studs. Los colores están arriba de todo en `css/styles.css` (`--brand`, `--play`, etc.). Para que aparezcan las tarjetas de Discord y del grupo de Roblox, completá `SOCIALS` en `js/config.js`.
+
 **Cómo está hecho el JavaScript (`js/`):**
 - `js/core/` son módulos compartidos: plantillas HTML seguras (`html.js`), sesión, encabezado/pie, formatos con `Intl`, encuestas, imágenes y más.
 - **Web Components propios:** `<count-down>`, `<count-up>`, `<lite-youtube>` (el video carga recién al tocar play) y `<image-drop>` (arrastrar, pegar o elegir imágenes; se comprimen solas a WEBP con Canvas antes de subirlas).
-- **APIs de HTML5:** View Transitions (animaciones entre páginas y al cambiar de tema), Popover (menú de usuario), `<dialog>` (confirmaciones), Constraint Validation + FormData (formularios), Drag & Drop (ordenar la galería), Canvas (fondo interactivo del inicio), Web Share, Notifications, Speculation Rules (precarga) y descarga de archivos `.ics`/`.csv` con Blob.
+- **APIs de HTML5:** View Transitions (animaciones entre páginas y al cambiar de tema), Popover (menú de usuario), `<dialog>` (confirmaciones), Constraint Validation + FormData (formularios), Drag & Drop (ordenar la galería), Web Share, Notifications, Speculation Rules (precarga) y descarga de archivos `.ics`/`.csv` con Blob.
 - **App instalable (PWA):** `manifest.webmanifest` + `sw.js`. Se puede instalar en el celular o la compu y el sitio abre aunque no haya internet (muestra la última versión guardada). Si cambiás muchos archivos y querés forzar que todos los descarguen, subí el número de `VERSION` en `sw.js`.
 - **Tiempo real:** los comentarios nuevos aparecen sin recargar (Supabase Realtime).
 

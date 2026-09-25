@@ -14,9 +14,9 @@ const next = /^[a-z]+\.html(\?[^\s]*)?$/i.test(params.get('next') ?? '') ? param
 if (await getSession()) location.replace(next);
 
 const SIDE = {
-  login: ['Volviste.', 'Entrá a tu cuenta para seguir donde lo dejaste.'],
-  register: ['Sumate.', 'Creá tu cuenta gratis en menos de un minuto.'],
-  forgot: ['Sin drama.', 'Te mandamos un enlace para recuperar tu cuenta.'],
+  login: ['Iniciar sesión', 'Entrá con tu cuenta de Aquino Studios.'],
+  register: ['Crear cuenta', 'Es gratis y tarda un minuto.'],
+  forgot: ['Recuperar cuenta', 'Te mandamos un link a tu email para cambiar la contraseña.'],
 };
 
 // ---------- Google / Discord (opcional, se activa en js/config.js) ----------
