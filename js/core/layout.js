@@ -7,8 +7,9 @@ import { avatar } from './view.js';
 import { toast, errorMsg } from './ui.js';
 import { SOCIALS } from '../config.js';
 
-const LOGO = raw('<svg viewBox="0 0 32 32" width="36" height="36" aria-hidden="true"><rect width="32" height="32" rx="4" fill="var(--accent)"/><path d="M8 25 16 6l8 19h-4.6L16 16.2 12.6 25z" fill="var(--accent-ink)"/></svg>');
-const BRAND = html`${LOGO}<span class="brand-word"><b>Aquino</b><small>Studios</small></span>`;
+// Logo: un bloque con studs arriba, como una pieza de Roblox
+const LOGO = raw('<svg viewBox="0 0 40 40" width="38" height="38" aria-hidden="true"><rect x="9" y="3" width="8" height="6" rx="2" fill="var(--brand-dark)"/><rect x="23" y="3" width="8" height="6" rx="2" fill="var(--brand-dark)"/><rect x="3" y="7" width="34" height="30" rx="7" fill="var(--brand-dark)"/><rect x="3" y="7" width="34" height="27" rx="7" fill="var(--brand)"/><path d="M13.5 29 20 12h.2L27 29h-4.6l-1.2-3.5h-5.1L14.9 29zm4-7.3h3l-1.5-4.6z" fill="#fff"/></svg>');
+const BRAND = html`${LOGO}<span class="brand-word">Aquino<b>Studios</b></span>`;
 const SUN = raw('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>');
 const MOON = raw('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>');
 const ICONS = {
@@ -20,10 +21,9 @@ const ICONS = {
 
 const NAV = [
   ['index.html#juegos', 'Juegos', 'games'],
-  ['index.html#noticias', 'Noticias', 'news'],
+  ['index.html#noticias', 'Novedades', 'news'],
   ['proximamente.html', 'Próximo', 'next'],
-  ['index.html#nosotros', 'Nosotros', 'about'],
-  ['index.html#contacto', 'Contacto', 'contact'],
+  ['index.html#nosotros', 'Comunidad', 'about'],
 ];
 
 // ---------- Tema claro / oscuro con transición circular ----------
@@ -101,28 +101,6 @@ function autoReveal() {
     .observe(document.body, { childList: true, subtree: true });
 }
 
-// ---------- Tarjetas de juegos con inclinación 3D ----------
-function enableTilt() {
-  if (!matchMedia('(hover: hover) and (pointer: fine)').matches || reducedMotion()) return;
-  let current = null;
-  let frame = 0;
-  document.addEventListener('pointermove', (e) => {
-    const card = e.target.closest?.('.game-card');
-    if (current && current !== card) current.style.transform = '';
-    current = card;
-    if (!card || frame) return;
-    frame = requestAnimationFrame(() => {
-      frame = 0;
-      const r = card.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      card.style.transform = `perspective(900px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) translateY(-4px)`;
-      card.style.setProperty('--mx', `${(x + 0.5) * 100}%`);
-      card.style.setProperty('--my', `${(y + 0.5) * 100}%`);
-    });
-  }, { passive: true });
-}
-
 // ---------- Transición entre páginas: la imagen del juego "vuela" a la página del juego ----------
 function shareElementTransitions() {
   on(document, 'click', '.game-card', (e, card) => {
@@ -174,6 +152,7 @@ export async function renderLayout(active = '') {
       <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
       <div class="nav-links" id="navLinks">
         ${NAV.map(([href, text, key]) => html`<a href="${href}" class="${active === key ? 'active' : ''}" ${active === key ? raw('aria-current="page"') : ''}>${text}</a>`)}
+        ${safeUrl(SOCIALS.discord) ? html`<a class="btn btn-sm btn-discord" href="${SOCIALS.discord}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="${ICONS.discord}"/></svg>Discord</a>` : ''}
         <button class="theme-btn" id="themeBtn" type="button"></button>
         <div class="nav-user" id="navUser">
           <a href="login.html" class="btn btn-sm btn-ghost">Entrar</a>
@@ -206,36 +185,26 @@ export async function renderLayout(active = '') {
   const footer = document.createElement('footer');
   footer.className = 'site-footer';
   render(footer, html`
-    <div class="container">
-      <div class="footer-grid">
-        <div>
-          <a href="index.html" class="brand" aria-label="Aquino Studios, inicio">${BRAND}</a>
-          <p class="muted">Estudio independiente de juegos de Roblox. Hechos para jugar con amigos.</p>
-          <div class="socials">
-            ${Object.entries(SOCIALS).filter(([k, url]) => ICONS[k] && safeUrl(url)).map(([k, url]) => html`
-              <a href="${url}" target="_blank" rel="noopener" aria-label="${k}"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="${ICONS[k]}"/></svg></a>`)}
-          </div>
-        </div>
-        <nav aria-label="Sitio"><h4>Sitio</h4><ul>
-          <li><a href="index.html#juegos">Juegos</a></li><li><a href="index.html#noticias">Noticias</a></li>
-          <li><a href="proximamente.html">Próximo lanzamiento</a></li><li><a href="index.html#equipo">Equipo</a></li>
-          <li><a href="index.html#contacto">Contacto</a></li>
-        </ul></nav>
-        <nav aria-label="Cuenta"><h4>Cuenta</h4><ul>
-          <li><a href="login.html">Iniciar sesión</a></li><li><a href="login.html?tab=register">Crear cuenta</a></li>
-          <li><a href="cuenta.html">Mi cuenta</a></li>
-        </ul></nav>
+    <div class="container footer-inner">
+      <div>
+        <a href="index.html" class="brand" aria-label="Aquino Studios, inicio">${BRAND}</a>
+        <p class="muted small">© ${new Date().getFullYear()} Aquino Studios. No afiliado a Roblox Corporation.</p>
       </div>
-      <div class="footer-bottom mono">
-        <span>© ${new Date().getFullYear()} Aquino Studios</span>
-        <span>No afiliado a Roblox Corporation</span>
+      <nav class="footer-links" aria-label="Pie de página">
+        <a href="index.html#juegos">Juegos</a>
+        <a href="index.html#noticias">Novedades</a>
+        <a href="proximamente.html">Próximo</a>
+        <a href="index.html#contacto">Contacto</a>
+        <a href="cuenta.html">Mi cuenta</a>
+      </nav>
+      <div class="socials">
+        ${Object.entries(SOCIALS).filter(([k, url]) => ICONS[k] && safeUrl(url)).map(([k, url]) => html`
+          <a href="${url}" target="_blank" rel="noopener" aria-label="${k}"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="${ICONS[k]}"/></svg></a>`)}
       </div>
-    </div>
-    <div class="footer-mark" aria-hidden="true">Aquino</div>`);
+    </div>`);
   document.body.append(footer);
 
   autoReveal();
-  enableTilt();
   shareElementTransitions();
   speculate();
   registerServiceWorker();

@@ -1,5 +1,5 @@
 // Piezas de interfaz que se repiten en varias páginas.
-import { html, safeUrl, cssUrl } from './html.js';
+import { html, raw, safeUrl, cssUrl } from './html.js';
 import { sb } from './supabase.js';
 import { memo } from './dom.js';
 import * as fmt from './format.js';
@@ -42,21 +42,37 @@ export const gameImage = (game, stats) => safeUrl(game.thumbnail_url) || safeUrl
 export const bgStyle = (url) => (url ? `background-image:${cssUrl(url)}` : '');
 export const placeholder = (game, id = '') => html`<div class="thumb-placeholder" ${id ? html`id="${id}"` : ''} aria-hidden="true">${initials(game.title)}</div>`;
 
+// Íconos (los mismos que usa cualquiera en una GUI de Roblox)
+export const ICON = {
+  play: raw('<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15a1 1 0 0 0 1.5.9l12-7.5a1 1 0 0 0 0-1.8l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>'),
+  user: raw('<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5 0-9 2.5-9 6v2h18v-2c0-3.5-4-6-9-6z"/></svg>'),
+  thumb: raw('<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2 21h4V9H2v12zm20-11a2 2 0 0 0-2-2h-6.3l1-4.6v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6C6.2 8 6 8.5 6 9v10a2 2 0 0 0 2 2h9c.8 0 1.5-.5 1.8-1.2l3-7.1c.1-.2.2-.5.2-.7v-2z"/></svg>'),
+  eye: raw('<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 5C6 5 2 12 2 12s4 7 10 7 10-7 10-7-4-7-10-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/></svg>'),
+  star: raw('<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m12 2 3 6.6 7 .7-5.3 4.8 1.6 7L12 17.6 5.7 21l1.6-7L2 9.3l7-.7z"/></svg>'),
+};
+
+export const likePct = (s) => {
+  const total = (s?.upVotes ?? 0) + (s?.downVotes ?? 0);
+  return total ? Math.round((s.upVotes / total) * 100) : null;
+};
+
+// Tarjeta de juego como las de roblox.com: miniatura, nombre, % de me gusta y jugando
 export function gameCard(game, stats) {
   const img = gameImage(game, stats);
+  const like = likePct(stats);
   return html`
     <a class="game-card" href="${gameUrl(game.slug)}" data-slug="${game.slug}">
       <div class="game-thumb" style="${bgStyle(img)}">
         ${img ? '' : placeholder(game)}
-        ${statusBadge(game.status)}
-        ${stats?.playing ? html`<span class="live-pill">${fmt.number(stats.playing)} jugando</span>` : ''}
+        ${game.status !== 'publicado' ? statusBadge(game.status) : ''}
       </div>
       <div class="game-info">
         <h3>${game.title}</h3>
-        <p>${game.short_description ?? ''}</p>
         <div class="game-meta">
-          <span>${game.genre ?? ''}</span>
-          <span>${stats?.visits ? `${fmt.number(stats.visits)} visitas` : ''}</span>
+          ${stats ? html`
+            <span title="Me gusta">${ICON.thumb} ${like === null ? '--' : `${like}%`}</span>
+            <span title="Jugando ahora">${ICON.user} ${fmt.number(stats.playing ?? 0)}</span>`
+          : html`<span>${game.genre ?? STATUS[game.status]?.label ?? ''}</span>`}
         </div>
       </div>
     </a>`;

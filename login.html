@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Iniciar sesión — Aquino Studios</title>
-  <meta name="theme-color" content="#0b0b0c">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23ff5a1f'/><path d='M8 25 16 6l8 19h-4.6L16 16.2 12.6 25z' fill='%230b0b0c'/></svg>">
+  <meta name="theme-color" content="#191b1d">
+  <link rel="icon" href="icons/icon-192.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <script src="js/theme.js"></script>
@@ -13,23 +13,14 @@
 </head>
 <body>
   <main class="auth-page">
-    <aside class="auth-side">
-      <div>
-        <span class="mono">Aquino Studios — Cuenta</span>
-      </div>
-      <div>
-        <h1 id="sideTitle">Volviste.</h1>
-        <p id="sideText">Entrá a tu cuenta para seguir donde lo dejaste.</p>
-      </div>
-      <ol>
-        <li>Guardá tus juegos favoritos</li>
-        <li>Comentá y votá en las encuestas</li>
-        <li>Enterate primero de los lanzamientos</li>
-      </ol>
-    </aside>
+
 
     <div class="auth-main">
-      <div class="auth-box">
+      <div class="auth-box card">
+        <div class="auth-head">
+          <h1 id="sideTitle">Iniciar sesión</h1>
+          <p class="muted" id="sideText">Entrá con tu cuenta de Aquino Studios.</p>
+        </div>
         <div class="tabs" role="tablist" aria-label="Cuenta">
           <button class="tab active" data-tab="login" role="tab" aria-selected="true" aria-controls="loginForm" id="tab-login">Iniciar sesión</button>
           <button class="tab" data-tab="register" role="tab" aria-selected="false" aria-controls="registerForm" id="tab-register">Crear cuenta</button>

@@ -40,8 +40,8 @@ function renderLaunch(game) {
 
   render(page, html`
     <div class="container launch">
-      <span class="kicker">Próximo lanzamiento</span>
-      <h1>${game.title}</h1>
+      <span class="pill pill-red">Próximo lanzamiento</span>
+      <h1 class="stroke-title">${game.title}</h1>
       <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
         ${statusBadge(game.status)}
         ${game.genre ? html`<span class="badge badge-accent">${game.genre}</span>` : ''}
@@ -50,7 +50,7 @@ function renderLaunch(game) {
         ${hasDate ? html`
           <p class="muted" style="margin-bottom:12px">Sale el <strong><time datetime="${game.release_at}">${fmt.dateTime(game.release_at)}</time></strong></p>
           <count-down to="${game.release_at}" size="lg"></count-down>`
-        : html`<p class="muted" style="margin-bottom:28px">Todavía sin fecha de salida. ¡Muy pronto!</p>`}
+        : html`<p class="muted" style="margin-bottom:28px">Todavía no tiene fecha. Seguinos en Discord para enterarte.</p>`}
       </div>
       <p class="muted" style="max-width:620px;margin:0 auto 28px">${game.short_description ?? ''}</p>
       <div class="hero-actions" style="justify-content:center">
@@ -63,8 +63,8 @@ function renderLaunch(game) {
     </div>`);
 
   $('count-down')?.addEventListener('end', () => {
-    render($('#whenBox'), html`<h2 style="margin-bottom:24px">¡Ya salió!</h2>
-      ${game.roblox_place_id ? html`<a class="btn btn-play" href="${robloxGameUrl(game.roblox_place_id)}" target="_blank" rel="noopener" style="margin-bottom:28px">Jugar en Roblox ↗</a>` : ''}`);
+    render($('#whenBox'), html`<h2 class="stroke-title" style="margin-bottom:24px">¡Ya salió!</h2>
+      ${game.roblox_place_id ? html`<a class="btn btn-play" href="${robloxGameUrl(game.roblox_place_id)}" target="_blank" rel="noopener" style="margin-bottom:28px">Jugar</a>` : ''}`);
     notify(`¡Ya salió ${game.title}!`, 'Entrá a jugarlo en Roblox.');
   });
 
