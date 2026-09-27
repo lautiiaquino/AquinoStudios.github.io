@@ -1,5 +1,5 @@
 import { html, render, safeUrl } from './core/html.js';
-import { $, $$, transition } from './core/dom.js';
+import { $, $$, transition, download } from './core/dom.js';
 import { sb } from './core/supabase.js';
 import { getProfile, getUser, requireAuth, signOut } from './core/session.js';
 import { renderLayout } from './core/layout.js';
@@ -146,4 +146,37 @@ mail.addEventListener('submit', async (e) => {
 
 $('#logoutAll').addEventListener('click', async () => {
   if (await ask('¿Cerrar sesión en todos los dispositivos?', { ok: 'Cerrar sesión', danger: true })) signOut({ everywhere: true });
+});
+
+// ---------- Descargar mis datos (derecho de acceso) ----------
+$('#exportData').addEventListener('click', (e) => busy(e.currentTarget, async () => {
+  const q = (table, cols = '*') => sb.from(table).select(cols).eq('user_id', profile.id);
+  const [favoritos, comentarios, votos, reportes, mensajes] = await Promise.all([
+    q('favorites', 'created_at, games(title)'), q('comments', 'body, created_at, games(title)'),
+    q('poll_votes', 'created_at, polls(question), poll_options(label)'), q('suggestions', 'kind, title, body, status, created_at'),
+    q('contact_messages', 'name, email, message, created_at'),
+  ]);
+  const data = {
+    exportado: new Date().toISOString(),
+    cuenta: { email: user.email, creada: user.created_at },
+    perfil: profile,
+    favoritos: favoritos.data ?? [], comentarios: comentarios.data ?? [], votos: votos.data ?? [],
+    reportes: reportes.data ?? [], mensajes_de_contacto: mensajes.data ?? [],
+  };
+  download(`aquino-studios-mis-datos-${profile.username}.json`, JSON.stringify(data, null, 2), 'application/json');
+  toast('Listo, se descargó el archivo');
+}));
+
+// ---------- Borrar mi cuenta (derecho de supresión) ----------
+$('#deleteAccount').addEventListener('click', async (e) => {
+  const typed = await ask(`Esto borra tu cuenta y todo lo tuyo para siempre. Para confirmar, escribí tu nombre de usuario: ${profile.username}`,
+    { ok: 'Borrar para siempre', danger: true, input: { placeholder: profile.username } });
+  if (typed === null) return;
+  if (typed !== profile.username) return toast('El nombre no coincide. No se borró nada.', 'error');
+  await busy(e.currentTarget, async () => {
+    const { error } = await sb.rpc('delete_my_account');
+    if (error) return toast(errorMsg(error), 'error');
+    await sb.auth.signOut().catch(() => {});
+    location.replace('index.html?cuenta=borrada');
+  });
 });

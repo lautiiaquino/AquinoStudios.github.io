@@ -97,6 +97,8 @@ python -m http.server 8000
 Después abrí http://localhost:8000
 
 ## Personalizar
-- **Colores:** variables al principio de `css/styles.css` (`--accent`, `--accent-2`, etc.). El modo claro tiene sus propias variables en el bloque `[data-theme="light"]`.
+- **Colores:** variables al principio de `css/styles.css`. El modo noche tiene sus propias variables en el bloque `[data-theme="dark"]`.
 - **Textos del inicio:** `index.html`.
+- **Términos y privacidad:** `terminos.html` y `privacidad.html`. Son una base; revisalos y adaptalos a tu caso.
+- **Borrar cuenta / descargar datos:** está en *Mi cuenta → Seguridad*. Para que borrar funcione, tenés que haber corrido la versión nueva de `schema.sql` (función `delete_my_account`).
 - **Juegos y noticias:** desde el panel de admin, sin tocar código.

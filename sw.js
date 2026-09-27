@@ -5,18 +5,19 @@
 // - Tipografías de Google: se guardan una vez y se reutilizan.
 // - Supabase (datos, login) NUNCA se guarda: siempre va directo a la red.
 // Cambiá VERSION cuando quieras forzar que todos descarguen los archivos nuevos.
-const VERSION = 'v4';
+const VERSION = 'v5';
 const STATIC = `aquino-static-${VERSION}`;
 const PAGES = `aquino-pages-${VERSION}`;
 const FONTS = 'aquino-fonts';
 
 const CORE = [
   './', 'index.html', 'juego.html', 'proximamente.html', 'login.html', 'cuenta.html', 'offline.html',
+  'terminos.html', 'privacidad.html', '404.html',
   'css/styles.css', 'js/config.js', 'js/theme.js', 'manifest.webmanifest', 'icons/icon-192.png',
   'js/core/html.js', 'js/core/dom.js', 'js/core/format.js', 'js/core/supabase.js', 'js/core/ui.js',
   'js/core/session.js', 'js/core/view.js', 'js/core/layout.js', 'js/core/components.js',
-  'js/core/polls.js', 'js/core/images.js',
-  'js/home.js', 'js/game.js', 'js/next.js', 'js/login.js', 'js/account.js',
+  'js/core/polls.js', 'js/core/images.js', 'js/core/confetti.js',
+  'js/home.js', 'js/game.js', 'js/next.js', 'js/login.js', 'js/account.js', 'js/legal.js', 'js/notfound.js',
 ];
 
 self.addEventListener('install', (e) => {

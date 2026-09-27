@@ -458,6 +458,22 @@ create policy "media_admin_delete" on storage.objects for delete
   using (bucket_id = 'media' and public.is_admin());
 
 -- =====================================================================
+-- BORRAR MI CUENTA (derecho de supresión, Ley 25.326)
+-- Borra el usuario; por las relaciones "on delete cascade" también se borran
+-- su perfil, favoritos, comentarios, votos y reportes.
+-- =====================================================================
+create or replace function public.delete_my_account()
+returns void language plpgsql security definer set search_path = public, auth as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Tenés que iniciar sesión';
+  end if;
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+revoke execute on function public.delete_my_account() from anon;
+
+-- =====================================================================
 -- TIEMPO REAL: los comentarios nuevos aparecen sin recargar la página.
 -- (Respeta las mismas reglas de seguridad: cada uno solo recibe lo que puede ver.)
 -- =====================================================================

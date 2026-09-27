@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /AquinoStudios.github.io/admin.html
+Disallow: /AquinoStudios.github.io/cuenta.html
+
+Sitemap: https://lautiiaquino.github.io/AquinoStudios.github.io/sitemap.xml

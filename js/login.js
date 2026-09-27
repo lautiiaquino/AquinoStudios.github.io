@@ -5,6 +5,7 @@ import { getSession } from './core/session.js';
 import { renderLayout } from './core/layout.js';
 import { busy, say, validate, errorMsg } from './core/ui.js';
 import { AUTH_PROVIDERS } from './config.js';
+import { confetti } from './core/confetti.js';
 
 await renderLayout();
 
@@ -137,10 +138,11 @@ reg.addEventListener('submit', async (e) => {
       options: { data: { username: data.username }, emailRedirectTo: new URL('cuenta.html', location.href).href },
     });
     if (error) return say(reg, errorMsg(error));
-    if (res.session) return location.replace(next); // confirmación de email desactivada
+    if (res.session) { confetti(); return setTimeout(() => location.replace(next), 900); } // confirmación de email desactivada
     if (res.user?.identities?.length === 0) return say(reg, 'Ya existe una cuenta con ese email.');
     reg.reset();
     $('#pwMeter').value = 0;
+    confetti();
     say(reg, `¡Cuenta creada! Te mandamos un email a ${data.email} para confirmarla. Después podés iniciar sesión.`, 'success');
   });
 });
