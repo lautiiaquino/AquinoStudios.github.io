@@ -30,11 +30,15 @@ export const DONATIONS = {
 
   // Pago automático (se confirma solo)
   mercadopago: true,   // pesos: tarjeta, débito, dinero en cuenta, Rapipago/Pago Fácil
-  paypal: false,       // dólares: cuenta PayPal o tarjeta (poné true cuando cargues las claves)
+  paypal: false,       // PayPal automático (necesita claves de desarrollador). Si usás PayPal.me, dejalo en false
   stripe: false,       // dólares: tarjetas de todo el mundo, Apple Pay y Google Pay
 
   // Montos rápidos por moneda
   amounts: { ARS: [500, 1000, 2500, 5000], USD: [2, 5, 10, 20] },
+
+  // PayPal.me (sin claves): la gente elige el monto y se abre tu PayPal.me con ese monto.
+  // Después avisa la donación y vos la confirmás en el panel.
+  paypalme: '',        // ej: https://paypal.me/tuusuario
 
   // Transferencia bancaria / billetera (Argentina)
   transfer: {
@@ -59,7 +63,6 @@ export const DONATIONS = {
   // Links de otras plataformas ('' para ocultar)
   links: {
     cafecito: '',      // https://cafecito.app/tuusuario
-    paypalme: '',      // https://paypal.me/tuusuario
     kofi: '',          // https://ko-fi.com/tuusuario
     patreon: '',       // https://patreon.com/tuusuario
     buymeacoffee: '',  // https://buymeacoffee.com/tuusuario

@@ -621,7 +621,7 @@ declare
   new_id uuid;
 begin
   if auth.uid() is null then raise exception 'Tenés que iniciar sesión'; end if;
-  if p_provider not in ('transferencia', 'cripto', 'robux', 'otro') then raise exception 'Método inválido'; end if;
+  if p_provider not in ('transferencia', 'cripto', 'robux', 'paypal', 'otro') then raise exception 'Método inválido'; end if;
   if (select count(*) from public.donations
       where user_id = auth.uid() and status = 'por_confirmar' and created_at > now() - interval '1 day') >= 5 then
     raise exception 'Ya avisaste varias donaciones hoy. Esperá a que las confirmemos.';

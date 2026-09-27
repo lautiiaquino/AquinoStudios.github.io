@@ -681,8 +681,8 @@ dialog.donate { width: min(480px, calc(100% - 32px)); }
 .amounts input:focus-visible + span { outline: 2px solid var(--accent-2); outline-offset: 2px; }
 @media (max-width: 420px) { .amounts { grid-template-columns: repeat(2, 1fr); } }
 .money { position: relative; }
-.money::before { content: attr(data-sym); position: absolute; left: 15px; top: 50%; translate: 0 -50%; color: var(--muted); font-weight: 600; }
-.money input { padding-left: 46px; }
+.money::before { content: attr(data-sym); position: absolute; left: 16px; z-index: 1; top: 50%; translate: 0 -50%; color: var(--muted); font-weight: 600; }
+.money input { padding-left: 56px; }
 .btn-pay { --b: var(--pay); --c: #fff; --bd: var(--pay); min-height: 54px; font-weight: 700; box-shadow: 0 10px 30px -10px var(--pay); }
 .btn-pay:hover { filter: brightness(1.1); }
 

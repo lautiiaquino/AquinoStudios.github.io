@@ -84,10 +84,11 @@ Todo se configura en `js/config.js` → `DONATIONS`. **Cada método aparece solo
 | **Mercado Pago** (pesos: tarjeta, débito, dinero en cuenta, efectivo) | `mercadopago: true` + secreto `MP_ACCESS_TOKEN` | Sí |
 | **PayPal** (dólares) | `paypal: true` + secretos `PAYPAL_CLIENT_ID` y `PAYPAL_SECRET` | Sí |
 | **Tarjeta internacional / Apple Pay / Google Pay** (Stripe, dólares) | `stripe: true` + secreto `STRIPE_SECRET_KEY` | Sí |
+| **PayPal.me** (dólares, sin claves) | Poné tu link en `paypalme` (ej: `https://paypal.me/tuusuario`) | No: se abre PayPal con el monto cargado, la persona avisa y vos confirmás |
 | **Transferencia** (alias / CVU) | Completá `transfer` con tu alias y CVU | No: la persona avisa y vos confirmás en el panel |
 | **Cripto** (USDT, BTC, ETH, Binance Pay) | Completá las direcciones en `crypto` y/o `binance` | No: igual que transferencia |
 | **Robux** | Creá un Game Pass de donación y poné el link en `robux` | No: igual que transferencia |
-| **Cafecito, PayPal.me, Ko-fi, Patreon, Buy Me a Coffee, Lemon, Ualá** | Poné tus links en `links` | Se maneja en cada plataforma |
+| **Cafecito, Ko-fi, Patreon, Buy Me a Coffee, Lemon, Ualá** | Poné tus links en `links` | Se maneja en cada plataforma |
 
 **Pagos automáticos (Mercado Pago, PayPal, Stripe):**
 1. Sacá las claves:

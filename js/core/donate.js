@@ -53,14 +53,17 @@ function methods() {
   const cryptos = Object.entries(D.crypto ?? {}).filter(([, v]) => filled(v));
   const crypto = cryptos.length || filled(D.binance);
   const robux = safeUrl(D.robux) ? D.robux : null;
-  const links = Object.entries(D.links ?? {}).filter(([k, url]) => LINKS[k] && safeUrl(url));
-  return { auto, transfer, cryptos, crypto, robux, links };
+  // PayPal.me: se acepta arriba en DONATIONS.paypalme o (versión vieja) dentro de links
+  const pm = [D.paypalme, D.links?.paypalme, D.links?.paypal].find((u) => safeUrl(u) && /paypal\.me\//i.test(u));
+  const paypalme = pm ? pm.trim().replace(/\/+$/, '') : null;
+  const links = Object.entries(D.links ?? {}).filter(([k, url]) => LINKS[k] && safeUrl(url) && !(paypalme && (k === 'paypalme' || k === 'paypal')));
+  return { auto, transfer, cryptos, crypto, robux, paypalme, links };
 }
 
 export const donationsOn = () => {
   if (!D.enabled) return false;
   const m = methods();
-  return Boolean(m.auto.length || m.transfer || m.crypto || m.robux || m.links.length);
+  return Boolean(m.auto.length || m.transfer || m.crypto || m.robux || m.paypalme || m.links.length);
 };
 
 // Muro de donadores + meta del mes (se pide una sola vez por página)
@@ -89,8 +92,9 @@ function pickView(m) {
     <div class="pay-view" data-view="pick">
       ${m.auto.length ? html`<p class="pay-group">Pago automático</p>
         <div class="pay-grid">${m.auto.map((k) => tile(k, AUTO[k].tag, AUTO[k].color, AUTO[k].name, AUTO[k].sub))}</div>` : ''}
-      ${m.transfer || m.crypto || m.robux ? html`<p class="pay-group">Otras formas</p>
+      ${m.transfer || m.crypto || m.robux || m.paypalme ? html`<p class="pay-group">Otras formas</p>
         <div class="pay-grid">
+          ${m.paypalme ? tile('paypalme', 'PP', '#0070e0', 'PayPal', 'Con tu cuenta PayPal o tarjeta (dólares)') : ''}
           ${m.transfer ? tile('transferencia', I.bank, '#16a34a', 'Transferencia', 'Alias o CVU, desde cualquier banco o billetera') : ''}
           ${m.crypto ? tile('cripto', '₿', '#f7931a', 'Cripto', 'USDT, Bitcoin, Ethereum o Binance Pay') : ''}
           ${m.robux ? tile('robux', 'R$', '#00b06f', 'Robux', 'Comprando el pase de donación en Roblox') : ''}
@@ -132,9 +136,9 @@ const copyRow = (label, value) => html`
   <div class="copy-row"><div><small>${label}</small><code>${value}</code></div>
     <button type="button" class="btn btn-sm btn-ghost" data-copy="${value}" aria-label="Copiar ${label}">${COPY} Copiar</button></div>`;
 
-function reportForm(provider, currency, amountLabel, placeholder) {
+function reportForm(provider, currency, amountLabel, placeholder, open = false) {
   return html`
-    <details class="report-box">
+    <details class="report-box" ${open ? raw('open') : ''}>
       <summary>Ya doné, quiero avisar</summary>
       <form class="form" data-report="${provider}" data-currency="${currency}" novalidate>
         <div class="field"><label for="rep-${provider}">${amountLabel}</label>
@@ -151,7 +155,22 @@ function reportForm(provider, currency, amountLabel, placeholder) {
 
 function manualViews(m) {
   const t = D.transfer ?? {};
+  const usd = D.amounts?.USD ?? [2, 5, 10, 20];
   return html`
+    ${m.paypalme ? html`<div class="pay-view hidden" data-view="paypalme">
+      ${backBtn}
+      <div class="pay-title"><span class="pay-ico" style="--c:#0070e0">PP</span><div><b>PayPal</b><small>Se abre PayPal con el monto ya cargado</small></div></div>
+      <fieldset class="amounts" id="ppAmounts"><legend class="sr-only">Monto</legend>
+        ${usd.map((a, i) => html`<label><input type="radio" name="pp" value="${a}" ${i === 1 ? raw('checked') : ''}><span>${money(a, 'USD')}</span></label>`)}
+      </fieldset>
+      <div class="field">
+        <label for="ppOther">Otro monto (USD)</label>
+        <div class="money" data-sym="US$"><input id="ppOther" type="number" inputmode="decimal" min="1" max="10000" step="0.5" placeholder="Ej: 7"></div>
+      </div>
+      <a class="btn btn-block btn-pay" style="--pay:#0070e0" id="ppGo" href="${m.paypalme}" target="_blank" rel="noopener">Donar <output id="ppTotal"></output> con PayPal ${OUT}</a>
+      <p class="donate-safe">${LOCK} Pagás en PayPal. Nosotros nunca vemos tu tarjeta.</p>
+      ${reportForm('paypal', 'USD', 'Monto enviado (USD)', 'Ej: 5')}
+    </div>` : ''}
     ${m.transfer ? html`<div class="pay-view hidden" data-view="transferencia">
       ${backBtn}
       <div class="pay-title"><span class="pay-ico" style="--c:#16a34a">${I.bank}</span><div><b>Transferencia</b><small>Desde cualquier banco o billetera virtual</small></div></div>
@@ -216,7 +235,7 @@ function build() {
   donationWall().then((w) => render($('#donateGoal', dialog), goalBar(w)));
 
   // Si hay un solo método automático y nada más, se abre directo
-  const only = m.auto.length === 1 && !m.transfer && !m.crypto && !m.robux && !m.links.length;
+  const only = m.auto.length === 1 && !m.transfer && !m.crypto && !m.robux && !m.paypalme && !m.links.length;
   if (only) show(m.auto[0]);
 
   on(dialog, 'click', '[data-close]', () => dialog.close());
@@ -261,7 +280,28 @@ function build() {
     });
   }
 
-  // ---- "Ya doné, quiero avisar" (transferencia, cripto, Robux) ----
+  // ---- PayPal.me: el link lleva el monto (paypal.me/usuario/5USD) ----
+  if (m.paypalme) {
+    const view = $('[data-view="paypalme"]', dialog);
+    const amount = () => Number($('#ppOther', view).value) || Number($('[name=pp]:checked', view)?.value) || 0;
+    const paint = () => {
+      const a = amount();
+      $('#ppGo', view).href = a > 0 ? `${m.paypalme}/${a}USD` : m.paypalme;
+      $('#ppTotal', view).value = a > 0 ? money(a, 'USD') : '';
+      const rep = $('form[data-report] [name=amount]', view);
+      if (rep && a > 0) rep.value = a; // así el aviso ya tiene el monto
+    };
+    view.addEventListener('input', (e) => {
+      if (e.target.id === 'ppOther' && e.target.value) $$('[name=pp]', view).forEach((r) => (r.checked = false));
+      if (e.target.name === 'pp') $('#ppOther', view).value = '';
+      if (e.target.closest('#ppAmounts') || e.target.id === 'ppOther') paint();
+    });
+    // Después de ir a PayPal, se abre solo el "Ya doné, quiero avisar"
+    $('#ppGo', view).addEventListener('click', () => { $('.report-box', view).open = true; });
+    paint();
+  }
+
+  // ---- "Ya doné, quiero avisar" (transferencia, cripto, Robux, PayPal.me) ----
   on(dialog, 'submit', 'form[data-report]', async (e, form) => {
     e.preventDefault();
     const amount = Number(form.elements.amount.value);
