@@ -89,15 +89,55 @@ create index if not exists visits_user_idx on public.visits(user_id, created_at 
 create table if not exists public.donations (
   id            uuid primary key default gen_random_uuid(),
   user_id       uuid references public.profiles(id) on delete set null,
-  amount        numeric(12, 2) not null check (amount >= 100 and amount <= 1000000),
+  amount        numeric(12, 2) not null,
   currency      text not null default 'ARS',
   message       text check (char_length(message) <= 200),
-  status        text not null default 'pendiente' check (status in ('pendiente', 'aprobada', 'rechazada', 'cancelada', 'reembolsada')),
+  status        text not null default 'pendiente',
   mp_payment_id text,
   created_at    timestamptz not null default now(),
   paid_at       timestamptz
 );
 create index if not exists donations_created_idx on public.donations(created_at desc);
+-- Versión 2 de donaciones: varios métodos de pago y muro de donadores
+alter table public.donations add column if not exists provider     text not null default 'mercadopago';
+alter table public.donations add column if not exists provider_ref text;
+alter table public.donations add column if not exists show_name    boolean not null default true;
+create index if not exists donations_ref_idx on public.donations(provider, provider_ref);
+alter table public.donations drop constraint if exists donations_amount_check;
+alter table public.donations add  constraint donations_amount_check check (amount > 0 and amount <= 1000000);
+alter table public.donations drop constraint if exists donations_status_check;
+alter table public.donations add  constraint donations_status_check
+  check (status in ('pendiente', 'por_confirmar', 'aprobada', 'rechazada', 'cancelada', 'reembolsada'));
+alter table public.donations drop constraint if exists donations_currency_check;
+alter table public.donations add  constraint donations_currency_check check (currency in ('ARS', 'USD', 'ROBUX', 'USDT', 'BTC', 'ETH'));
+alter table public.donations drop constraint if exists donations_provider_check;
+alter table public.donations add  constraint donations_provider_check
+  check (provider in ('mercadopago', 'paypal', 'stripe', 'transferencia', 'cripto', 'robux', 'otro'));
+
+-- ---------- AJUSTES DEL SITIO (meta de donaciones, etc.) ----------
+create table if not exists public.settings (
+  key        text primary key check (char_length(key) <= 60),
+  value      jsonb not null,
+  updated_at timestamptz not null default now()
+);
+insert into public.settings (key, value)
+values ('donation_goal', '{"amount": 50000, "label": "Servidores, anuncios y nuevos juegos", "usd_rate": 1200, "robux_rate": 10}')
+on conflict (key) do nothing;
+
+-- ---------- CÓDIGOS DE LOS JUEGOS (los que se canjean adentro del juego) ----------
+create table if not exists public.game_codes (
+  id         bigint generated always as identity primary key,
+  game_id    bigint not null references public.games(id) on delete cascade,
+  code       text not null check (char_length(code) between 1 and 40),
+  reward     text check (char_length(reward) <= 120),
+  expires_at timestamptz,
+  active     boolean not null default true,
+  created_at timestamptz not null default now()
+);
+create index if not exists game_codes_game_idx on public.game_codes(game_id, created_at desc);
+
+-- Insignia de donador en el perfil (la pone sola la base cuando se aprueba una donación)
+alter table public.profiles add column if not exists supporter boolean not null default false;
 
 -- ---------- COLUMNAS AGREGADAS EN LA VERSIÓN 2 ----------
 alter table public.profiles add column if not exists banned boolean not null default false;
@@ -236,6 +276,9 @@ begin
   if new.id = auth.uid() and new.banned and not old.banned then
     raise exception 'No podés banearte a vos mismo';
   end if;
+  if new.supporter is distinct from old.supporter and auth.uid() is not null and not public.is_admin() then
+    raise exception 'No tenés permiso para cambiar la insignia de donador';
+  end if;
   return new;
 end;
 $$;
@@ -321,7 +364,7 @@ begin
       'visits_today',     (select count(*) from public.visits where created_at >= current_date),
       'active_today',     (select count(distinct user_id) from public.visits where created_at >= current_date),
       'active_7d',        (select count(distinct user_id) from public.visits where created_at > now() - interval '7 days'),
-      'donations_total',  (select coalesce(sum(amount), 0) from public.donations where status = 'aprobada'),
+      'donations_total',  (select coalesce(round(sum(public.donation_in_ars(amount, currency))), 0) from public.donations where status = 'aprobada'),
       'donations_count',  (select count(*) from public.donations where status = 'aprobada')
     ),
     'visits', (
@@ -368,6 +411,8 @@ alter table public.comments         enable row level security;
 alter table public.contact_messages enable row level security;
 alter table public.visits           enable row level security;
 alter table public.donations        enable row level security;
+alter table public.settings         enable row level security;
+alter table public.game_codes       enable row level security;
 alter table public.banned_words     enable row level security;
 alter table public.team_members     enable row level security;
 alter table public.game_media       enable row level security;
@@ -548,11 +593,97 @@ revoke execute on function public.log_visit(text) from anon;
 drop policy if exists "donations_select" on public.donations;
 create policy "donations_select" on public.donations for select using (auth.uid() = user_id or public.is_admin());
 
--- Total recaudado (público, para mostrar en el botón de donar si querés)
+drop policy if exists "donations_admin" on public.donations;
+create policy "donations_admin" on public.donations for update using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "donations_admin_delete" on public.donations;
+create policy "donations_admin_delete" on public.donations for delete using (public.is_admin());
+
+-- Cuando una donación se aprueba, el usuario recibe la insignia de donador
+create or replace function public.mark_supporter()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.status = 'aprobada' and new.user_id is not null then
+    update public.profiles set supporter = true where id = new.user_id and not supporter;
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists donations_supporter on public.donations;
+create trigger donations_supporter after insert or update of status on public.donations
+  for each row execute function public.mark_supporter();
+
+-- Avisar una donación hecha por fuera (transferencia, cripto, Robux): queda "por confirmar"
+-- hasta que el admin la revise en el panel.
+create or replace function public.report_manual_donation(
+  p_provider text, p_amount numeric, p_currency text, p_message text default null, p_show_name boolean default true)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare
+  new_id uuid;
+begin
+  if auth.uid() is null then raise exception 'Tenés que iniciar sesión'; end if;
+  if p_provider not in ('transferencia', 'cripto', 'robux', 'otro') then raise exception 'Método inválido'; end if;
+  if (select count(*) from public.donations
+      where user_id = auth.uid() and status = 'por_confirmar' and created_at > now() - interval '1 day') >= 5 then
+    raise exception 'Ya avisaste varias donaciones hoy. Esperá a que las confirmemos.';
+  end if;
+  insert into public.donations (user_id, amount, currency, message, status, provider, show_name)
+  values (auth.uid(), p_amount, upper(p_currency), nullif(trim(p_message), ''), 'por_confirmar', p_provider, coalesce(p_show_name, true))
+  returning id into new_id;
+  return new_id;
+end;
+$$;
+revoke execute on function public.report_manual_donation(text, numeric, text, text, boolean) from anon;
+
+-- Ajustes: todos los leen, solo el admin los cambia
+drop policy if exists "settings_select" on public.settings;
+create policy "settings_select" on public.settings for select using (true);
+drop policy if exists "settings_admin" on public.settings;
+create policy "settings_admin" on public.settings for all using (public.is_admin()) with check (public.is_admin());
+
+-- Códigos: se ven los activos; el admin ve y edita todos
+drop policy if exists "codes_select" on public.game_codes;
+create policy "codes_select" on public.game_codes for select using (active or public.is_admin());
+drop policy if exists "codes_admin" on public.game_codes;
+create policy "codes_admin" on public.game_codes for all using (public.is_admin()) with check (public.is_admin());
+
+-- Pasa cualquier donación aprobada a pesos, para la meta del mes y el ranking
+create or replace function public.donation_in_ars(amount numeric, currency text)
+returns numeric language sql stable set search_path = public as $$
+  select amount * case upper(currency)
+    when 'ARS' then 1
+    when 'USD' then coalesce((select (value->>'usd_rate')::numeric from public.settings where key = 'donation_goal'), 1000)
+    when 'USDT' then coalesce((select (value->>'usd_rate')::numeric from public.settings where key = 'donation_goal'), 1000)
+    when 'ROBUX' then coalesce((select (value->>'robux_rate')::numeric from public.settings where key = 'donation_goal'), 10)
+    else 0 end;
+$$;
+
+-- Muro de donadores y meta del mes (público: solo nombres de quienes aceptaron aparecer)
+create or replace function public.donation_wall()
+returns json language sql stable security definer set search_path = public as $$
+  select json_build_object(
+    'goal', (select value from public.settings where key = 'donation_goal'),
+    'month_total', (select coalesce(round(sum(public.donation_in_ars(amount, currency))), 0) from public.donations
+                    where status = 'aprobada' and created_at >= date_trunc('month', now())),
+    'month_count', (select count(*) from public.donations where status = 'aprobada' and created_at >= date_trunc('month', now())),
+    'supporters', (select count(distinct user_id) from public.donations where status = 'aprobada'),
+    'top', (select coalesce(json_agg(t), '[]'::json) from (
+      select p.username, p.avatar_url, count(*) as count
+      from public.donations d join public.profiles p on p.id = d.user_id
+      where d.status = 'aprobada' and d.show_name
+      group by p.id order by sum(public.donation_in_ars(d.amount, d.currency)) desc limit 10) t),
+    'recent', (select coalesce(json_agg(t), '[]'::json) from (
+      select p.username, p.avatar_url, d.message, d.created_at
+      from public.donations d join public.profiles p on p.id = d.user_id
+      where d.status = 'aprobada' and d.show_name
+      order by d.created_at desc limit 8) t)
+  );
+$$;
+
+-- Compatibilidad con la versión anterior
 create or replace function public.donation_stats()
 returns json language sql stable security definer set search_path = public as $$
   select json_build_object(
-    'total', (select coalesce(sum(amount), 0) from public.donations where status = 'aprobada'),
+    'total', (select coalesce(sum(public.donation_in_ars(amount, currency)), 0) from public.donations where status = 'aprobada'),
     'count', (select count(*) from public.donations where status = 'aprobada')
   );
 $$;

@@ -8,7 +8,7 @@ import { mountPolls } from './core/polls.js';
 import { toast, busy, say, validate, ask, errorMsg } from './core/ui.js';
 import {
   statusBadge, avatar, robloxGameUrl, gameImage, bgStyle, placeholder, fetchRobloxStats, bannedNotice, releaseIcs, REPORT_KIND,
-  ICON, likePct,
+  ICON, likePct, codeCard,
 } from './core/view.js';
 import * as fmt from './core/format.js';
 
@@ -87,6 +87,11 @@ function renderGame(game) {
             <p class="muted small" style="margin-top:16px">Agregado el ${fmt.date(game.created_at)}</p>
             <div id="gameNews"></div>
           </aside>
+          <aside class="card hidden" id="codesCard">
+            <h3>Códigos</h3>
+            <p class="muted small">Canjealos adentro del juego para ganar recompensas.</p>
+            <div class="codes" id="gameCodes" style="grid-template-columns:1fr"></div>
+          </aside>
           <div class="polls hidden" id="gamePolls" style="grid-template-columns:1fr"></div>
           <aside class="card hidden" id="changelogCard">
             <h3>Registro de cambios</h3>
@@ -125,6 +130,7 @@ function renderGame(game) {
   loadGallery(game);
   loadChangelog(game);
   loadNews(game);
+  loadCodes(game);
   mountPolls($('#gamePolls'), { profile, filter: (q) => q.eq('game_id', game.id) })
     .then((n) => n && $('#gamePolls').classList.remove('hidden'));
 }
@@ -222,7 +228,7 @@ function setupComments(game) {
   async function loadComments() {
     loading ??= (async () => {
       const { data, error } = await sb.from('comments')
-        .select('id, body, created_at, user_id, hidden, profiles(username, avatar_url, role)')
+        .select('id, body, created_at, user_id, hidden, profiles(username, avatar_url, role, supporter)')
         .eq('game_id', game.id).order('created_at', { ascending: false }).limit(100);
       loading = null;
       if (error) return render($('#comments'), html`<p class="muted">${errorMsg(error)}</p>`);
@@ -234,6 +240,7 @@ function setupComments(game) {
             <div class="comment-head">
               <strong>${c.profiles?.username ?? 'Usuario'}</strong>
               ${c.profiles?.role === 'admin' ? html`<span class="badge badge-accent">Staff</span>` : ''}
+              ${c.profiles?.supporter ? html`<span class="badge badge-supporter" title="Apoyó al estudio con una donación">Donador</span>` : ''}
               <time class="muted small" datetime="${c.created_at}" title="${fmt.dateTime(c.created_at)}">${fmt.ago(c.created_at)}</time>
               ${c.hidden ? html`<span class="badge badge-amber">Oculto</span>` : ''}
               ${isAdmin ? html`<button class="link-btn" data-hide="${c.id}" data-val="${!c.hidden}">${c.hidden ? 'Mostrar' : 'Ocultar'}</button>` : ''}
@@ -271,6 +278,21 @@ function setupComments(game) {
       .subscribe((status) => $('#liveDot').classList.toggle('hidden', status !== 'SUBSCRIBED'));
     addEventListener('pagehide', () => sb.removeChannel(channel), { once: true });
   }
+}
+
+// ---------- Códigos del juego ----------
+async function loadCodes(game) {
+  const { data } = await sb.from('game_codes').select('*').eq('game_id', game.id).eq('active', true).order('created_at', { ascending: false });
+  const now = Date.now();
+  const list = (data ?? []).filter((c) => !c.expires_at || new Date(c.expires_at) > now);
+  if (!list.length) return;
+  render($('#gameCodes'), list.map((c) => codeCard(c)));
+  $('#codesCard').classList.remove('hidden');
+  on($('#gameCodes'), 'click', '[data-code]', async (e, b) => {
+    try { await navigator.clipboard.writeText(b.dataset.code); } catch { /* sin permiso */ }
+    b.closest('.code-card').classList.add('copied');
+    toast(`Código ${b.dataset.code} copiado`);
+  });
 }
 
 // ---------- Galería con visor (teclado, flechas y deslizar con el dedo) ----------

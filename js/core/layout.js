@@ -164,6 +164,23 @@ function globalErrors() {
   });
 }
 
+// ---------- Cuántas personas están en el sitio ahora (Supabase Realtime Presence) ----------
+function onlineNow(profile) {
+  if (!sb.channel) return;
+  const pill = Object.assign(document.createElement('div'), { className: 'online-pill', role: 'status' });
+  pill.setAttribute('aria-live', 'polite');
+  document.body.append(pill);
+  const channel = sb.channel('online', { config: { presence: { key: profile.id } } });
+  channel
+    .on('presence', { event: 'sync' }, () => {
+      const n = Object.keys(channel.presenceState()).length;
+      render(pill, html`<b>${n}</b> ${n === 1 ? 'persona en línea' : 'personas en línea'}`);
+      pill.classList.toggle('show', n > 0);
+    })
+    .subscribe((status) => { if (status === 'SUBSCRIBED') channel.track({ at: Date.now() }); });
+  addEventListener('pagehide', () => sb.removeChannel(channel), { once: true });
+}
+
 // =====================================================================
 export async function renderLayout(active = '', { bare = false } = {}) {
   // Pantallas sin menú (el login): solo lo básico
@@ -276,6 +293,7 @@ export async function renderLayout(active = '', { bare = false } = {}) {
     // Estadística de visitas para el panel (máximo 1 por página cada 5 minutos, lo controla la base)
     const page = location.pathname.split('/').pop() || 'index.html';
     idle(() => sb.rpc('log_visit', { p_path: page }).then(() => {}, () => {}));
+    onlineNow(profile);
     const navUser = $('#navUser');
     render(navUser, userMenu(profile));
     const menu = $('#userMenu');

@@ -5,7 +5,7 @@ import { sb } from './core/supabase.js';
 import { requireAuth } from './core/session.js';
 import { renderLayout } from './core/layout.js';
 import { uploadImage } from './core/images.js';
-import { toast, busy, say, ask, errorMsg } from './core/ui.js';
+import { toast, busy, say, ask, errorMsg, validate } from './core/ui.js';
 import { REPORT_STATUS, REPORT_KIND, avatar, statusBadge, gameUrl, youtubeId } from './core/view.js';
 import * as fmt from './core/format.js';
 
@@ -50,7 +50,7 @@ const gameSelect = (emptyLabel) => html`<option value="">${emptyLabel}</option>$
 // ---------- Secciones por #hash (el botón "atrás" funciona) ----------
 const loaders = {
   stats: loadStats, juegos: loadGames, noticias: loadNews, encuestas: loadPolls, reportes: loadReports,
-  comentarios: loadComments, usuarios: loadUsers, equipo: loadTeam, mensajes: loadMessages, donaciones: loadDonations,
+  comentarios: loadComments, usuarios: loadUsers, equipo: loadTeam, mensajes: loadMessages, donaciones: loadDonations, codigos: loadCodes,
 };
 function route() {
   const name = loaders[location.hash.slice(1)] ? location.hash.slice(1) : 'stats';
@@ -840,38 +840,147 @@ on($('#messagesList'), 'click', '[data-del]', async (e, b) => {
 // DONACIONES (las crea la Edge Function "donate" y las confirma "mp-webhook")
 // =====================================================================
 const DONATION_STATUS = {
-  aprobada: ['Aprobada', 'badge-green'], pendiente: ['Pendiente', 'badge-amber'], rechazada: ['Rechazada', ''],
-  cancelada: ['Cancelada', ''], reembolsada: ['Reembolsada', 'badge-accent'],
+  aprobada: ['Aprobada', 'badge-green'], pendiente: ['Pendiente', 'badge-amber'], por_confirmar: ['Por confirmar', 'badge-amber'],
+  rechazada: ['Rechazada', ''], cancelada: ['Cancelada', ''], reembolsada: ['Reembolsada', 'badge-accent'],
 };
+const METHOD = { mercadopago: 'Mercado Pago', paypal: 'PayPal', stripe: 'Stripe', transferencia: 'Transferencia', cripto: 'Cripto', robux: 'Robux', otro: 'Otro' };
+const anyMoney = (n, c) => (c === 'ARS' ? money(n) : c === 'USD' ? `US$${fmt.fullNumber(n)}` : `${fmt.fullNumber(n)} ${c === 'ROBUX' ? 'R$' : c}`);
 let donations = [];
-async function loadDonations() {
-  const { data, error } = await sb.from('donations').select('*, profiles(username)').order('created_at', { ascending: false }).limit(500);
-  if (error) return render($('#donationsTable'), emptyRow(5, `${errorMsg(error)} — ¿ejecutaste el schema.sql nuevo?`));
-  donations = data;
-  const ok = data.filter((d) => d.status === 'aprobada');
-  const month = ok.filter((d) => new Date(d.created_at) > new Date(Date.now() - 30 * 864e5));
-  render($('#donationTiles'), [
-    [money(ok.reduce((a, d) => a + Number(d.amount), 0)), 'Recaudado'], [ok.length, 'Aprobadas'],
-    [money(month.reduce((a, d) => a + Number(d.amount), 0)), 'Últimos 30 días'], [data.filter((d) => d.status === 'pendiente').length, 'Pendientes'],
-  ].map(([v, l]) => html`<div class="stat"><div class="stat-value" style="font-size:1.6rem">${v}</div><div class="stat-label">${l}</div></div>`));
-  render($('#donationsTable'), data.length ? data.map((d) => {
+let goal = {};
+async function refreshDonationsBadge() {
+  const { count } = await sb.from('donations').select('id', { count: 'exact', head: true }).eq('status', 'por_confirmar');
+  render($('#donationsBadge'), count ? html`<span class="badge badge-amber">${count}</span>` : '');
+}
+function paintDonations() {
+  const f = $('#donationFilter input:checked').value;
+  const rows = f === 'all' ? donations : donations.filter((d) => d.status === f);
+  render($('#donationsTable'), rows.length ? rows.map((d) => {
     const [text, cls] = DONATION_STATUS[d.status] ?? [d.status, ''];
     return html`<tr>
       <td><time datetime="${d.created_at}" title="${fmt.dateTime(d.created_at)}">${fmt.ago(d.created_at)}</time></td>
       <td>${d.profiles?.username ?? html`<span class="muted">(cuenta borrada)</span>`}</td>
-      <td><b>${money(d.amount)}</b></td>
+      <td>${METHOD[d.provider] ?? d.provider}</td>
+      <td><b>${anyMoney(d.amount, d.currency)}</b></td>
       <td><span class="badge ${cls}">${text}</span></td>
-      <td class="muted small" style="max-width:280px;overflow-wrap:anywhere">${d.message ?? ''}</td>
+      <td class="muted small" style="max-width:260px;overflow-wrap:anywhere">${d.message ?? ''}</td>
+      <td><div class="actions">
+        ${d.status === 'por_confirmar' ? html`
+          <button class="btn btn-sm btn-primary" data-dstatus="aprobada" data-id="${d.id}">Confirmar</button>
+          <button class="btn btn-sm btn-ghost" data-dstatus="rechazada" data-id="${d.id}">Rechazar</button>` : ''}
+        ${d.status !== 'aprobada' ? html`<button class="btn btn-sm btn-danger" data-ddel="${d.id}" aria-label="Borrar">×</button>` : ''}
+      </div></td>
     </tr>`;
-  }) : emptyRow(5, 'Todavía no hay donaciones.'));
+  }) : emptyRow(7, 'No hay donaciones acá.'));
 }
+async function loadDonations() {
+  const [{ data, error }, { data: s }] = await Promise.all([
+    sb.from('donations').select('*, profiles(username)').order('created_at', { ascending: false }).limit(500),
+    sb.from('settings').select('value').eq('key', 'donation_goal').maybeSingle(),
+  ]);
+  if (error) return render($('#donationsTable'), emptyRow(7, `${errorMsg(error)} — ¿ejecutaste el schema.sql nuevo?`));
+  donations = data;
+  goal = s?.value ?? { amount: 50000, label: '', usd_rate: 1200, robux_rate: 10 };
+  const f = $('#goalForm').elements;
+  f.amount.value = goal.amount; f.label.value = goal.label ?? ''; f.usd_rate.value = goal.usd_rate ?? 1200; f.robux_rate.value = goal.robux_rate ?? 10;
+  // Todo pasado a pesos con los valores de la meta
+  const ars = (d) => Number(d.amount) * ({ ARS: 1, USD: goal.usd_rate, USDT: goal.usd_rate, ROBUX: goal.robux_rate }[d.currency] ?? 0);
+  const ok = data.filter((d) => d.status === 'aprobada');
+  const month = ok.filter((d) => new Date(d.created_at) >= new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  render($('#donationTiles'), [
+    [money(ok.reduce((a, d) => a + ars(d), 0)), 'Recaudado (en pesos)'], [ok.length, 'Aprobadas'],
+    [money(month.reduce((a, d) => a + ars(d), 0)), 'Este mes'], [data.filter((d) => d.status === 'por_confirmar').length, 'Por confirmar'],
+  ].map(([v, l]) => html`<div class="stat"><div class="stat-value" style="font-size:1.6rem">${v}</div><div class="stat-label">${l}</div></div>`));
+  paintDonations();
+  refreshDonationsBadge();
+}
+$('#donationFilter').addEventListener('change', paintDonations);
+on($('#donationsTable'), 'click', '[data-dstatus]', async (e, b) => {
+  const approve = b.dataset.dstatus === 'aprobada';
+  if (!approve && !(await ask('¿Rechazar esta donación? No va a aparecer en el muro.', { ok: 'Rechazar', danger: true }))) return;
+  const { error } = await sb.from('donations').update({ status: b.dataset.dstatus, paid_at: approve ? new Date().toISOString() : null }).eq('id', b.dataset.id);
+  if (error) return toast(errorMsg(error), 'error');
+  toast(approve ? 'Donación confirmada: ya aparece en el muro' : 'Donación rechazada');
+  loadDonations();
+});
+on($('#donationsTable'), 'click', '[data-ddel]', async (e, b) => {
+  if (!(await ask('¿Borrar este registro de donación?', { ok: 'Borrar', danger: true }))) return;
+  const { error } = await sb.from('donations').delete().eq('id', b.dataset.ddel);
+  if (error) return toast(errorMsg(error), 'error');
+  toast('Registro borrado');
+  loadDonations();
+});
+$('#goalForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.currentTarget;
+  const { ok, data, message } = validate(form);
+  if (!ok) return say(form, message);
+  await busy(form.querySelector('[type=submit]'), async () => {
+    const value = { amount: Number(data.amount), label: data.label.trim(), usd_rate: Number(data.usd_rate), robux_rate: Number(data.robux_rate) };
+    const { error } = await sb.from('settings').upsert({ key: 'donation_goal', value, updated_at: new Date().toISOString() });
+    if (error) return say(form, errorMsg(error));
+    say(form, '');
+    toast('Meta guardada');
+    loadDonations();
+  });
+});
 $('#donationsCsv').addEventListener('click', () => exportCsv('donaciones.csv', [
-  ['Fecha', 'Usuario', 'Monto', 'Moneda', 'Estado', 'Mensaje', 'ID de pago de Mercado Pago'],
-  ...donations.map((d) => [fmt.dateTime(d.created_at), d.profiles?.username ?? '', d.amount, d.currency, d.status, d.message ?? '', d.mp_payment_id ?? '']),
+  ['Fecha', 'Usuario', 'Método', 'Monto', 'Moneda', 'Estado', 'Mensaje', 'ID de pago'],
+  ...donations.map((d) => [fmt.dateTime(d.created_at), d.profiles?.username ?? '', METHOD[d.provider] ?? d.provider, d.amount, d.currency, d.status, d.message ?? '', d.mp_payment_id ?? '']),
 ]));
+
+// =====================================================================
+// CÓDIGOS DE LOS JUEGOS
+// =====================================================================
+async function loadCodes() {
+  render($('#codeGame'), gameSelect('Elegí un juego'));
+  const { data, error } = await sb.from('game_codes').select('*, games(title)').order('created_at', { ascending: false });
+  if (error) return render($('#codesTable'), emptyRow(6, `${errorMsg(error)} — ¿ejecutaste el schema.sql nuevo?`));
+  const now = Date.now();
+  render($('#codesTable'), data.length ? data.map((c) => {
+    const expired = c.expires_at && new Date(c.expires_at) < now;
+    return html`<tr class="${!c.active || expired ? 'is-muted' : ''}">
+      <td><code>${c.code}</code></td><td>${c.games?.title ?? ''}</td><td>${c.reward ?? ''}</td>
+      <td>${c.expires_at ? fmt.dateTime(c.expires_at) : html`<span class="muted">Nunca</span>`}</td>
+      <td>${expired ? html`<span class="badge">Vencido</span>` : c.active ? html`<span class="badge badge-green">Activo</span>` : html`<span class="badge">Pausado</span>`}</td>
+      <td><div class="actions">
+        <button class="btn btn-sm btn-ghost" data-ctoggle="${c.id}" data-val="${!c.active}">${c.active ? 'Pausar' : 'Activar'}</button>
+        <button class="btn btn-sm btn-danger" data-cdel="${c.id}" aria-label="Borrar ${c.code}">×</button>
+      </div></td>
+    </tr>`;
+  }) : emptyRow(6, 'Todavía no cargaste códigos.'));
+}
+$('#codeForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.currentTarget;
+  const { ok, data, message } = validate(form);
+  if (!ok) return say(form, message);
+  await busy(form.querySelector('[type=submit]'), async () => {
+    const { error } = await sb.from('game_codes').insert({
+      game_id: Number(data.game_id), code: data.code.trim().toUpperCase(), reward: data.reward.trim() || null, expires_at: fromLocalInput(data.expires_at),
+    });
+    if (error) return say(form, errorMsg(error));
+    form.reset();
+    say(form, '');
+    toast('Código agregado');
+    loadCodes();
+  });
+});
+on($('#codesTable'), 'click', '[data-ctoggle]', async (e, b) => {
+  const { error } = await sb.from('game_codes').update({ active: b.dataset.val === 'true' }).eq('id', b.dataset.ctoggle);
+  if (error) return toast(errorMsg(error), 'error');
+  loadCodes();
+});
+on($('#codesTable'), 'click', '[data-cdel]', async (e, b) => {
+  if (!(await ask('¿Borrar este código?', { ok: 'Borrar', danger: true }))) return;
+  const { error } = await sb.from('game_codes').delete().eq('id', b.dataset.cdel);
+  if (error) return toast(errorMsg(error), 'error');
+  toast('Código borrado');
+  loadCodes();
+});
 
 // ---------- Inicio ----------
 await loadGameOptions();
 route();
 refreshUnread();
 refreshReportsBadge();
+refreshDonationsBadge();

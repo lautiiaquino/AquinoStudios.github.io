@@ -18,6 +18,7 @@
       <a href="#perfil" data-sec="perfil">Perfil</a>
       <a href="#favoritos" data-sec="favoritos">Favoritos</a>
       <a href="#reportes" data-sec="reportes">Mis reportes</a>
+      <a href="#donaciones" data-sec="donaciones">Mis donaciones</a>
       <a href="#seguridad" data-sec="seguridad">Seguridad</a>
     </nav>
 
@@ -76,6 +77,14 @@
       </section>
 
       <!-- SEGURIDAD -->
+      <section class="hidden" data-sec="donaciones" style="padding:0">
+        <div class="section-head"><h2>Mis donaciones</h2><button class="btn btn-sm btn-donate" type="button" data-donate>Donar</button></div>
+        <div class="card table-wrap"><table>
+          <thead><tr><th>Fecha</th><th>Método</th><th>Monto</th><th>Estado</th></tr></thead>
+          <tbody id="myDonations"></tbody>
+        </table></div>
+      </section>
+
       <section class="hidden" data-sec="seguridad" style="padding:0;display:grid;gap:20px">
         <div class="card">
           <h2>Cambiar contraseña</h2>

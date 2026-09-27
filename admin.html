@@ -24,7 +24,8 @@
       <a href="#usuarios" data-sec="usuarios">Usuarios</a>
       <a href="#equipo" data-sec="equipo">Equipo</a>
       <a href="#mensajes" data-sec="mensajes">Mensajes <span id="unreadBadge"></span></a>
-      <a href="#donaciones" data-sec="donaciones">Donaciones</a>
+      <a href="#donaciones" data-sec="donaciones">Donaciones <span id="donationsBadge"></span></a>
+      <a href="#codigos" data-sec="codigos">Códigos</a>
     </nav>
 
     <div>
@@ -51,6 +52,27 @@
           <div class="card"><h3>Juegos más favoriteados</h3><div class="bar-list" id="topFavs"></div></div>
           <div class="card"><h3>Juegos más comentados</h3><div class="bar-list" id="topComments"></div></div>
         </div>
+      </section>
+
+      <!-- CÓDIGOS -->
+      <section class="hidden" data-sec="codigos">
+        <div class="section-head"><h2>Códigos de los juegos</h2></div>
+        <form class="card form" id="codeForm" style="margin-bottom:20px" novalidate>
+          <div class="form-row">
+            <div class="field"><label for="codeGame">Juego</label><select id="codeGame" name="game_id" required data-msg="Elegí el juego."></select></div>
+            <div class="field"><label for="codeText">Código</label><input id="codeText" name="code" maxlength="40" required placeholder="Ej: AQUINO100" data-msg="Escribí el código." style="text-transform:uppercase"></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label for="codeReward">Recompensa</label><input id="codeReward" name="reward" maxlength="120" placeholder="Ej: 100 monedas"></div>
+            <div class="field"><label for="codeExp">Vence (opcional)</label><input id="codeExp" name="expires_at" type="datetime-local"></div>
+          </div>
+          <div class="msg"></div>
+          <div><button class="btn btn-primary" type="submit">Agregar código</button></div>
+        </form>
+        <div class="card table-wrap"><table>
+          <thead><tr><th>Código</th><th>Juego</th><th>Recompensa</th><th>Vence</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="codesTable"></tbody>
+        </table></div>
       </section>
 
       <!-- JUEGOS -->
@@ -147,8 +169,26 @@
       <section class="hidden" data-sec="donaciones">
         <div class="section-head"><h2>Donaciones</h2><button class="btn btn-sm btn-ghost" id="donationsCsv">Descargar CSV</button></div>
         <div class="stats stats-sm" id="donationTiles"></div>
+        <form class="card form" id="goalForm" style="margin-bottom:20px" novalidate>
+          <h3 style="margin:0">Meta del mes</h3>
+          <div class="form-row">
+            <div class="field"><label for="goalAmount">Meta (ARS)</label><input id="goalAmount" name="amount" type="number" min="1" step="1" required data-msg="Poné la meta en pesos."></div>
+            <div class="field"><label for="goalLabel">Para qué es</label><input id="goalLabel" name="label" maxlength="80" placeholder="Servidores, anuncios..."></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label for="goalUsd">1 dólar = ? pesos</label><input id="goalUsd" name="usd_rate" type="number" min="1" step="any" required data-msg="Poné el valor del dólar."></div>
+            <div class="field"><label for="goalRobux">1 Robux = ? pesos</label><input id="goalRobux" name="robux_rate" type="number" min="0" step="any" required data-msg="Poné el valor del Robux."></div>
+          </div>
+          <div class="msg"></div>
+          <div><button class="btn btn-primary" type="submit">Guardar meta</button></div>
+        </form>
+        <div class="seg" id="donationFilter" role="radiogroup" aria-label="Filtrar donaciones" style="margin-bottom:12px">
+          <label><input type="radio" name="dfilter" value="all" checked><span>Todas</span></label>
+          <label><input type="radio" name="dfilter" value="por_confirmar"><span>Por confirmar</span></label>
+          <label><input type="radio" name="dfilter" value="aprobada"><span>Aprobadas</span></label>
+        </div>
         <div class="card table-wrap"><table>
-          <thead><tr><th>Fecha</th><th>Usuario</th><th>Monto</th><th>Estado</th><th>Mensaje</th></tr></thead>
+          <thead><tr><th>Fecha</th><th>Usuario</th><th>Método</th><th>Monto</th><th>Estado</th><th>Mensaje</th><th></th></tr></thead>
           <tbody id="donationsTable"></tbody>
         </table></div>
       </section>
