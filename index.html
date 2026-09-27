@@ -3,53 +3,93 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Aquino Studios</title>
-  <meta name="description" content="Aquino Studios - juegos de Roblox. Jugá, enterate de las actualizaciones y sumate a la comunidad.">
-  <meta name="theme-color" content="#191b1d">
-  <meta property="og:title" content="Aquino Studios">
-  <meta property="og:description" content="Juegos de Roblox hechos por Aquino Studios.">
+  <title>Aquino Studios · Juegos de Roblox</title>
+  <meta name="description" content="Aquino Studios hace juegos de Roblox. Jugá, enterate de las actualizaciones, votá lo que viene y sumate a la comunidad.">
+  <meta name="theme-color" content="#3aa8ff">
+  <link rel="canonical" href="https://lautiiaquino.github.io/AquinoStudios.github.io/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Aquino Studios">
+  <meta property="og:title" content="Aquino Studios · Juegos de Roblox">
+  <meta property="og:description" content="Jugá nuestros juegos de Roblox, votá lo que viene y sumate a la comunidad.">
+  <meta property="og:image" content="https://lautiiaquino.github.io/AquinoStudios.github.io/icons/og-image.png">
+  <meta property="og:locale" content="es_AR">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Aquino Studios",
+    "url": "https://lautiiaquino.github.io/AquinoStudios.github.io/",
+    "logo": "https://lautiiaquino.github.io/AquinoStudios.github.io/icons/icon-512.png",
+    "description": "Estudio independiente de juegos de Roblox."
+  }
+  </script>
   <script src="js/theme.js"></script>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#juegos">Saltar al contenido</a>
   <main>
-    <!-- PORTADA: se llena con el juego destacado. Si no hay, queda esto. -->
-    <section class="hero" id="hero">
-      <div class="hero-bg" id="heroBg"></div>
-      <div class="container hero-inner">
-        <span class="pill" id="heroTag">Estudio de Roblox</span>
-        <h1 class="stroke-title" id="heroTitle">Aquino Studios</h1>
-        <p id="heroDesc">Hacemos juegos en Roblox. Entrá, jugá y contanos qué te gustaría que agreguemos.</p>
-        <div class="hero-actions" id="heroActions">
-          <a href="#juegos" class="btn btn-play">Ver juegos</a>
-          <a href="login.html?tab=register" class="btn btn-ghost" id="heroJoin">Crear cuenta</a>
-        </div>
-        <ul class="hero-stats hidden" id="heroStats"></ul>
+    <!-- ===== PORTADA: cielo, nubes y bloques flotando ===== -->
+    <section class="hero sky" id="hero">
+      <div class="sky-deco" aria-hidden="true">
+        <span class="stars"></span>
+        <span class="cloud c1"></span><span class="cloud c2"></span><span class="cloud c3"></span><span class="cloud c4"></span>
+        <div class="cube cube-1" data-depth="18"><i></i><i></i><i></i></div>
+        <div class="cube cube-2" data-depth="32"><i></i><i></i><i></i></div>
+        <div class="cube cube-3" data-depth="12"><i></i><i></i><i></i></div>
+        <div class="cube cube-4" data-depth="26"><i></i><i></i><i></i></div>
+        <span class="coin coin-1" data-depth="40"></span><span class="coin coin-2" data-depth="22"></span><span class="coin coin-3" data-depth="30"></span>
       </div>
+
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <span class="pill" id="heroTag">Estudio de juegos de Roblox</span>
+          <h1 class="game-logo" aria-label="Aquino Studios">
+            <span class="word" data-text="Aquino">Aquino</span>
+            <span class="word" data-text="Studios">Studios</span>
+          </h1>
+          <p id="heroDesc">Hacemos juegos en Roblox para jugar con amigos. Entrá, jugá y votá qué agregamos en la próxima update.</p>
+          <div class="hero-actions" id="heroActions">
+            <a href="#juegos" class="btn btn-play btn-lg">Ver juegos</a>
+            <a href="login.html?tab=register" class="btn btn-white btn-lg" id="heroJoin">Crear cuenta</a>
+          </div>
+        </div>
+        <!-- Póster del juego destacado (lo completa js/home.js) -->
+        <div class="hero-feature" id="heroFeature">
+          <div class="poster poster-empty">
+            <div class="poster-art"><div class="big-cube"><i></i><i></i><i></i></div></div>
+          </div>
+        </div>
+      </div>
+
+      <svg class="grass" viewBox="0 0 1440 140" preserveAspectRatio="none" aria-hidden="true">
+        <path class="grass-back" d="M0 70 C120 40 240 95 360 70 S600 30 720 62 960 100 1080 66 1320 38 1440 60 V140 H0Z"/>
+        <path class="grass-front" d="M0 96 C160 70 280 118 440 96 S700 62 860 90 1120 122 1260 92 1400 76 1440 84 V140 H0Z"/>
+      </svg>
     </section>
 
     <!-- Números del estudio -->
     <div class="container">
       <div class="stat-strip">
-        <div class="stat"><div class="stat-label">Juegos</div><count-up class="stat-value" id="statGames"></count-up></div>
-        <div class="stat"><div class="stat-label">Jugando ahora</div><count-up class="stat-value" id="statPlaying"></count-up></div>
-        <div class="stat"><div class="stat-label">Visitas</div><count-up class="stat-value" id="statVisits"></count-up></div>
-        <div class="stat"><div class="stat-label">Miembros</div><count-up class="stat-value" id="statMembers"></count-up></div>
+        <div class="stat stat-blue"><div class="stat-label">Juegos</div><count-up class="stat-value" id="statGames"></count-up></div>
+        <div class="stat stat-green"><div class="stat-label">Jugando ahora</div><count-up class="stat-value" id="statPlaying"></count-up></div>
+        <div class="stat stat-gold"><div class="stat-label">Visitas</div><count-up class="stat-value" id="statVisits"></count-up></div>
+        <div class="stat stat-pink"><div class="stat-label">Miembros</div><count-up class="stat-value" id="statMembers"></count-up></div>
       </div>
     </div>
 
-    <!-- JUEGOS -->
+    <!-- ===== JUEGOS ===== -->
     <section id="juegos">
       <div class="container">
-        <!-- Próximo lanzamiento (aparece solo si hay un juego con fecha) -->
         <div class="release-banner hidden" id="releaseBanner"></div>
 
         <div class="section-head">
-          <h2>Nuestros juegos</h2>
-          <div class="filters" id="filters">
+          <h2 class="ribbon"><span>Nuestros juegos</span></h2>
+          <div class="filters" id="filters" role="toolbar" aria-label="Filtrar juegos">
             <button class="chip active" data-filter="all" aria-pressed="true">Todos</button>
             <button class="chip" data-filter="publicado" aria-pressed="false">Disponibles</button>
             <button class="chip" data-filter="en_desarrollo" aria-pressed="false">En desarrollo</button>
@@ -57,61 +97,90 @@
           </div>
         </div>
         <div class="grid" id="gamesGrid">
-          <div class="skeleton tile-skel"></div>
-          <div class="skeleton tile-skel"></div>
-          <div class="skeleton tile-skel"></div>
-          <div class="skeleton tile-skel"></div>
+          <div class="skeleton tile-skel"></div><div class="skeleton tile-skel"></div>
+          <div class="skeleton tile-skel"></div><div class="skeleton tile-skel"></div>
         </div>
       </div>
     </section>
 
-    <!-- NOVEDADES -->
-    <section id="noticias">
+    <!-- ===== NOVEDADES ===== -->
+    <section id="noticias" class="band band-blue">
       <div class="container">
-        <div class="section-head"><h2>Novedades</h2></div>
+        <div class="section-head"><h2 class="ribbon ribbon-gold"><span>Novedades</span></h2></div>
         <div class="news-list" id="newsList">
-          <div class="skeleton" style="height:260px"></div>
-          <div class="skeleton" style="height:260px"></div>
-          <div class="skeleton" style="height:260px"></div>
+          <div class="skeleton" style="height:280px"></div><div class="skeleton" style="height:280px"></div><div class="skeleton" style="height:280px"></div>
         </div>
       </div>
     </section>
 
-    <!-- ENCUESTAS (solo si hay) -->
+    <!-- ===== ENCUESTAS (solo si hay) ===== -->
     <section id="encuestas" class="hidden">
       <div class="container">
-        <div class="section-head"><h2>Votá</h2><p class="muted">Lo que gane, lo hacemos.</p></div>
+        <div class="section-head"><h2 class="ribbon ribbon-pink"><span>Votá</span></h2><p class="muted">Lo que gane, lo hacemos.</p></div>
         <div class="polls" id="pollsList"></div>
       </div>
     </section>
 
-    <!-- EQUIPO (solo si cargaste miembros) -->
+    <!-- ===== EQUIPO (solo si cargaste miembros) ===== -->
     <section id="equipo" class="hidden">
       <div class="container">
-        <div class="section-head"><h2>El equipo</h2></div>
+        <div class="section-head"><h2 class="ribbon ribbon-green"><span>El equipo</span></h2></div>
         <div class="team-grid" id="teamGrid"></div>
       </div>
     </section>
 
-    <!-- COMUNIDAD -->
+    <!-- ===== COMUNIDAD ===== -->
     <section id="nosotros">
       <div class="container">
-        <div class="section-head"><h2>Comunidad</h2></div>
+        <div class="section-head"><h2 class="ribbon ribbon-purple"><span>Comunidad</span></h2></div>
         <div class="community" id="community">
           <a class="community-card cc-account" href="login.html?tab=register" id="ctaBtn">
+            <span class="cc-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5 0-9 2.5-9 6v2h18v-2c0-3.5-4-6-9-6z"/></svg>
+            </span>
             <b id="ctaTitle">Creá tu cuenta</b>
             <span id="ctaText">Guardá favoritos, comentá y votá qué agregamos.</span>
+            <em>Empezar</em>
           </a>
         </div>
       </div>
     </section>
 
-    <!-- CONTACTO -->
-    <section id="contacto">
+    <!-- ===== PREGUNTAS FRECUENTES ===== -->
+    <section id="faq">
+      <div class="container faq-wrap">
+        <div class="section-head"><h2 class="ribbon ribbon-gold"><span>Preguntas</span></h2></div>
+        <div class="faq" id="faqList">
+          <details name="faq" open>
+            <summary>¿Cómo juego sus juegos?</summary>
+            <p>Entrá a cualquier juego y tocá <b>Jugar</b>. Se abre Roblox directo en el juego. Necesitás una cuenta de Roblox (es gratis).</p>
+          </details>
+          <details name="faq">
+            <summary>¿Para qué me sirve crear una cuenta acá?</summary>
+            <p>Para guardar tus juegos favoritos, comentar, votar en las encuestas y mandarnos sugerencias o reportes de bugs. Es gratis y no tiene nada que ver con tu contraseña de Roblox.</p>
+          </details>
+          <details name="faq">
+            <summary>Encontré un bug, ¿dónde lo reporto?</summary>
+            <p>En la página del juego, abajo a la derecha, está <b>Sugerencias y bugs</b>. Después podés ver cómo va en <a href="cuenta.html#reportes">Mi cuenta</a>.</p>
+          </details>
+          <details name="faq">
+            <summary>¿Puedo trabajar con ustedes?</summary>
+            <p>¡Sí! Mandanos un mensaje desde <a href="#contacto">Contacto</a> contando qué hacés (build, scripting, UI, modelado) y pasanos tu portfolio.</p>
+          </details>
+          <details name="faq">
+            <summary>¿Esta página es de Roblox?</summary>
+            <p>No. Somos un estudio independiente; no estamos afiliados a Roblox Corporation. Nunca te vamos a pedir tu contraseña de Roblox.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CONTACTO ===== -->
+    <section id="contacto" class="band band-green">
       <div class="container contact">
         <div>
-          <h2>Contacto</h2>
-          <p class="muted">¿Encontraste un bug, tenés una idea o querés trabajar con nosotros? Mandanos un mensaje.</p>
+          <h2 class="ribbon"><span>Contacto</span></h2>
+          <p>¿Encontraste un bug, tenés una idea o querés trabajar con nosotros? Mandanos un mensaje y te respondemos.</p>
         </div>
         <form class="card form" id="contactForm" novalidate>
           <div class="form-row">
@@ -120,7 +189,7 @@
           </div>
           <div class="field"><label for="cMsg">Mensaje</label><textarea id="cMsg" name="message" maxlength="2000" required data-msg="Escribí tu mensaje."></textarea></div>
           <div class="msg"></div>
-          <div><button class="btn btn-primary" type="submit">Enviar</button></div>
+          <div><button class="btn btn-primary" type="submit">Enviar mensaje</button></div>
         </form>
       </div>
     </section>

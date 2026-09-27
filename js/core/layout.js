@@ -101,6 +101,24 @@ function autoReveal() {
     .observe(document.body, { childList: true, subtree: true });
 }
 
+// ---------- Barra de progreso de lectura y botón "volver arriba" ----------
+function scrollExtras(header) {
+  // La barra se anima sola con CSS (animation-timeline: scroll()); acá solo se agrega al DOM
+  const bar = Object.assign(document.createElement('div'), { className: 'scroll-progress' });
+  bar.setAttribute('aria-hidden', 'true');
+  header.append(bar);
+
+  const top = Object.assign(document.createElement('button'), { className: 'to-top', type: 'button', title: 'Volver arriba' });
+  top.setAttribute('aria-label', 'Volver arriba');
+  render(top, raw('<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 5.5 4 13.5l1.9 1.9L12 9.3l6.1 6.1 1.9-1.9z"/></svg>'));
+  document.body.append(top);
+  top.addEventListener('click', () => scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' }));
+  // Aparece cuando bajaste más de una pantalla
+  const marker = Object.assign(document.createElement('div'), { className: 'to-top-marker' });
+  document.body.prepend(marker);
+  new IntersectionObserver(([e]) => top.classList.toggle('show', !e.isIntersecting)).observe(marker);
+}
+
 // ---------- Transición entre páginas: la imagen del juego "vuela" a la página del juego ----------
 function shareElementTransitions() {
   on(document, 'click', '.game-card', (e, card) => {
@@ -185,26 +203,35 @@ export async function renderLayout(active = '') {
   const footer = document.createElement('footer');
   footer.className = 'site-footer';
   render(footer, html`
+    <svg class="footer-wave" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40 C180 10 340 70 540 42 S900 8 1080 38 1320 70 1440 36 V80 H0Z"/></svg>
     <div class="container footer-inner">
-      <div>
+      <div class="footer-brand">
         <a href="index.html" class="brand" aria-label="Aquino Studios, inicio">${BRAND}</a>
-        <p class="muted small">© ${new Date().getFullYear()} Aquino Studios. No afiliado a Roblox Corporation.</p>
+        <p>Juegos de Roblox hechos con ganas. Jugá, votá y sumate a la comunidad.</p>
+        <div class="socials">
+          ${Object.entries(SOCIALS).filter(([k, url]) => ICONS[k] && safeUrl(url)).map(([k, url]) => html`
+            <a href="${url}" target="_blank" rel="noopener" aria-label="${k}"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="${ICONS[k]}"/></svg></a>`)}
+        </div>
       </div>
-      <nav class="footer-links" aria-label="Pie de página">
-        <a href="index.html#juegos">Juegos</a>
-        <a href="index.html#noticias">Novedades</a>
-        <a href="proximamente.html">Próximo</a>
-        <a href="index.html#contacto">Contacto</a>
-        <a href="cuenta.html">Mi cuenta</a>
+      <nav aria-label="Sitio"><h4>Sitio</h4>
+        <a href="index.html#juegos">Juegos</a><a href="index.html#noticias">Novedades</a>
+        <a href="proximamente.html">Próximo lanzamiento</a><a href="index.html#faq">Preguntas</a><a href="index.html#contacto">Contacto</a>
       </nav>
-      <div class="socials">
-        ${Object.entries(SOCIALS).filter(([k, url]) => ICONS[k] && safeUrl(url)).map(([k, url]) => html`
-          <a href="${url}" target="_blank" rel="noopener" aria-label="${k}"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="${ICONS[k]}"/></svg></a>`)}
-      </div>
+      <nav aria-label="Cuenta"><h4>Cuenta</h4>
+        <a href="login.html">Iniciar sesión</a><a href="login.html?tab=register">Crear cuenta</a><a href="cuenta.html">Mi cuenta</a>
+      </nav>
+      <nav aria-label="Legal"><h4>Legal</h4>
+        <a href="terminos.html">Términos y condiciones</a><a href="privacidad.html">Privacidad</a>
+      </nav>
+    </div>
+    <div class="container footer-bottom">
+      <span>© ${new Date().getFullYear()} Aquino Studios</span>
+      <span>No estamos afiliados a Roblox Corporation. Roblox es una marca de Roblox Corporation.</span>
     </div>`);
   document.body.append(footer);
 
   autoReveal();
+  scrollExtras(header);
   shareElementTransitions();
   speculate();
   registerServiceWorker();

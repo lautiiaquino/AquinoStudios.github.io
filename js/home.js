@@ -29,6 +29,11 @@ if (safeUrl(SOCIALS.roblox)) community.push(html`
   </a>`);
 if (community.length) $('#community').insertAdjacentHTML('afterbegin', community.join(''));
 
+if (new URLSearchParams(location.search).get('cuenta') === 'borrada') {
+  toast('Tu cuenta y tus datos se borraron. ¡Gracias por haber jugado!');
+  history.replaceState(null, '', location.pathname);
+}
+
 // ---------- Si hay sesión ----------
 if (profile) {
   Object.assign($('#heroJoin'), { textContent: 'Mi cuenta', href: 'cuenta.html' });
@@ -39,29 +44,58 @@ if (profile) {
   getUser().then((u) => u?.email && ($('#contactForm').elements.email.value = u.email));
 }
 
-// ---------- Portada: el juego destacado, como la página de un juego en Roblox ----------
+// ---------- Portada: póster del juego destacado ----------
 function renderHero() {
   const g = state.games.find((x) => x.featured);
   if (!g) return;
   const s = state.stats[g.roblox_place_id];
   const img = gameImage(g, s);
-  if (img) { $('#heroBg').style.backgroundImage = cssUrl(img); $('#hero').classList.add('has-image'); }
-  $('#heroTag').textContent = g.status === 'publicado' ? 'Destacado' : g.status === 'en_desarrollo' ? 'En desarrollo' : 'Próximamente';
-  $('#heroTitle').textContent = g.title;
-  $('#heroDesc').textContent = g.short_description || '';
+  const like = likePct(s);
   const canPlay = g.roblox_place_id && g.status === 'publicado';
-  render($('#heroActions'), html`
-    ${canPlay ? html`<a class="btn btn-play btn-lg" href="${robloxGameUrl(g.roblox_place_id)}" target="_blank" rel="noopener">${ICON.play} Jugar</a>` : ''}
-    <a class="btn ${canPlay ? 'btn-ghost' : 'btn-play'}" href="${gameUrl(g.slug)}">Ver juego</a>`);
-  if (s) {
-    const like = likePct(s);
-    render($('#heroStats'), html`
-      <li>${ICON.user}<b>${fmt.number(s.playing)}</b> jugando</li>
-      <li>${ICON.eye}<b>${fmt.number(s.visits)}</b> visitas</li>
-      ${like !== null ? html`<li>${ICON.thumb}<b>${like}%</b> me gusta</li>` : ''}`);
-    $('#heroStats').classList.remove('hidden');
-  }
+  render($('#heroFeature'), html`
+    <article class="poster">
+      <span class="poster-sticker">${g.status === 'publicado' ? 'Destacado' : g.status === 'en_desarrollo' ? 'En desarrollo' : 'Próximamente'}</span>
+      <a class="poster-art" href="${gameUrl(g.slug)}" style="${img ? `background-image:${cssUrl(img)}` : ''}" aria-label="Ver ${g.title}">
+        ${img ? '' : html`<div class="big-cube"><i></i><i></i><i></i></div>`}
+      </a>
+      <div class="poster-body">
+        <h2 class="poster-title">${g.title}</h2>
+        <p>${g.short_description ?? ''}</p>
+        ${s ? html`<ul class="poster-stats">
+          <li>${ICON.user}<b>${fmt.number(s.playing)}</b> jugando</li>
+          <li>${ICON.eye}<b>${fmt.number(s.visits)}</b> visitas</li>
+          ${like !== null ? html`<li>${ICON.thumb}<b>${like}%</b></li>` : ''}
+        </ul>` : ''}
+        <div class="poster-actions">
+          ${canPlay ? html`<a class="btn btn-play btn-lg" href="${robloxGameUrl(g.roblox_place_id)}" target="_blank" rel="noopener">${ICON.play} Jugar</a>` : ''}
+          <a class="btn ${canPlay ? 'btn-white' : 'btn-play btn-lg'}" href="${gameUrl(g.slug)}">Ver juego</a>
+        </div>
+      </div>
+    </article>`);
 }
+
+// Bloques y monedas del cielo que se mueven con el mouse (parallax)
+function skyParallax() {
+  const hero = $('#hero');
+  const items = $$('[data-depth]', hero);
+  if (!matchMedia('(hover: hover)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let frame = 0;
+  hero.addEventListener('pointermove', (e) => {
+    if (frame) return;
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      const r = hero.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      for (const el of items) {
+        const d = Number(el.dataset.depth);
+        el.style.translate = `${(-x * d).toFixed(1)}px ${(-y * d).toFixed(1)}px`;
+      }
+    });
+  }, { passive: true });
+  hero.addEventListener('pointerleave', () => items.forEach((el) => (el.style.translate = '')));
+}
+skyParallax();
 
 // ---------- Juegos ----------
 function renderGames() {
