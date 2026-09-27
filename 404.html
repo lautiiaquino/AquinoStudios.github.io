@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Te caíste del mapa · Aquino Studios</title>
   <meta name="robots" content="noindex">
-  <meta name="theme-color" content="#3aa8ff">
+  <meta name="theme-color" content="#0a0c11">
   <!-- GitHub Pages muestra esta página para cualquier dirección que no existe; la base hace que los links funcionen igual -->
   <script>if (location.hostname.endsWith('github.io')) document.write('<base href="/AquinoStudios.github.io/">');</script>
   <link rel="icon" href="icons/icon-192.png">
@@ -14,25 +14,17 @@
 </head>
 <body>
   <main>
-    <section class="hero sky launch" style="min-height:calc(100vh - 70px);padding-bottom:160px">
-      <div class="sky-deco" aria-hidden="true">
-        <span class="stars"></span><span class="cloud c1"></span><span class="cloud c2"></span><span class="cloud c3"></span>
-        <div class="cube cube-1"><i></i><i></i><i></i></div><div class="cube cube-3"><i></i><i></i><i></i></div>
-        <span class="coin coin-1"></span>
-      </div>
+    <section class="stage launch" style="min-height:calc(100vh - 68px);display:grid;align-content:center">
       <div class="container">
         <span class="pill pill-red">Error 404</span>
-        <h1 class="stroke-title" style="font-size:clamp(4rem,16vw,9rem)">404</h1>
-        <p style="font-size:1.3rem;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.2)">¡Te caíste del mapa! Esta página no existe o se movió.</p>
+        <h1 class="big-404" data-text="404" aria-label="Error 404">404</h1>
+        <h2 style="font-size:clamp(1.8rem,4vw,2.6rem);margin:18px 0 8px">Te caíste del mapa</h2>
+        <p class="muted" style="font-size:1.15rem;max-width:460px;margin:0 auto 30px">Esta página no existe o se movió.</p>
         <div class="hero-actions" style="justify-content:center">
-          <a class="btn btn-play btn-lg" href="index.html">Respawn en el inicio</a>
+          <a class="btn btn-primary btn-lg" href="index.html">Volver al inicio</a>
           <a class="btn btn-white btn-lg" href="index.html#juegos">Ver juegos</a>
         </div>
       </div>
-      <svg class="grass" viewBox="0 0 1440 140" preserveAspectRatio="none" aria-hidden="true">
-        <path class="grass-back" d="M0 70 C120 40 240 95 360 70 S600 30 720 62 960 100 1080 66 1320 38 1440 60 V140 H0Z"/>
-        <path class="grass-front" d="M0 96 C160 70 280 118 440 96 S700 62 860 90 1120 122 1260 92 1400 76 1440 84 V140 H0Z"/>
-      </svg>
     </section>
   </main>
   <script type="module" src="js/notfound.js"></script>

@@ -3,7 +3,7 @@
 //   confetti({ x: e.clientX, y: e.clientY })  → desde donde hiciste clic
 import { reducedMotion } from './dom.js';
 
-const COLORS = ['#ffcd1f', '#3aa8ff', '#52d35a', '#ff5fa2', '#8a5cff', '#ff8a1f', '#ffffff'];
+const COLORS = ['#ffc83d', '#ffe08a', '#ffffff', '#2bd26f', '#4c9dff'];
 
 export function confetti({ x = innerWidth / 2, y = innerHeight / 3, count = 120, spread = 1 } = {}) {
   if (reducedMotion()) return;
