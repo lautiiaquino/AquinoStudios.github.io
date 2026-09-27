@@ -2,10 +2,11 @@
 import { html, raw, render, safeUrl } from './html.js';
 import { $, $$, on, reducedMotion, idle } from './dom.js';
 import { sb, configured } from './supabase.js';
-import { getProfile, signOut } from './session.js';
+import { getProfile, getSession, signOut, loginUrl } from './session.js';
 import { avatar } from './view.js';
 import { toast, errorMsg } from './ui.js';
 import { SOCIALS } from '../config.js';
+import { HEART, donationsOn, openDonate, donationReturn } from './donate.js';
 
 // Logo: la "A" del estudio sobre el cuadrado amarillo
 const LOGO = raw('<svg viewBox="0 0 36 36" width="34" height="34" aria-hidden="true"><rect width="36" height="36" rx="8" fill="var(--accent)"/><path d="M10.4 27.5 16 8.5h4l5.6 19h-4.3l-1.1-3.8h-4.4l-1.1 3.8zm6.5-7.4h2.2L18 16z" fill="var(--accent-ink)"/></svg>');
@@ -164,7 +165,18 @@ function globalErrors() {
 }
 
 // =====================================================================
-export async function renderLayout(active = '') {
+export async function renderLayout(active = '', { bare = false } = {}) {
+  // Pantallas sin menú (el login): solo lo básico
+  if (bare) {
+    registerServiceWorker();
+    globalErrors();
+    if (!configured) {
+      const warn = Object.assign(document.createElement('div'), { className: 'config-warning' });
+      render(warn, html`Falta configurar Supabase en <code>js/config.js</code>. Mirá el archivo <code>README.md</code>.`);
+      document.body.prepend(warn);
+    }
+    return null;
+  }
   const header = document.createElement('header');
   header.className = 'site-header';
   render(header, html`
@@ -173,6 +185,7 @@ export async function renderLayout(active = '') {
       <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
       <div class="nav-links" id="navLinks">
         ${NAV.map(([href, text, key]) => html`<a href="${href}" class="${active === key ? 'active' : ''}" ${active === key ? raw('aria-current="page"') : ''}>${text}</a>`)}
+        ${donationsOn() ? html`<button class="btn btn-sm btn-donate" type="button" data-donate>${HEART}Donar</button>` : ''}
         ${safeUrl(SOCIALS.discord) ? html`<a class="btn btn-sm btn-discord" href="${SOCIALS.discord}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="${ICONS.discord}"/></svg>Discord</a>` : ''}
         <button class="theme-btn" id="themeBtn" type="button"></button>
         <div class="nav-user" id="navUser">
@@ -197,6 +210,7 @@ export async function renderLayout(active = '') {
   };
   toggle.addEventListener('click', () => setOpen(!header.classList.contains('open')));
   on(header, 'click', '.nav-links a', () => setOpen(false));
+  on(header, 'click', '[data-donate]', () => setOpen(false));
   addEventListener('keydown', (e) => e.key === 'Escape' && setOpen(false));
 
   const themeBtn = $('#themeBtn', header);
@@ -223,6 +237,7 @@ export async function renderLayout(active = '') {
         <a href="login.html">Iniciar sesión</a><a href="login.html?tab=register">Crear cuenta</a><a href="cuenta.html">Mi cuenta</a>
       </nav>
       <nav aria-label="Legal"><h4>Legal</h4>
+        ${donationsOn() ? html`<a href="#donar" data-donate>Donar al estudio</a>` : ''}
         <a href="terminos.html">Términos y condiciones</a><a href="privacidad.html">Privacidad</a>
       </nav>
     </div>
@@ -231,6 +246,10 @@ export async function renderLayout(active = '') {
       <span>No estamos afiliados a Roblox Corporation. Roblox es una marca de Roblox Corporation.</span>
     </div>`);
   document.body.append(footer);
+
+  // Botones de donar (menú, pie o cualquier elemento con data-donate)
+  on(document, 'click', '[data-donate]', (e) => { e.preventDefault(); openDonate(); });
+  donationReturn();
 
   autoReveal();
   scrollExtras(header);
@@ -246,8 +265,17 @@ export async function renderLayout(active = '') {
     return null;
   }
 
+  // Páginas con login obligatorio (las que cargan js/gate.js): sin sesión válida, al login
+  if (document.documentElement.dataset.gate && !(await getSession())) {
+    location.replace(loginUrl());
+    return null;
+  }
+
   const profile = await getProfile();
   if (profile) {
+    // Estadística de visitas para el panel (máximo 1 por página cada 5 minutos, lo controla la base)
+    const page = location.pathname.split('/').pop() || 'index.html';
+    idle(() => sb.rpc('log_visit', { p_path: page }).then(() => {}, () => {}));
     const navUser = $('#navUser');
     render(navUser, userMenu(profile));
     const menu = $('#userMenu');

@@ -19,10 +19,13 @@ export const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)'
 export function transition(update) {
   if (!document.startViewTransition || reducedMotion() || document.hidden) return Promise.resolve(update());
   let ran = false;
-  const vt = document.startViewTransition(() => { ran = true; return update(); });
+  const run = () => { if (ran) return undefined; ran = true; return update(); };
+  const vt = document.startViewTransition(run);
+  // Si el navegador tarda en arrancar la animación, el cambio se aplica igual (sin animación)
+  const guard = setTimeout(() => { if (!ran) { vt.skipTransition(); run(); } }, 300);
   vt.ready.catch(() => {});
   vt.finished.catch(() => {});
-  return vt.updateCallbackDone.catch(() => {}).then(() => { if (!ran) update(); });
+  return vt.updateCallbackDone.catch(() => {}).then(() => { clearTimeout(guard); run(); });
 }
 
 // Espera a que el navegador esté libre para tareas no urgentes.

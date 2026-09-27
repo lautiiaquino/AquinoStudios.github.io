@@ -25,6 +25,7 @@ const toLocalInput = (iso) => {
 };
 const fromLocalInput = (v) => (v ? new Date(v).toISOString() : null);
 const val = (id) => $(`#${id}`).value.trim();
+const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(Number(n) || 0);
 const emptyRow = (cols, text) => html`<tr><td colspan="${cols}" class="muted center">${text}</td></tr>`;
 
 // CSV para abrir en Excel / Google Sheets (con BOM para que respete las tildes)
@@ -49,7 +50,7 @@ const gameSelect = (emptyLabel) => html`<option value="">${emptyLabel}</option>$
 // ---------- Secciones por #hash (el botón "atrás" funciona) ----------
 const loaders = {
   stats: loadStats, juegos: loadGames, noticias: loadNews, encuestas: loadPolls, reportes: loadReports,
-  comentarios: loadComments, usuarios: loadUsers, equipo: loadTeam, mensajes: loadMessages,
+  comentarios: loadComments, usuarios: loadUsers, equipo: loadTeam, mensajes: loadMessages, donaciones: loadDonations,
 };
 function route() {
   const name = loaders[location.hash.slice(1)] ? location.hash.slice(1) : 'stats';
@@ -80,6 +81,7 @@ async function loadStats() {
   render($('#statTiles'), [
     [t.members, 'Miembros'], [t.new_7d, 'Nuevos (7 días)'], [t.comments, 'Comentarios'], [t.favorites, 'Favoritos'],
     [t.votes, 'Votos'], [t.suggestions_open, 'Reportes abiertos'], [t.banned, 'Suspendidos'],
+    [t.visits_today ?? 0, 'Visitas hoy'], [t.active_today ?? 0, 'Activos hoy'], [t.active_7d ?? 0, 'Activos (7 días)'],
   ].map(([v, l]) => html`<div class="stat"><count-up class="stat-value" value="${v}"></count-up><div class="stat-label">${l}</div></div>`));
 
   // Registros por día: una sola serie, con tooltip propio y vista de tabla
@@ -104,6 +106,23 @@ async function loadStats() {
         <span class="val">${r.count}</span>
       </div>`) : html`<p class="muted">Todavía no hay datos.</p>`);
   };
+  // Visitas por día (cantidad de páginas vistas; el tooltip también muestra usuarios distintos)
+  const visits = data.visits ?? [];
+  if (visits.length) {
+    const vmax = Math.max(1, ...visits.map((d) => d.count));
+    const vtotal = visits.reduce((a, d) => a + d.count, 0);
+    $('#visitChart').setAttribute('aria-label', `Visitas por día en los últimos 30 días: ${vtotal} en total`);
+    render($('#visitChart'), visits.map((d) => html`
+      <div style="height:${(d.count / vmax) * 100}%" data-tip="${label(d)}: ${fmt.plural(d.count, 'visita', 'visitas')} · ${fmt.plural(d.users, 'usuario', 'usuarios')}"></div>`));
+    render($('#visitAxis'), html`<span>${label(visits[0])}</span><span>Total: ${fmt.fullNumber(vtotal)} · Máx: ${vmax}</span><span>${label(visits.at(-1))}</span>`);
+  } else {
+    render($('#visitChart'), html`<p class="muted">Volvé a ejecutar <code>supabase/schema.sql</code> para ver las visitas.</p>`);
+  }
+  bars($('#topPages'), data.top_pages ?? [], ['visita', 'visitas']);
+  render($('#donationSummary'), html`
+    <p style="font:700 2.1rem/1.2 var(--font-title);margin:4px 0">${money(t.donations_total ?? 0)}</p>
+    <p class="muted" style="margin:0 0 14px">${fmt.plural(t.donations_count ?? 0, 'donación aprobada', 'donaciones aprobadas')}</p>
+    <a class="btn btn-sm btn-ghost" href="#donaciones">Ver todas</a>`);
   bars($('#topFavs'), data.top_favorites, ['favorito', 'favoritos']);
   bars($('#topComments'), data.top_comments, ['comentario', 'comentarios']);
 }
@@ -816,6 +835,40 @@ on($('#messagesList'), 'click', '[data-del]', async (e, b) => {
   toast('Mensaje borrado');
   loadMessages();
 });
+
+// =====================================================================
+// DONACIONES (las crea la Edge Function "donate" y las confirma "mp-webhook")
+// =====================================================================
+const DONATION_STATUS = {
+  aprobada: ['Aprobada', 'badge-green'], pendiente: ['Pendiente', 'badge-amber'], rechazada: ['Rechazada', ''],
+  cancelada: ['Cancelada', ''], reembolsada: ['Reembolsada', 'badge-accent'],
+};
+let donations = [];
+async function loadDonations() {
+  const { data, error } = await sb.from('donations').select('*, profiles(username)').order('created_at', { ascending: false }).limit(500);
+  if (error) return render($('#donationsTable'), emptyRow(5, `${errorMsg(error)} — ¿ejecutaste el schema.sql nuevo?`));
+  donations = data;
+  const ok = data.filter((d) => d.status === 'aprobada');
+  const month = ok.filter((d) => new Date(d.created_at) > new Date(Date.now() - 30 * 864e5));
+  render($('#donationTiles'), [
+    [money(ok.reduce((a, d) => a + Number(d.amount), 0)), 'Recaudado'], [ok.length, 'Aprobadas'],
+    [money(month.reduce((a, d) => a + Number(d.amount), 0)), 'Últimos 30 días'], [data.filter((d) => d.status === 'pendiente').length, 'Pendientes'],
+  ].map(([v, l]) => html`<div class="stat"><div class="stat-value" style="font-size:1.6rem">${v}</div><div class="stat-label">${l}</div></div>`));
+  render($('#donationsTable'), data.length ? data.map((d) => {
+    const [text, cls] = DONATION_STATUS[d.status] ?? [d.status, ''];
+    return html`<tr>
+      <td><time datetime="${d.created_at}" title="${fmt.dateTime(d.created_at)}">${fmt.ago(d.created_at)}</time></td>
+      <td>${d.profiles?.username ?? html`<span class="muted">(cuenta borrada)</span>`}</td>
+      <td><b>${money(d.amount)}</b></td>
+      <td><span class="badge ${cls}">${text}</span></td>
+      <td class="muted small" style="max-width:280px;overflow-wrap:anywhere">${d.message ?? ''}</td>
+    </tr>`;
+  }) : emptyRow(5, 'Todavía no hay donaciones.'));
+}
+$('#donationsCsv').addEventListener('click', () => exportCsv('donaciones.csv', [
+  ['Fecha', 'Usuario', 'Monto', 'Moneda', 'Estado', 'Mensaje', 'ID de pago de Mercado Pago'],
+  ...donations.map((d) => [fmt.dateTime(d.created_at), d.profiles?.username ?? '', d.amount, d.currency, d.status, d.message ?? '', d.mp_payment_id ?? '']),
+]));
 
 // ---------- Inicio ----------
 await loadGameOptions();

@@ -19,3 +19,15 @@ export const SOCIALS = {
   youtube: '',
   tiktok: '',
 };
+
+// Donaciones con Mercado Pago (ver README: hay que cargar el Access Token en Supabase).
+// amounts: montos rápidos en pesos. links: otras formas de donar opcionales ('' para ocultar).
+export const DONATIONS = {
+  enabled: true,
+  amounts: [500, 1000, 2500, 5000],
+  links: {
+    cafecito: '', // ej: https://cafecito.app/tuusuario
+    paypal: '',   // ej: https://paypal.me/tuusuario
+    kofi: '',     // ej: https://ko-fi.com/tuusuario
+  },
+};

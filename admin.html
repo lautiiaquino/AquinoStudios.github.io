@@ -24,6 +24,7 @@
       <a href="#usuarios" data-sec="usuarios">Usuarios</a>
       <a href="#equipo" data-sec="equipo">Equipo</a>
       <a href="#mensajes" data-sec="mensajes">Mensajes <span id="unreadBadge"></span></a>
+      <a href="#donaciones" data-sec="donaciones">Donaciones</a>
     </nav>
 
     <div>
@@ -36,6 +37,15 @@
           <div class="spark" id="signupChart" role="img"></div>
           <div class="spark-axis" id="signupAxis"></div>
           <details style="margin-top:12px"><summary class="muted small" style="cursor:pointer">Ver como tabla</summary><div id="signupTable" class="table-wrap"></div></details>
+        </div>
+        <div class="card" style="margin-bottom:20px">
+          <h3>Visitas por día <span class="muted small" style="font-family:var(--font-body)">(usuarios con sesión, últimos 30 días)</span></h3>
+          <div class="spark" id="visitChart" role="img"></div>
+          <div class="spark-axis" id="visitAxis"></div>
+        </div>
+        <div class="admin-grid" style="margin-bottom:20px">
+          <div class="card"><h3>Páginas más vistas <span class="muted small" style="font-family:var(--font-body)">(30 días)</span></h3><div class="bar-list" id="topPages"></div></div>
+          <div class="card"><h3>Donaciones</h3><div id="donationSummary"></div></div>
         </div>
         <div class="admin-grid">
           <div class="card"><h3>Juegos más favoriteados</h3><div class="bar-list" id="topFavs"></div></div>
@@ -131,6 +141,16 @@
       <section class="hidden" data-sec="mensajes">
         <div class="section-head"><h2>Mensajes de contacto</h2></div>
         <div id="messagesList"></div>
+      </section>
+
+      <!-- DONACIONES -->
+      <section class="hidden" data-sec="donaciones">
+        <div class="section-head"><h2>Donaciones</h2><button class="btn btn-sm btn-ghost" id="donationsCsv">Descargar CSV</button></div>
+        <div class="stats stats-sm" id="donationTiles"></div>
+        <div class="card table-wrap"><table>
+          <thead><tr><th>Fecha</th><th>Usuario</th><th>Monto</th><th>Estado</th><th>Mensaje</th></tr></thead>
+          <tbody id="donationsTable"></tbody>
+        </table></div>
       </section>
     </div>
   </main>

@@ -11,6 +11,7 @@ import {
 } from './core/view.js';
 import * as fmt from './core/format.js';
 import { SOCIALS } from './config.js';
+import { HEART, donationsOn } from './core/donate.js';
 
 const profile = await renderLayout('games');
 
@@ -29,6 +30,10 @@ if (safeUrl(SOCIALS.discord)) community.push(html`
 if (safeUrl(SOCIALS.roblox)) community.push(html`
   <a class="community-card cc-roblox" href="${SOCIALS.roblox}" target="_blank" rel="noopener">
     <span class="cc-icon" aria-hidden="true">${ROBLOX}</span><b>Grupo de Roblox</b><span>Unite al grupo para tener los beneficios en nuestros juegos.</span><em>Unirme</em>
+  </a>`);
+if (donationsOn()) community.push(html`
+  <a class="community-card cc-donate" href="#donar" data-donate>
+    <span class="cc-icon" aria-hidden="true">${HEART}</span><b>Apoyá al estudio</b><span>Si te gustan nuestros juegos, podés donar lo que quieras con Mercado Pago.</span><em>Donar</em>
   </a>`);
 if (community.length) $('#community').insertAdjacentHTML('afterbegin', community.join(''));
 
