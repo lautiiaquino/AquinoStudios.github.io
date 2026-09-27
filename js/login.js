@@ -7,15 +7,16 @@ import { busy, say, validate, errorMsg } from './core/ui.js';
 import { AUTH_PROVIDERS } from './config.js';
 import { confetti } from './core/confetti.js';
 
-await renderLayout();
+await renderLayout('', { bare: true });
+$('#year').textContent = new Date().getFullYear();
 
 const params = new URLSearchParams(location.search);
 // Solo se permite volver a páginas internas del sitio
-const next = /^[a-z]+\.html(\?[^\s]*)?$/i.test(params.get('next') ?? '') ? params.get('next') : 'cuenta.html';
+const next = /^[a-z0-9-]+\.html([?#][^\s]*)?$/i.test(params.get('next') ?? '') ? params.get('next') : 'index.html';
 if (await getSession()) location.replace(next);
 
 const SIDE = {
-  login: ['Iniciar sesión', 'Entrá con tu cuenta de Aquino Studios.'],
+  login: ['Iniciar sesión', 'Iniciá sesión para entrar al sitio.'],
   register: ['Crear cuenta', 'Es gratis y tarda un minuto.'],
   forgot: ['Recuperar cuenta', 'Te mandamos un link a tu email para cambiar la contraseña.'],
 };
@@ -41,6 +42,9 @@ function openPanel(name, { focus = true } = {}) {
       t.setAttribute('aria-selected', t.dataset.tab === name);
     });
     $('.tabs').classList.toggle('hidden', name === 'forgot');
+    render($('#authAlt'), name === 'login'
+      ? html`¿No tenés una cuenta? <button type="button" class="link-btn" data-go="register">Creá una gratis</button>`
+      : html`¿Ya tenés cuenta? <button type="button" class="link-btn" data-go="login">Iniciá sesión</button>`);
     ['#oauth', '#oauthDivider'].forEach((s) => $(s).classList.toggle('hidden', name === 'forgot' || !OAUTH.length));
     [$('#sideTitle').textContent, $('#sideText').textContent] = SIDE[name];
     $$('[data-panel]').forEach((f) => say(f, ''));
@@ -63,11 +67,13 @@ $('.tabs').addEventListener('keydown', (e) => {
 openPanel(params.get('tab') === 'register' ? 'register' : 'login', { focus: false });
 
 // ---------- Ver contraseña y aviso de Bloq Mayús ----------
+const EYE = raw('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>');
+const EYE_OFF = raw('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 3l18 18M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.6 6.6C3.7 8.4 2 12 2 12s3.6 7 10 7c1.8 0 3.4-.5 4.7-1.3M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>');
 on(document, 'click', '.pw-toggle', (e, btn) => {
   const input = btn.previousElementSibling;
   const show = input.type === 'password';
   input.type = show ? 'text' : 'password';
-  btn.textContent = show ? 'Ocultar' : 'Ver';
+  render(btn, show ? EYE_OFF : EYE);
   btn.setAttribute('aria-label', show ? 'Ocultar contraseña' : 'Mostrar contraseña');
 });
 for (const type of ['keydown', 'keyup']) {

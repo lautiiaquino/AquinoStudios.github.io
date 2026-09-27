@@ -151,10 +151,11 @@ $('#logoutAll').addEventListener('click', async () => {
 // ---------- Descargar mis datos (derecho de acceso) ----------
 $('#exportData').addEventListener('click', (e) => busy(e.currentTarget, async () => {
   const q = (table, cols = '*') => sb.from(table).select(cols).eq('user_id', profile.id);
-  const [favoritos, comentarios, votos, reportes, mensajes] = await Promise.all([
+  const [favoritos, comentarios, votos, reportes, mensajes, donaciones, visitas] = await Promise.all([
     q('favorites', 'created_at, games(title)'), q('comments', 'body, created_at, games(title)'),
     q('poll_votes', 'created_at, polls(question), poll_options(label)'), q('suggestions', 'kind, title, body, status, created_at'),
     q('contact_messages', 'name, email, message, created_at'),
+    q('donations', 'amount, currency, message, status, mp_payment_id, created_at, paid_at'), q('visits', 'path, created_at'),
   ]);
   const data = {
     exportado: new Date().toISOString(),
@@ -162,6 +163,7 @@ $('#exportData').addEventListener('click', (e) => busy(e.currentTarget, async ()
     perfil: profile,
     favoritos: favoritos.data ?? [], comentarios: comentarios.data ?? [], votos: votos.data ?? [],
     reportes: reportes.data ?? [], mensajes_de_contacto: mensajes.data ?? [],
+    donaciones: donaciones.data ?? [], visitas: visitas.data ?? [],
   };
   download(`aquino-studios-mis-datos-${profile.username}.json`, JSON.stringify(data, null, 2), 'application/json');
   toast('Listo, se descargó el archivo');

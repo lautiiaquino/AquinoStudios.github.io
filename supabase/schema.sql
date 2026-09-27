@@ -73,6 +73,32 @@ create table if not exists public.contact_messages (
   created_at timestamptz not null default now()
 );
 
+-- ---------- VISITAS (para las estadísticas del panel) ----------
+create table if not exists public.visits (
+  id         bigint generated always as identity primary key,
+  user_id    uuid not null references public.profiles(id) on delete cascade,
+  path       text not null check (char_length(path) between 1 and 200),
+  created_at timestamptz not null default now()
+);
+create index if not exists visits_created_idx on public.visits(created_at desc);
+create index if not exists visits_user_idx on public.visits(user_id, created_at desc);
+
+-- ---------- DONACIONES (Mercado Pago) ----------
+-- Las filas las crea y actualiza solo la Edge Function "donate" (con la service role),
+-- así nadie puede marcar una donación como pagada desde el navegador.
+create table if not exists public.donations (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid references public.profiles(id) on delete set null,
+  amount        numeric(12, 2) not null check (amount >= 100 and amount <= 1000000),
+  currency      text not null default 'ARS',
+  message       text check (char_length(message) <= 200),
+  status        text not null default 'pendiente' check (status in ('pendiente', 'aprobada', 'rechazada', 'cancelada', 'reembolsada')),
+  mp_payment_id text,
+  created_at    timestamptz not null default now(),
+  paid_at       timestamptz
+);
+create index if not exists donations_created_idx on public.donations(created_at desc);
+
 -- ---------- COLUMNAS AGREGADAS EN LA VERSIÓN 2 ----------
 alter table public.profiles add column if not exists banned boolean not null default false;
 alter table public.profiles add column if not exists banned_reason text check (char_length(banned_reason) <= 200);
@@ -291,7 +317,24 @@ begin
       'comments',         (select count(*) from public.comments),
       'favorites',        (select count(*) from public.favorites),
       'votes',            (select count(*) from public.poll_votes),
-      'suggestions_open', (select count(*) from public.suggestions where status in ('nueva', 'en_revision'))
+      'suggestions_open', (select count(*) from public.suggestions where status in ('nueva', 'en_revision')),
+      'visits_today',     (select count(*) from public.visits where created_at >= current_date),
+      'active_today',     (select count(distinct user_id) from public.visits where created_at >= current_date),
+      'active_7d',        (select count(distinct user_id) from public.visits where created_at > now() - interval '7 days'),
+      'donations_total',  (select coalesce(sum(amount), 0) from public.donations where status = 'aprobada'),
+      'donations_count',  (select count(*) from public.donations where status = 'aprobada')
+    ),
+    'visits', (
+      select coalesce(json_agg(json_build_object('day', d::date,
+        'count', (select count(*) from public.visits v where v.created_at::date = d::date),
+        'users', (select count(distinct user_id) from public.visits v where v.created_at::date = d::date)) order by d), '[]'::json)
+      from generate_series(current_date - 29, current_date, interval '1 day') d
+    ),
+    'top_pages', (
+      select coalesce(json_agg(t), '[]'::json) from (
+        select path as title, count(*) as count from public.visits
+        where created_at > now() - interval '30 days'
+        group by path order by count desc limit 8) t
     ),
     'signups', (
       select coalesce(json_agg(json_build_object('day', d::date,
@@ -323,6 +366,8 @@ alter table public.news             enable row level security;
 alter table public.favorites        enable row level security;
 alter table public.comments         enable row level security;
 alter table public.contact_messages enable row level security;
+alter table public.visits           enable row level security;
+alter table public.donations        enable row level security;
 alter table public.banned_words     enable row level security;
 alter table public.team_members     enable row level security;
 alter table public.game_media       enable row level security;
@@ -472,6 +517,45 @@ begin
 end;
 $$;
 revoke execute on function public.delete_my_account() from anon;
+
+-- =====================================================================
+-- VISITAS: cada página que abre un usuario con sesión se anota acá.
+-- Se usa una función (y no un insert directo) para limitar a 1 registro
+-- por página cada 5 minutos y no llenar la tabla si alguien recarga mucho.
+-- =====================================================================
+drop policy if exists "visits_admin" on public.visits;
+create policy "visits_admin" on public.visits for select using (public.is_admin());
+
+create or replace function public.log_visit(p_path text)
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  clean text := left(coalesce(nullif(trim(p_path), ''), '/'), 200);
+begin
+  if auth.uid() is null then return; end if;
+  if exists (select 1 from public.visits
+             where user_id = auth.uid() and path = clean and created_at > now() - interval '5 minutes') then
+    return;
+  end if;
+  insert into public.visits (user_id, path) values (auth.uid(), clean);
+end;
+$$;
+revoke execute on function public.log_visit(text) from anon;
+
+-- =====================================================================
+-- DONACIONES: cada uno ve las suyas; el admin ve todas.
+-- (No hay políticas de insert/update: solo la Edge Function puede escribir.)
+-- =====================================================================
+drop policy if exists "donations_select" on public.donations;
+create policy "donations_select" on public.donations for select using (auth.uid() = user_id or public.is_admin());
+
+-- Total recaudado (público, para mostrar en el botón de donar si querés)
+create or replace function public.donation_stats()
+returns json language sql stable security definer set search_path = public as $$
+  select json_build_object(
+    'total', (select coalesce(sum(amount), 0) from public.donations where status = 'aprobada'),
+    'count', (select count(*) from public.donations where status = 'aprobada')
+  );
+$$;
 
 -- =====================================================================
 -- TIEMPO REAL: los comentarios nuevos aparecen sin recargar la página.

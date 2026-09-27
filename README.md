@@ -28,6 +28,10 @@ Sitio oficial de Aquino Studios, un estudio de juegos de Roblox.
 **Backend (`supabase/`):**
 - `schema.sql`: tablas, reglas de seguridad (RLS), triggers y datos de ejemplo.
 - `functions/roblox-stats`: función que consulta a Roblox los jugadores activos, las visitas, los favoritos y el ícono de cada juego.
+- `functions/donate`: crea el pago de una donación en Mercado Pago (el Access Token queda guardado en Supabase, nunca en el sitio).
+- `functions/mp-webhook`: Mercado Pago avisa acá cuando un pago se aprueba; la función lo confirma con la API de Mercado Pago y marca la donación como aprobada.
+
+**Login obligatorio:** para ver el inicio, los juegos y "Próximo" hay que iniciar sesión (lo controla `js/gate.js`). Los términos, la privacidad y la página 404 se ven sin cuenta. Cada página que abre un usuario queda anotada en la tabla `visits` (como mucho una vez cada 5 minutos por página) y en el panel de admin ves visitas por día, usuarios activos y páginas más vistas.
 
 ---
 
@@ -68,6 +72,19 @@ En **Edge Functions**, luego **Deploy a new function** y **Via Editor**:
 3. En los ajustes de la función, desactivá **Verify JWT / Enforce JWT verification**. La clave nueva (`sb_publishable_...`) no es un JWT; si la verificación queda activada, la función rechaza las llamadas del sitio.
 
 Sin este paso el sitio funciona igual, pero no muestra jugadores activos ni visitas.
+
+### 5b. Donaciones con Mercado Pago
+1. Entrá a https://www.mercadopago.com.ar/developers/panel/app y creá una aplicación (tipo **Pagos online → Checkout Pro**).
+2. En **Credenciales de producción** copiá el **Access Token** (empieza con `APP_USR-`). Es secreto: no lo pegues en el sitio ni se lo pases a nadie.
+3. En Supabase, andá a **Edge Functions → Secrets** y agregá `MP_ACCESS_TOKEN` con ese valor.
+4. Creá dos funciones con **Deploy a new function → Via Editor**:
+   - `donate`: pegá `supabase/functions/donate/index.ts`.
+   - `mp-webhook`: pegá `supabase/functions/mp-webhook/index.ts`.
+   En las dos, desactivá **Verify JWT / Enforce JWT verification** (la de donar igual comprueba adentro que haya una sesión; el webhook lo llama Mercado Pago, que no tiene token de Supabase).
+5. Volvé a ejecutar `supabase/schema.sql` (crea la tabla `donations`).
+6. Listo: el botón **Donar** del menú abre la ventana, elegís el monto y te lleva a pagar a Mercado Pago. Al volver, el sitio muestra el resultado y en **Panel de admin → Donaciones** ves cada pago.
+
+Para probar sin plata real, usá primero las **Credenciales de prueba** (`TEST-...`) y los usuarios de prueba de Mercado Pago. Montos, textos y links opcionales (Cafecito, PayPal, Ko-fi) se cambian en `js/config.js` → `DONATIONS`. Para sacar el botón: `enabled: false`.
 
 ### 6. Hacerte admin
 1. Registrate en el sitio con tu cuenta.
