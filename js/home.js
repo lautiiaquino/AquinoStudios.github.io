@@ -1,5 +1,5 @@
 import './core/components.js';
-import { html, render, safeUrl, cssUrl } from './core/html.js';
+import { html, raw, render, safeUrl, cssUrl } from './core/html.js';
 import { $, $$, on, transition } from './core/dom.js';
 import { sb } from './core/supabase.js';
 import { getUser } from './core/session.js';
@@ -18,14 +18,17 @@ const state = { games: [], stats: {}, filter: new URLSearchParams(location.searc
 const empty = (text) => html`<div class="empty" style="grid-column:1/-1">${text}</div>`;
 
 // ---------- Comunidad: Discord y grupo de Roblox (se completan en js/config.js) ----------
+const svg = (d) => raw(`<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${d}"/></svg>`);
+const DISCORD = svg('M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.3 18.3 0 0 0-5.5 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9.1-.3 13.7.1 18.2a19.9 19.9 0 0 0 6 3l1.3-2a13 13 0 0 1-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4-2 1 1.3 2a19.8 19.8 0 0 0 6-3c.5-5.2-.9-9.8-3.6-13.8zM8 15.4c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z');
+const ROBLOX = svg('M5.2 0 0 18.8 18.8 24 24 5.2zm8.4 14.9-4.5-1.2 1.2-4.5 4.5 1.2z');
 const community = [];
 if (safeUrl(SOCIALS.discord)) community.push(html`
   <a class="community-card cc-discord" href="${SOCIALS.discord}" target="_blank" rel="noopener">
-    <b>Discord</b><span>Hablá con el equipo, reportá bugs y enterate primero de las updates.</span><em>Unirme</em>
+    <span class="cc-icon" aria-hidden="true">${DISCORD}</span><b>Discord</b><span>Hablá con el equipo, reportá bugs y enterate primero de las updates.</span><em>Unirme</em>
   </a>`);
 if (safeUrl(SOCIALS.roblox)) community.push(html`
   <a class="community-card cc-roblox" href="${SOCIALS.roblox}" target="_blank" rel="noopener">
-    <b>Grupo de Roblox</b><span>Unite al grupo para tener los beneficios en nuestros juegos.</span><em>Unirme</em>
+    <span class="cc-icon" aria-hidden="true">${ROBLOX}</span><b>Grupo de Roblox</b><span>Unite al grupo para tener los beneficios en nuestros juegos.</span><em>Unirme</em>
   </a>`);
 if (community.length) $('#community').insertAdjacentHTML('afterbegin', community.join(''));
 
@@ -44,7 +47,7 @@ if (profile) {
   getUser().then((u) => u?.email && ($('#contactForm').elements.email.value = u.email));
 }
 
-// ---------- Portada: póster del juego destacado ----------
+// ---------- Portada: juego destacado ----------
 function renderHero() {
   const g = state.games.find((x) => x.featured);
   if (!g) return;
@@ -52,11 +55,14 @@ function renderHero() {
   const img = gameImage(g, s);
   const like = likePct(s);
   const canPlay = g.roblox_place_id && g.status === 'publicado';
+  // La imagen del juego también queda de fondo, tenue, detrás de todo el hero
+  const bg = $('#heroBg');
+  if (img) { bg.style.backgroundImage = cssUrl(img); bg.classList.add('on'); }
   render($('#heroFeature'), html`
     <article class="poster">
       <span class="poster-sticker">${g.status === 'publicado' ? 'Destacado' : g.status === 'en_desarrollo' ? 'En desarrollo' : 'Próximamente'}</span>
       <a class="poster-art" href="${gameUrl(g.slug)}" style="${img ? `background-image:${cssUrl(img)}` : ''}" aria-label="Ver ${g.title}">
-        ${img ? '' : html`<div class="big-cube"><i></i><i></i><i></i></div>`}
+        ${img ? '' : html`<span class="poster-initial">${g.title.slice(0, 1)}</span>`}
       </a>
       <div class="poster-body">
         <h2 class="poster-title">${g.title}</h2>
@@ -68,17 +74,17 @@ function renderHero() {
         </ul>` : ''}
         <div class="poster-actions">
           ${canPlay ? html`<a class="btn btn-play btn-lg" href="${robloxGameUrl(g.roblox_place_id)}" target="_blank" rel="noopener">${ICON.play} Jugar</a>` : ''}
-          <a class="btn ${canPlay ? 'btn-white' : 'btn-play btn-lg'}" href="${gameUrl(g.slug)}">Ver juego</a>
+          <a class="btn ${canPlay ? 'btn-white btn-lg' : 'btn-primary btn-lg'}" href="${gameUrl(g.slug)}">Ver juego</a>
         </div>
       </div>
     </article>`);
 }
 
-// Bloques y monedas del cielo que se mueven con el mouse (parallax)
-function skyParallax() {
+// El fondo del hero se corre un poco siguiendo al mouse (la tarjeta, al revés): da profundidad
+function heroDepth() {
   const hero = $('#hero');
-  const items = $$('[data-depth]', hero);
   if (!matchMedia('(hover: hover)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const layers = [[$('#heroBg'), 14], [$('#heroFeature'), -8]];
   let frame = 0;
   hero.addEventListener('pointermove', (e) => {
     if (frame) return;
@@ -87,15 +93,19 @@ function skyParallax() {
       const r = hero.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width - 0.5;
       const y = (e.clientY - r.top) / r.height - 0.5;
-      for (const el of items) {
-        const d = Number(el.dataset.depth);
-        el.style.translate = `${(-x * d).toFixed(1)}px ${(-y * d).toFixed(1)}px`;
-      }
+      for (const [el, d] of layers) el.style.translate = `${(-x * d).toFixed(1)}px ${(-y * d).toFixed(1)}px`;
     });
   }, { passive: true });
-  hero.addEventListener('pointerleave', () => items.forEach((el) => (el.style.translate = '')));
+  hero.addEventListener('pointerleave', () => layers.forEach(([el]) => (el.style.translate = '')));
 }
-skyParallax();
+heroDepth();
+
+// Tarjetas de comunidad: la luz sigue al mouse (variables CSS --mx / --my)
+on($('#community'), 'pointermove', '.community-card', (e, card) => {
+  const r = card.getBoundingClientRect();
+  card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+  card.style.setProperty('--my', `${e.clientY - r.top}px`);
+});
 
 // ---------- Juegos ----------
 function renderGames() {

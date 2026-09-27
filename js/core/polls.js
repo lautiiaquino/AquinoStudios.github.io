@@ -5,7 +5,6 @@ import { sb } from './supabase.js';
 import { toast, errorMsg } from './ui.js';
 import { loginUrl } from './session.js';
 import * as fmt from './format.js';
-import { confetti } from './confetti.js';
 
 const isOpen = (p) => p.active && (!p.closes_at || new Date(p.closes_at) > new Date());
 
@@ -89,7 +88,6 @@ export async function mountPolls(container, { profile, filter }) {
       return toast(errorMsg(error), 'error');
     }
     toast(previous ? 'Cambiaste tu voto' : '¡Voto registrado!');
-    if (!previous) confetti({ x: e.clientX || innerWidth / 2, y: e.clientY || innerHeight / 2, count: 70 });
   });
   return polls.length;
 }

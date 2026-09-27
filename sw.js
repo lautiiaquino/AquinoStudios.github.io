@@ -5,7 +5,7 @@
 // - Tipografías de Google: se guardan una vez y se reutilizan.
 // - Supabase (datos, login) NUNCA se guarda: siempre va directo a la red.
 // Cambiá VERSION cuando quieras forzar que todos descarguen los archivos nuevos.
-const VERSION = 'v5';
+const VERSION = 'v6';
 const STATIC = `aquino-static-${VERSION}`;
 const PAGES = `aquino-pages-${VERSION}`;
 const FONTS = 'aquino-fonts';

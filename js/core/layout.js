@@ -7,8 +7,8 @@ import { avatar } from './view.js';
 import { toast, errorMsg } from './ui.js';
 import { SOCIALS } from '../config.js';
 
-// Logo: un bloque con studs arriba, como una pieza de Roblox
-const LOGO = raw('<svg viewBox="0 0 40 40" width="38" height="38" aria-hidden="true"><rect x="9" y="3" width="8" height="6" rx="2" fill="var(--brand-dark)"/><rect x="23" y="3" width="8" height="6" rx="2" fill="var(--brand-dark)"/><rect x="3" y="7" width="34" height="30" rx="7" fill="var(--brand-dark)"/><rect x="3" y="7" width="34" height="27" rx="7" fill="var(--brand)"/><path d="M13.5 29 20 12h.2L27 29h-4.6l-1.2-3.5h-5.1L14.9 29zm4-7.3h3l-1.5-4.6z" fill="#fff"/></svg>');
+// Logo: la "A" del estudio sobre el cuadrado amarillo
+const LOGO = raw('<svg viewBox="0 0 36 36" width="34" height="34" aria-hidden="true"><rect width="36" height="36" rx="8" fill="var(--accent)"/><path d="M10.4 27.5 16 8.5h4l5.6 19h-4.3l-1.1-3.8h-4.4l-1.1 3.8zm6.5-7.4h2.2L18 16z" fill="var(--accent-ink)"/></svg>');
 const BRAND = html`${LOGO}<span class="brand-word">Aquino<b>Studios</b></span>`;
 const SUN = raw('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>');
 const MOON = raw('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>');
@@ -51,6 +51,9 @@ async function toggleTheme(e, btn) {
   const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
   document.documentElement.classList.add('theme-switch');
   const t = document.startViewTransition(apply);
+  // Si el navegador tarda en arrancar la animación, el tema cambia igual (sin animación)
+  const guard = setTimeout(() => { if (currentTheme() !== next) { t.skipTransition(); apply(); } }, 250);
+  t.updateCallbackDone.finally(() => clearTimeout(guard)).catch(() => {});
   try {
     await t.ready;
     document.documentElement.animate(
@@ -203,11 +206,10 @@ export async function renderLayout(active = '') {
   const footer = document.createElement('footer');
   footer.className = 'site-footer';
   render(footer, html`
-    <svg class="footer-wave" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40 C180 10 340 70 540 42 S900 8 1080 38 1320 70 1440 36 V80 H0Z"/></svg>
     <div class="container footer-inner">
       <div class="footer-brand">
         <a href="index.html" class="brand" aria-label="Aquino Studios, inicio">${BRAND}</a>
-        <p>Juegos de Roblox hechos con ganas. Jugá, votá y sumate a la comunidad.</p>
+        <p>Estudio independiente de juegos en Roblox. Jugá, votá lo que viene y sumate a la comunidad.</p>
         <div class="socials">
           ${Object.entries(SOCIALS).filter(([k, url]) => ICONS[k] && safeUrl(url)).map(([k, url]) => html`
             <a href="${url}" target="_blank" rel="noopener" aria-label="${k}"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="${ICONS[k]}"/></svg></a>`)}
