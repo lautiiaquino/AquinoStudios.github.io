@@ -20,14 +20,50 @@ export const SOCIALS = {
   tiktok: '',
 };
 
-// Donaciones con Mercado Pago (ver README: hay que cargar el Access Token en Supabase).
-// amounts: montos rápidos en pesos. links: otras formas de donar opcionales ('' para ocultar).
+// =====================================================================
+// DONACIONES — cada método aparece solo si está completado.
+// Los de pago automático (Mercado Pago, PayPal, Stripe) además necesitan
+// sus claves cargadas en Supabase (ver README, paso 5b).
+// =====================================================================
 export const DONATIONS = {
   enabled: true,
-  amounts: [500, 1000, 2500, 5000],
+
+  // Pago automático (se confirma solo)
+  mercadopago: true,   // pesos: tarjeta, débito, dinero en cuenta, Rapipago/Pago Fácil
+  paypal: false,       // dólares: cuenta PayPal o tarjeta (poné true cuando cargues las claves)
+  stripe: false,       // dólares: tarjetas de todo el mundo, Apple Pay y Google Pay
+
+  // Montos rápidos por moneda
+  amounts: { ARS: [500, 1000, 2500, 5000], USD: [2, 5, 10, 20] },
+
+  // Transferencia bancaria / billetera (Argentina)
+  transfer: {
+    alias: '',     // ej: aquino.studios.mp
+    cvu: '',       // CVU o CBU (22 números)
+    holder: '',    // titular de la cuenta
+    bank: '',      // ej: Mercado Pago, Ualá, Brubank
+  },
+
+  // Cripto: dirección de cada billetera ('' para ocultar)
+  crypto: {
+    'USDT (TRC20)': '',
+    'USDT (BEP20)': '',
+    'Bitcoin (BTC)': '',
+    'Ethereum (ETH)': '',
+  },
+  binance: '',         // Binance Pay ID (número)
+
+  // Robux: link a un Game Pass de donación en uno de tus juegos
+  robux: '',           // ej: https://www.roblox.com/game-pass/123456/Donacion
+
+  // Links de otras plataformas ('' para ocultar)
   links: {
-    cafecito: '', // ej: https://cafecito.app/tuusuario
-    paypal: '',   // ej: https://paypal.me/tuusuario
-    kofi: '',     // ej: https://ko-fi.com/tuusuario
+    cafecito: '',      // https://cafecito.app/tuusuario
+    paypalme: '',      // https://paypal.me/tuusuario
+    kofi: '',          // https://ko-fi.com/tuusuario
+    patreon: '',       // https://patreon.com/tuusuario
+    buymeacoffee: '',  // https://buymeacoffee.com/tuusuario
+    lemon: '',         // link de pago de Lemon Cash
+    uala: '',          // link de cobro de Ualá
   },
 };

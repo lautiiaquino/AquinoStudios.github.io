@@ -7,11 +7,11 @@ import { renderLayout } from './core/layout.js';
 import { mountPolls } from './core/polls.js';
 import { toast, busy, say, validate, errorMsg } from './core/ui.js';
 import {
-  gameCard, gameImage, avatar, robloxGameUrl, robloxUserUrl, gameUrl, fetchRobloxStats, likePct, ICON,
+  gameCard, gameImage, avatar, codeCard, robloxGameUrl, robloxUserUrl, gameUrl, fetchRobloxStats, likePct, ICON,
 } from './core/view.js';
 import * as fmt from './core/format.js';
 import { SOCIALS } from './config.js';
-import { HEART, donationsOn } from './core/donate.js';
+import { HEART, donationsOn, donationWall, goalBar } from './core/donate.js';
 
 const profile = await renderLayout('games');
 
@@ -200,6 +200,49 @@ async function loadTeam() {
   $('#equipo').classList.remove('hidden');
 }
 
+// ---------- Códigos activos de todos los juegos ----------
+async function loadCodes() {
+  if (!sb) return;
+  const { data } = await sb.from('game_codes').select('*, games(title)').eq('active', true).order('created_at', { ascending: false }).limit(12);
+  const now = Date.now();
+  const list = (data ?? []).filter((c) => !c.expires_at || new Date(c.expires_at) > now);
+  if (!list.length) return;
+  render($('#codesList'), list.map((c) => codeCard(c, c.games?.title)));
+  $('#codigos').classList.remove('hidden');
+}
+on($('#codesList'), 'click', '[data-code]', async (e, b) => {
+  try { await navigator.clipboard.writeText(b.dataset.code); } catch { /* sin permiso */ }
+  b.closest('.code-card').classList.add('copied');
+  toast(`Código ${b.dataset.code} copiado`);
+});
+
+// ---------- Muro de donadores ----------
+async function loadWall() {
+  if (!donationsOn()) return;
+  $('#apoyos').classList.remove('hidden');
+  const w = await donationWall();
+  if (!w) return render($('#wall'), html`<div class="empty" style="grid-column:1/-1">Todavía no hay donaciones. ¡Podés ser el primero! 💙</div>`);
+  render($('#wall'), html`
+    <div class="card wall-goal">
+      ${goalBar(w)}
+      <div class="wall-nums">
+        <div><b>${fmt.fullNumber(w.supporters)}</b><span>donadores en total</span></div>
+        <div><b>${fmt.fullNumber(w.month_count)}</b><span>donaciones este mes</span></div>
+      </div>
+      <h3>Top donadores</h3>
+      ${w.top.length ? html`<ol class="top-list">${w.top.map((t) => html`<li>${avatar({ avatar_url: t.avatar_url, username: t.username }, 30)}<b>${t.username}</b><span class="muted small">${fmt.plural(t.count, 'donación', 'donaciones')}</span></li>`)}</ol>`
+        : html`<p class="muted">Todavía nadie. ¡Podés ser el primero!</p>`}
+    </div>
+    <div class="card">
+      <h3>Últimos mensajes</h3>
+      ${w.recent.length ? w.recent.map((r) => html`
+        <div class="shout">${avatar({ avatar_url: r.avatar_url, username: r.username }, 38)}
+          <div><b>${r.username}</b> <span class="badge badge-supporter">Donador</span> <small>${fmt.ago(r.created_at)}</small>
+            ${r.message ? html`<p>${r.message}</p>` : ''}</div>
+        </div>`) : html`<p class="muted">Cuando alguien done, su mensaje aparece acá.</p>`}
+    </div>`);
+}
+
 async function loadSiteStats() {
   if (!sb) return;
   const { data } = await sb.rpc('site_stats');
@@ -223,7 +266,7 @@ $('#contactForm').addEventListener('submit', async (e) => {
 });
 
 await Promise.allSettled([
-  loadGames(), loadNews(), loadTeam(), loadSiteStats(),
+  loadGames(), loadNews(), loadTeam(), loadSiteStats(), loadCodes(), loadWall(),
   mountPolls($('#pollsList'), { profile, filter: (q) => q.is('game_id', null) })
     .then((n) => n && $('#encuestas').classList.remove('hidden')),
 ]);

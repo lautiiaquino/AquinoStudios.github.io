@@ -126,3 +126,15 @@ export function releaseIcs(game, pageUrl) {
     'END:VEVENT', 'END:VCALENDAR',
   ].join('\r\n');
 }
+
+// Tarjeta de un código canjeable (inicio y página del juego)
+const COPY = raw('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>');
+export const codeCard = (c, gameTitle) => html`
+  <div class="code-card">
+    <div>
+      <code>${c.code}</code>
+      ${c.reward ? html`<span class="reward">${c.reward}</span>` : ''}
+      <small>${gameTitle ? html`${gameTitle} · ` : ''}${c.expires_at ? html`vence ${fmt.ago(c.expires_at)}` : 'sin vencimiento'}</small>
+    </div>
+    <button class="btn btn-sm btn-ghost" type="button" data-code="${c.code}" aria-label="Copiar código ${c.code}">${COPY} Copiar</button>
+  </div>`;

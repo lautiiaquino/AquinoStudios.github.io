@@ -28,8 +28,11 @@ Sitio oficial de Aquino Studios, un estudio de juegos de Roblox.
 **Backend (`supabase/`):**
 - `schema.sql`: tablas, reglas de seguridad (RLS), triggers y datos de ejemplo.
 - `functions/roblox-stats`: función que consulta a Roblox los jugadores activos, las visitas, los favoritos y el ícono de cada juego.
-- `functions/donate`: crea el pago de una donación en Mercado Pago (el Access Token queda guardado en Supabase, nunca en el sitio).
+- `functions/donate`: crea el pago de una donación en Mercado Pago, PayPal o Stripe (las claves quedan guardadas en Supabase, nunca en el sitio).
 - `functions/mp-webhook`: Mercado Pago avisa acá cuando un pago se aprueba; la función lo confirma con la API de Mercado Pago y marca la donación como aprobada.
+- `functions/donate-confirm`: al volver de PayPal o Stripe, confirma el pago preguntándole al proveedor.
+
+**Extras:** códigos canjeables de los juegos (se cargan en **Panel de admin → Códigos** y aparecen en el inicio y en cada juego), contador de **personas en línea** en tiempo real (Supabase Realtime Presence), insignia de **Donador**, sección **Mis donaciones** en Mi cuenta.
 
 **Login obligatorio:** para ver el inicio, los juegos y "Próximo" hay que iniciar sesión (lo controla `js/gate.js`). Los términos, la privacidad y la página 404 se ven sin cuenta. Cada página que abre un usuario queda anotada en la tabla `visits` (como mucho una vez cada 5 minutos por página) y en el panel de admin ves visitas por día, usuarios activos y páginas más vistas.
 
@@ -73,18 +76,36 @@ En **Edge Functions**, luego **Deploy a new function** y **Via Editor**:
 
 Sin este paso el sitio funciona igual, pero no muestra jugadores activos ni visitas.
 
-### 5b. Donaciones con Mercado Pago
-1. Entrá a https://www.mercadopago.com.ar/developers/panel/app y creá una aplicación (tipo **Pagos online → Checkout Pro**).
-2. En **Credenciales de producción** copiá el **Access Token** (empieza con `APP_USR-`). Es secreto: no lo pegues en el sitio ni se lo pases a nadie.
-3. En Supabase, andá a **Edge Functions → Secrets** y agregá `MP_ACCESS_TOKEN` con ese valor.
-4. Creá dos funciones con **Deploy a new function → Via Editor**:
-   - `donate`: pegá `supabase/functions/donate/index.ts`.
-   - `mp-webhook`: pegá `supabase/functions/mp-webhook/index.ts`.
-   En las dos, desactivá **Verify JWT / Enforce JWT verification** (la de donar igual comprueba adentro que haya una sesión; el webhook lo llama Mercado Pago, que no tiene token de Supabase).
-5. Volvé a ejecutar `supabase/schema.sql` (crea la tabla `donations`).
-6. Listo: el botón **Donar** del menú abre la ventana, elegís el monto y te lleva a pagar a Mercado Pago. Al volver, el sitio muestra el resultado y en **Panel de admin → Donaciones** ves cada pago.
+### 5b. Donaciones (varios métodos de pago)
+Todo se configura en `js/config.js` → `DONATIONS`. **Cada método aparece solo si lo completás**, así que podés activar uno solo o todos.
 
-Para probar sin plata real, usá primero las **Credenciales de prueba** (`TEST-...`) y los usuarios de prueba de Mercado Pago. Montos, textos y links opcionales (Cafecito, PayPal, Ko-fi) se cambian en `js/config.js` → `DONATIONS`. Para sacar el botón: `enabled: false`.
+| Método | Qué hay que hacer | Se confirma solo |
+|---|---|---|
+| **Mercado Pago** (pesos: tarjeta, débito, dinero en cuenta, efectivo) | `mercadopago: true` + secreto `MP_ACCESS_TOKEN` | Sí |
+| **PayPal** (dólares) | `paypal: true` + secretos `PAYPAL_CLIENT_ID` y `PAYPAL_SECRET` | Sí |
+| **Tarjeta internacional / Apple Pay / Google Pay** (Stripe, dólares) | `stripe: true` + secreto `STRIPE_SECRET_KEY` | Sí |
+| **Transferencia** (alias / CVU) | Completá `transfer` con tu alias y CVU | No: la persona avisa y vos confirmás en el panel |
+| **Cripto** (USDT, BTC, ETH, Binance Pay) | Completá las direcciones en `crypto` y/o `binance` | No: igual que transferencia |
+| **Robux** | Creá un Game Pass de donación y poné el link en `robux` | No: igual que transferencia |
+| **Cafecito, PayPal.me, Ko-fi, Patreon, Buy Me a Coffee, Lemon, Ualá** | Poné tus links en `links` | Se maneja en cada plataforma |
+
+**Pagos automáticos (Mercado Pago, PayPal, Stripe):**
+1. Sacá las claves:
+   - **Mercado Pago:** https://www.mercadopago.com.ar/developers/panel/app → creá una app de **Checkout Pro** → **Credenciales de producción** → **Access Token** (`APP_USR-...`).
+   - **PayPal:** https://developer.paypal.com/dashboard/applications → **Create App** → copiá **Client ID** y **Secret** (de la pestaña *Live*).
+   - **Stripe:** https://dashboard.stripe.com/apikeys → **Secret key** (`sk_live_...`).
+2. En Supabase → **Edge Functions → Secrets**, cargá solo las que uses: `MP_ACCESS_TOKEN`, `PAYPAL_CLIENT_ID`, `PAYPAL_SECRET`, `STRIPE_SECRET_KEY`. **Son secretas: nunca las pongas en el sitio ni se las pases a nadie.**
+3. Creá tres funciones con **Deploy a new function → Via Editor** y desactivá **Verify JWT** en las tres:
+   - `donate` → `supabase/functions/donate/index.ts` (crea el pago)
+   - `donate-confirm` → `supabase/functions/donate-confirm/index.ts` (confirma PayPal y Stripe al volver, preguntándole al proveedor)
+   - `mp-webhook` → `supabase/functions/mp-webhook/index.ts` (Mercado Pago avisa acá cuando se aprueba un pago)
+4. En `js/config.js` poné en `true` los métodos que activaste.
+
+Para probar sin plata real: Mercado Pago con credenciales `TEST-...`, PayPal con el secreto `PAYPAL_ENV=sandbox` y claves de *Sandbox*, Stripe con `sk_test_...` y la tarjeta `4242 4242 4242 4242`.
+
+**Métodos manuales:** la persona ve tus datos (alias, billetera o pase de Robux) y toca **"Ya doné, quiero avisar"**. La donación queda **por confirmar** y la aprobás o rechazás en **Panel de admin → Donaciones**.
+
+**Meta del mes y muro de donadores:** en **Panel de admin → Donaciones** ponés la meta en pesos y a cuánto tomás el dólar y el Robux (para sumar todo en pesos). El inicio muestra la barra de la meta, el top de donadores y los últimos mensajes. Quien dona recibe la insignia **Donador** en sus comentarios. Solo aparecen los que dejaron marcado "Mostrar mi nombre".
 
 ### 6. Hacerte admin
 1. Registrate en el sitio con tu cuenta.

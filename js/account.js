@@ -22,7 +22,7 @@ function paintHeader() {
   render($('#bigAvatar'), avatar(profile, 84));
   $('#pName').textContent = profile.username;
   render($('#pMeta'), html`
-    ${profile.role === 'admin' ? html`<span class="badge badge-accent">Admin</span> · ` : ''}${user.email}
+    ${profile.role === 'admin' ? html`<span class="badge badge-accent">Admin</span> · ` : ''}${profile.supporter ? html`<span class="badge badge-supporter">Donador</span> · ` : ''}${user.email}
     · Miembro desde ${fmt.date(profile.created_at)}
     ${profile.roblox_username ? html` · Roblox: <a href="${robloxUserUrl(profile.roblox_username)}" target="_blank" rel="noopener">@${profile.roblox_username}</a>` : ''}`);
   const navName = $('.user-btn span');
@@ -35,7 +35,7 @@ if (profile.banned) {
 }
 
 // ---------- Secciones con #hash (funciona el botón "atrás" del navegador) ----------
-const SECTIONS = { perfil: null, favoritos: loadFavorites, reportes: loadReports, seguridad: null };
+const SECTIONS = { perfil: null, favoritos: loadFavorites, reportes: loadReports, donaciones: loadDonations, seguridad: null };
 function route(name = location.hash.slice(1)) {
   if (!(name in SECTIONS)) name = 'perfil';
   transition(() => {
@@ -114,6 +114,19 @@ async function loadReports() {
   }) : html`<div class="empty">Todavía no mandaste sugerencias ni reportes. Podés hacerlo desde la página de cada juego.</div>`);
 }
 
+// ---------- Mis donaciones ----------
+const METHOD = { mercadopago: 'Mercado Pago', paypal: 'PayPal', stripe: 'Tarjeta', transferencia: 'Transferencia', cripto: 'Cripto', robux: 'Robux', otro: 'Otro' };
+const DSTATUS = { aprobada: ['Aprobada', 'badge-green'], pendiente: ['Pendiente', 'badge-amber'], por_confirmar: ['Por confirmar', 'badge-amber'], rechazada: ['Rechazada', ''], cancelada: ['Cancelada', ''], reembolsada: ['Reembolsada', 'badge-accent'] };
+const money = (n, c) => (c === 'ARS' || c === 'USD' ? new Intl.NumberFormat('es-AR', { style: 'currency', currency: c, maximumFractionDigits: c === 'ARS' ? 0 : 2 }).format(n) : `${fmt.fullNumber(n)} ${c === 'ROBUX' ? 'R$' : c}`);
+async function loadDonations() {
+  const { data, error } = await sb.from('donations').select('*').eq('user_id', profile.id).order('created_at', { ascending: false });
+  if (error) return render($('#myDonations'), html`<tr><td colspan="4" class="muted">${errorMsg(error)}</td></tr>`);
+  render($('#myDonations'), data.length ? data.map((d) => {
+    const [text, cls] = DSTATUS[d.status] ?? [d.status, ''];
+    return html`<tr><td>${fmt.date(d.created_at)}</td><td>${METHOD[d.provider] ?? d.provider ?? 'Mercado Pago'}</td><td><b>${money(d.amount, d.currency)}</b></td><td><span class="badge ${cls}">${text}</span></td></tr>`;
+  }) : html`<tr><td colspan="4" class="muted center">Todavía no donaste. Si querés apoyar al estudio, tocá "Donar". 💙</td></tr>`);
+}
+
 // ---------- Seguridad ----------
 const pass = $('#passForm');
 pass.addEventListener('submit', async (e) => {
@@ -155,7 +168,7 @@ $('#exportData').addEventListener('click', (e) => busy(e.currentTarget, async ()
     q('favorites', 'created_at, games(title)'), q('comments', 'body, created_at, games(title)'),
     q('poll_votes', 'created_at, polls(question), poll_options(label)'), q('suggestions', 'kind, title, body, status, created_at'),
     q('contact_messages', 'name, email, message, created_at'),
-    q('donations', 'amount, currency, message, status, mp_payment_id, created_at, paid_at'), q('visits', 'path, created_at'),
+    q('donations', 'amount, currency, provider, message, status, show_name, mp_payment_id, created_at, paid_at'), q('visits', 'path, created_at'),
   ]);
   const data = {
     exportado: new Date().toISOString(),
