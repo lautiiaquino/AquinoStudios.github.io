@@ -27,7 +27,7 @@ Sitio oficial de Aquino Studios, un estudio de juegos de Roblox.
 
 **Backend (`supabase/`):**
 - `schema.sql`: tablas, reglas de seguridad (RLS), triggers y datos de ejemplo.
-- `functions/roblox-stats`: función que consulta a Roblox los jugadores activos, las visitas, los favoritos y el ícono de cada juego.
+- `functions/roblox-stats`: consulta a Roblox los jugadores activos, visitas, favoritos, votos e ícono de cada juego; y para la página del juego trae las capturas, la **Tienda** (game passes con precio en Robux), los **servidores públicos** (con botón para unirse) y las **insignias** (con rareza). También trae la cara del avatar de Roblox de cada usuario que puso su usuario de Roblox en el perfil. **Si ya la tenías publicada, volvé a pegar el archivo nuevo y tocá Deploy.**
 - `functions/donate`: crea el pago de una donación en Mercado Pago, PayPal o Stripe (las claves quedan guardadas en Supabase, nunca en el sitio).
 - `functions/mp-webhook`: Mercado Pago avisa acá cuando un pago se aprueba; la función lo confirma con la API de Mercado Pago y marca la donación como aprobada.
 - `functions/donate-confirm`: al volver de PayPal o Stripe, confirma el pago preguntándole al proveedor.

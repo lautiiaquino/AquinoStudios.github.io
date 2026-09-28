@@ -189,7 +189,7 @@ async function loadTeam() {
   if (!data?.length) return;
   render($('#teamGrid'), data.map((m) => html`
     <article class="member">
-      ${avatar({ avatar_url: m.avatar_url, username: m.name }, 88)}
+      ${avatar({ avatar_url: m.avatar_url, username: m.name, roblox_username: m.roblox_username }, 88)}
       <div>
         <h3>${m.name}</h3>
         ${m.roblox_username ? html`<a class="small" href="${robloxUserUrl(m.roblox_username)}" target="_blank" rel="noopener">@${m.roblox_username}</a>` : ''}
@@ -230,13 +230,13 @@ async function loadWall() {
         <div><b>${fmt.fullNumber(w.month_count)}</b><span>donaciones este mes</span></div>
       </div>
       <h3>Top donadores</h3>
-      ${w.top.length ? html`<ol class="top-list">${w.top.map((t) => html`<li>${avatar({ avatar_url: t.avatar_url, username: t.username }, 30)}<b>${t.username}</b><span class="muted small">${fmt.plural(t.count, 'donación', 'donaciones')}</span></li>`)}</ol>`
+      ${w.top.length ? html`<ol class="top-list">${w.top.map((t) => html`<li>${avatar(t, 30)}<b>${t.username}</b><span class="muted small">${fmt.plural(t.count, 'donación', 'donaciones')}</span></li>`)}</ol>`
         : html`<p class="muted">Todavía nadie. ¡Podés ser el primero!</p>`}
     </div>
     <div class="card">
       <h3>Últimos mensajes</h3>
       ${w.recent.length ? w.recent.map((r) => html`
-        <div class="shout">${avatar({ avatar_url: r.avatar_url, username: r.username }, 38)}
+        <div class="shout">${avatar(r, 38)}
           <div><b>${r.username}</b> <span class="badge badge-supporter">Donador</span> <small>${fmt.ago(r.created_at)}</small>
             ${r.message ? html`<p>${r.message}</p>` : ''}</div>
         </div>`) : html`<p class="muted">Cuando alguien done, su mensaje aparece acá.</p>`}

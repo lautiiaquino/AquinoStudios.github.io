@@ -30,8 +30,58 @@ export function avatar(profile, size = 36) {
   const style = `width:${size}px;height:${size}px`;
   return url
     ? html`<img class="avatar" style="${style}" src="${url}" alt="" loading="lazy" decoding="async">`
-    : html`<span class="avatar avatar-fallback" style="${style};font-size:${Math.round(size * 0.4)}px" aria-hidden="true">${initials(profile?.username)}</span>`;
+    : html`<span class="avatar avatar-fallback" style="${style};font-size:${Math.round(size * 0.4)}px" aria-hidden="true"
+        ${validRobloxName(profile?.roblox_username) ? raw(`data-rbx="${profile.roblox_username}"`) : ''}>${initials(profile?.username)}</span>`;
 }
+const validRobloxName = (n) => typeof n === 'string' && /^[A-Za-z0-9_]{3,20}$/.test(n);
+
+// ---------- Avatares de Roblox ----------
+// Si alguien no subió foto pero puso su usuario de Roblox, se muestra la cara de su avatar de Roblox.
+// Los <span data-rbx="usuario"> se reemplazan solos (lo llama un MutationObserver de layout.js).
+const avatarCache = new Map(); // usuario → Promise<url|null>
+export async function hydrateRobloxAvatars(root = document) {
+  const spans = [...root.querySelectorAll('[data-rbx]:not([data-rbx-done])')];
+  if (!spans.length || !sb) return;
+  spans.forEach((el) => el.setAttribute('data-rbx-done', ''));
+  const names = [...new Set(spans.map((el) => el.dataset.rbx))];
+  const missing = names.filter((n) => !avatarCache.has(n.toLowerCase()));
+  if (missing.length) {
+    const req = sb.functions.invoke('roblox-stats', { body: { action: 'avatars', usernames: missing } })
+      .then(({ data }) => data ?? {}, () => ({}));
+    for (const n of missing) avatarCache.set(n.toLowerCase(), req.then((d) => safeUrl(d[n]?.headshot) || null));
+  }
+  for (const el of spans) {
+    const url = await avatarCache.get(el.dataset.rbx.toLowerCase());
+    if (!url || !el.isConnected) continue;
+    const img = Object.assign(document.createElement('img'), { className: 'avatar avatar-rbx', src: url, alt: '', decoding: 'async' });
+    img.style.cssText = el.style.cssText;
+    img.title = `@${el.dataset.rbx} en Roblox`;
+    el.replaceWith(img);
+  }
+}
+
+// Datos extra de la página del juego (imágenes, tienda, servidores, insignias)
+export async function fetchRobloxDetails(placeId) {
+  if (!sb || !placeId) return null;
+  const key = `rdetails:${placeId}`;
+  const cached = memo.get(key, 30_000);
+  if (cached) return cached;
+  try {
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000));
+    const { data, error } = await Promise.race([sb.functions.invoke('roblox-stats', { body: { action: 'details', placeId: Number(placeId) } }), timeout]);
+    if (error || !data || data.error) return null;
+    memo.set(key, data);
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+// Íconos estilo Roblox
+export const ROBUX = raw('<svg class="robux" viewBox="0 0 24 24" aria-label="Robux" role="img"><path fill="currentColor" d="M12 1.5 21.1 6.75v10.5L12 22.5l-9.1-5.25V6.75zm0 2.3L4.9 7.9v8.2L12 20.2l7.1-4.1V7.9zm0 2.9 4.6 2.65v5.3L12 17.3l-4.6-2.65v-5.3zm0 2.3-2.6 1.5v3l2.6 1.5 2.6-1.5v-3z"/></svg>');
+export const robloxPassUrl = (id) => `https://www.roblox.com/game-pass/${encodeURIComponent(id)}`;
+export const robloxBadgeUrl = (id) => `https://www.roblox.com/badges/${encodeURIComponent(id)}`;
+export const robloxServerUrl = (placeId, serverId) => `https://www.roblox.com/games/start?placeId=${encodeURIComponent(placeId)}&gameInstanceId=${encodeURIComponent(serverId)}`;
 
 export const robloxGameUrl = (placeId) => (placeId ? `https://www.roblox.com/games/${encodeURIComponent(placeId)}` : '');
 export const robloxUserUrl = (name) => `https://www.roblox.com/search/users?keyword=${encodeURIComponent(name)}`;
