@@ -3,7 +3,7 @@ import { html, raw, render, safeUrl } from './html.js';
 import { $, $$, on, reducedMotion, idle } from './dom.js';
 import { sb, configured } from './supabase.js';
 import { getProfile, getSession, signOut, loginUrl } from './session.js';
-import { avatar } from './view.js';
+import { avatar, hydrateRobloxAvatars } from './view.js';
 import { toast, errorMsg } from './ui.js';
 import { SOCIALS } from '../config.js';
 import { HEART, donationsOn, openDonate, donationReturn } from './donate.js';
@@ -264,6 +264,12 @@ export async function renderLayout(active = '', { bare = false } = {}) {
     </div>`);
   document.body.append(footer);
 
+  // Avatares de Roblox: cualquier avatar nuevo con data-rbx se reemplaza por la cara del avatar de Roblox
+  let rbxTimer = 0;
+  const rbx = () => { clearTimeout(rbxTimer); rbxTimer = setTimeout(() => hydrateRobloxAvatars(), 150); };
+  new MutationObserver(rbx).observe(document.body, { childList: true, subtree: true });
+  rbx();
+
   // Botones de donar (menú, pie o cualquier elemento con data-donate)
   on(document, 'click', '[data-donate]', (e) => { e.preventDefault(); openDonate(); });
   donationReturn();
@@ -279,6 +285,7 @@ export async function renderLayout(active = '', { bare = false } = {}) {
     const warn = Object.assign(document.createElement('div'), { className: 'config-warning' });
     render(warn, html`Falta configurar Supabase en <code>js/config.js</code>. Mirá el archivo <code>README.md</code>.`);
     header.after(warn);
+    document.documentElement.classList.add('ready');
     return null;
   }
 
@@ -311,5 +318,6 @@ export async function renderLayout(active = '', { bare = false } = {}) {
 
   // Si cerrás sesión en otra pestaña, esta se actualiza sola
   sb.auth.onAuthStateChange((event) => { if (event === 'SIGNED_OUT' && profile) location.reload(); });
+  document.documentElement.classList.add('ready'); // saca la pantalla de carga
   return profile;
 }

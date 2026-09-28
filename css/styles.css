@@ -984,6 +984,114 @@ body:has(#toasts:not(:empty)) .to-top { translate: 0 -70px; }
 }
 @keyframes fade-up { from { opacity: 0; transform: translateY(32px); } }
 
+/* =====================================================================
+   PÁGINA DEL JUEGO ESTILO ROBLOX: carrusel, votos, pestañas, tienda, servidores e insignias
+   ===================================================================== */
+.rbx-media { position: relative; }
+.rbx-nav {
+  position: absolute; top: 50%; translate: 0 -50%; z-index: 2; width: 40px; height: 56px; border: 0; border-radius: 8px; cursor: pointer;
+  background: rgba(0, 0, 0, .45); color: #fff; font-size: 1.8rem; line-height: 1; backdrop-filter: blur(6px); opacity: 0; transition: opacity .2s, background .2s;
+}
+.rbx-nav.prev { left: 10px; } .rbx-nav.next { right: 10px; }
+.rbx-media:hover .rbx-nav, .rbx-nav:focus-visible { opacity: 1; }
+.rbx-nav:hover { background: rgba(0, 0, 0, .7); }
+.rbx-dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+.rbx-dots:empty { display: none; }
+.rbx-dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 99px; background: var(--line-2); cursor: pointer; transition: width .25s var(--ease), background .2s; }
+.rbx-dots button[aria-current="true"] { width: 22px; background: var(--accent); }
+.game-hero-img { transition: background-image .3s; touch-action: pan-y; }
+
+.votes { display: flex; align-items: center; gap: 10px; margin-top: 16px; font-size: .9rem; font-weight: 600; }
+.vote { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); }
+.vote svg { width: 18px; height: 18px; }
+.vote.up { color: var(--play); }
+.vote.down svg { rotate: 180deg; }
+.vote-bar { flex: 1; height: 6px; border-radius: 99px; background: color-mix(in oklab, var(--red) 55%, var(--bg-2)); overflow: hidden; }
+.vote-bar span { display: block; height: 100%; background: var(--play); border-radius: inherit; }
+
+.rbx-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line-2); margin-top: 8px; overflow-x: auto; scrollbar-width: none; }
+.rbx-tabs button {
+  position: relative; padding: 14px 18px; border: 0; background: none; color: var(--muted); cursor: pointer; white-space: nowrap;
+  font: 600 1rem var(--font-title); transition: color .15s;
+}
+.rbx-tabs button::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--accent); scale: 0 1; transition: scale .25s var(--ease); }
+.rbx-tabs button:hover { color: var(--text); }
+.rbx-tabs button[aria-selected="true"] { color: var(--text); }
+.rbx-tabs button[aria-selected="true"]::after { scale: 1 1; }
+.tab-count { display: inline-block; min-width: 20px; margin-left: 4px; padding: 0 6px; border-radius: 99px; background: var(--card-2); color: var(--muted); font-size: .75rem; line-height: 20px; }
+.tab-count:empty { display: none; }
+.rbx-panel { padding: 28px 0 80px; }
+.rbx-panel.hidden { display: none; }
+.panel-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+.panel-head h2 { font-size: 1.6rem; margin: 0 0 4px; }
+.panel-head p { margin: 0; }
+
+/* Datos del juego en grilla, como en Roblox */
+.rbx-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-bottom: 26px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); overflow: hidden; }
+.rbx-stats .stat { padding: 14px 18px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 0 -1px -1px 0; }
+.rbx-stats .stat-value { font-size: 1.25rem; font-weight: 700; }
+
+/* Tienda (game passes) */
+.store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
+.store-item {
+  text-align: center;
+  display: grid; gap: 8px; align-content: start; padding: 12px; border-radius: 12px; background: var(--card); border: 1px solid var(--line);
+  color: var(--text); text-decoration: none !important; transition: border-color .2s, translate .25s var(--ease);
+}
+.store-item:hover { border-color: var(--play); translate: 0 -3px; }
+.store-icon { width: 100%; max-width: 130px; justify-self: center; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: var(--bg-2); display: grid; place-items: center; color: var(--muted); }
+.store-icon img { width: 100%; height: 100%; object-fit: cover; }
+.store-icon .robux { width: 40%; height: 40%; }
+.store-item b { font-weight: 600; line-height: 1.3; }
+.price { display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-weight: 700; color: var(--text); }
+.robux { width: 1em; height: 1em; flex-shrink: 0; vertical-align: -.12em; }
+.price .robux { color: var(--play); }
+.store-item .btn { pointer-events: none; }
+
+/* Servidores */
+.server-list { display: grid; gap: 10px; }
+.server { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); }
+.server-info { flex: 1; display: grid; gap: 4px; min-width: 0; }
+.server-bar { height: 6px; border-radius: 99px; background: var(--bg-2); overflow: hidden; max-width: 320px; }
+.server-bar span { display: block; height: 100%; background: var(--play); border-radius: inherit; }
+
+/* Insignias */
+.badge-list { display: grid; gap: 10px; }
+.badge-item {
+  display: grid; grid-template-columns: 64px 1fr auto; gap: 16px; align-items: center; padding: 12px 16px; border-radius: 12px;
+  background: var(--card); border: 1px solid var(--line); color: var(--text); text-decoration: none !important; transition: border-color .2s;
+}
+.badge-item:hover { border-color: var(--accent); }
+.badge-icon { width: 64px; height: 64px; border-radius: 50%; overflow: hidden; background: var(--bg-2); }
+.badge-icon img { width: 100%; height: 100%; object-fit: cover; }
+.badge-text p { margin: 2px 0 0; color: var(--muted); font-size: .9rem; }
+.badge-stats { display: flex; gap: 22px; text-align: right; }
+.badge-stats span { display: grid; }
+.badge-stats small { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; }
+.badge-stats b { font-weight: 600; font-size: .92rem; }
+@media (max-width: 640px) {
+  .badge-item { grid-template-columns: 52px 1fr; }
+  .badge-icon { width: 52px; height: 52px; }
+  .badge-stats { grid-column: 1 / -1; justify-content: flex-start; text-align: left; }
+  .server { flex-wrap: wrap; }
+}
+.avatar-rbx { background: linear-gradient(180deg, #d4d9e0, #b8c0cc); }
+
+/* ---------- Pantalla de carga (como la de Roblox: un cuadrado inclinado que gira) ---------- */
+html[data-gate]:not(.ready) body::before, html[data-gate]:not(.ready) body::after {
+  content: ''; position: fixed; z-index: 9999; pointer-events: none;
+  animation: loader-out .4s 3.5s forwards; /* por si algo falla, se va sola */
+}
+html[data-gate]:not(.ready) body::before { inset: 0; background: var(--bg); }
+html[data-gate]:not(.ready) body::after {
+  left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 7px;
+  background: radial-gradient(circle, var(--bg) 0 24%, transparent 25%), var(--accent);
+  box-shadow: 0 0 40px color-mix(in oklab, var(--accent) 60%, transparent);
+  animation: rbx-spin 1s cubic-bezier(.6, 0, .4, 1) infinite, loader-out .4s 3.5s forwards;
+}
+@keyframes rbx-spin { from { rotate: 15deg; } to { rotate: 375deg; } }
+@keyframes loader-out { to { opacity: 0; visibility: hidden; } }
+
 /* ---------- Detalles técnicos ---------- */
 count-up { display: block; }
 count-down { display: flex; }
@@ -995,5 +1103,6 @@ html.theme-switch::view-transition-old(root), html.theme-switch::view-transition
 .reveal { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
+  html[data-gate]:not(.ready) body::after { display: none; }
   html { scroll-behavior: auto; }
 }

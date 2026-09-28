@@ -667,12 +667,12 @@ returns json language sql stable security definer set search_path = public as $$
     'month_count', (select count(*) from public.donations where status = 'aprobada' and created_at >= date_trunc('month', now())),
     'supporters', (select count(distinct user_id) from public.donations where status = 'aprobada'),
     'top', (select coalesce(json_agg(t), '[]'::json) from (
-      select p.username, p.avatar_url, count(*) as count
+      select p.username, p.avatar_url, p.roblox_username, count(*) as count
       from public.donations d join public.profiles p on p.id = d.user_id
       where d.status = 'aprobada' and d.show_name
       group by p.id order by sum(public.donation_in_ars(d.amount, d.currency)) desc limit 10) t),
     'recent', (select coalesce(json_agg(t), '[]'::json) from (
-      select p.username, p.avatar_url, d.message, d.created_at
+      select p.username, p.avatar_url, p.roblox_username, d.message, d.created_at
       from public.donations d join public.profiles p on p.id = d.user_id
       where d.status = 'aprobada' and d.show_name
       order by d.created_at desc limit 8) t)
