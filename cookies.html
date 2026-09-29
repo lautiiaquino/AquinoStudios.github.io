@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Seguridad: solo se cargan scripts, estilos y conexiones de los orígenes de esta lista (CSP) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://challenges.cloudflare.com 'inline-speculation-rules' 'sha256-Owfb3qLivvTpN1SaMR0agfr8XVLT7k3FqsftskwARwA=' 'sha256-L4jZKYB2rl0fEimXN0mMjJ9DpzXonT1piPQMBLEGas0='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net; frame-src https://www.youtube-nocookie.com https://challenges.cloudflare.com; media-src 'self' https:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="color-scheme" content="dark light">
+  <title>Política de cookies · Aquino Studios</title>
+  <meta name="description" content="Qué cookies y almacenamiento usa el sitio de Aquino Studios y cómo cambiar tus preferencias.">
+  <meta name="theme-color" content="#0a0c11">
+  <link rel="canonical" href="https://lautiiaquino.github.io/AquinoStudios.github.io/cookies.html">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <script src="js/theme.js"></script>
+  <link rel="preload" href="fonts/poppins-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/poppins-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <main>
+    <header class="legal-hero stage">
+      <div class="container">
+        <span class="kicker">Legal</span>
+        <h1 class="stroke-title">Política de cookies</h1>
+        <p>Última actualización: <time datetime="2026-09-29">29 de septiembre de 2026</time></p>
+      </div>
+    </header>
+
+    <div class="container legal-layout">
+      <nav class="card toc" aria-label="Índice">
+        <h4>En esta página</h4>
+        <ol id="toc"></ol>
+      </nav>
+
+      <article class="card legal-content" id="contenido">
+        <p class="legal-note">Resumen corto: <b>no usamos cookies de publicidad ni de estadísticas de terceros.</b> Solo guardamos en tu navegador lo necesario para que el sitio funcione. Podés cambiar tus preferencias cuando quieras.</p>
+        <p><button type="button" class="btn btn-primary" data-open-consent>Cambiar mis preferencias</button></p>
+
+        <h2 id="que-son">Qué son las cookies</h2>
+        <p>Las cookies y tecnologías parecidas (como el <i>localStorage</i>) son pequeños datos que un sitio guarda en tu navegador para recordar cosas, por ejemplo que ya iniciaste sesión. En esta página llamamos "cookies" a todas estas tecnologías.</p>
+
+        <h2 id="esenciales">Lo que guardamos (esencial)</h2>
+        <p>Sin esto el sitio no funciona, por eso no se puede desactivar:</p>
+        <div class="table-wrap" style="padding:0">
+          <table>
+            <thead><tr><th>Nombre</th><th>Para qué</th><th>Dónde</th><th>Duración</th></tr></thead>
+            <tbody>
+              <tr><td><code>sb-…-auth-token</code></td><td>Mantener tu sesión iniciada (lo crea Supabase, nuestro proveedor de cuentas).</td><td>localStorage</td><td>Hasta que cierres sesión</td></tr>
+              <tr><td><code>theme</code></td><td>Recordar si elegiste modo claro u oscuro.</td><td>localStorage</td><td>Hasta que la borres</td></tr>
+              <tr><td><code>consent</code></td><td>Recordar tu elección sobre cookies.</td><td>localStorage</td><td>Hasta que cambie esta política</td></tr>
+              <tr><td><code>games:v1</code>, <code>news:v1</code>, <code>rstats:…</code>, <code>rdetails:…</code></td><td>Copia temporal de juegos, novedades y estadísticas de Roblox para que el sitio cargue más rápido.</td><td>sessionStorage</td><td>Hasta cerrar la pestaña</td></tr>
+              <tr><td>Caché de la app</td><td>Copia de los archivos del sitio para que cargue rápido y funcione sin internet.</td><td>Cache Storage (Service Worker)</td><td>Hasta la próxima actualización del sitio</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="terceros">Contenido y servicios de terceros</h2>
+        <ul>
+          <li><b>Videos de YouTube:</b> solo se cargan si tocás "play", desde <code>youtube-nocookie.com</code> (el modo de YouTube que no guarda cookies hasta que reproducís). Si elegís "Solo esenciales", el video se abre en YouTube en otra pestaña.</li>
+          <li><b>Imágenes de Roblox:</b> los íconos, capturas y avatares se muestran desde los servidores de Roblox, que reciben tu dirección IP como cualquier imagen de internet.</li>
+          <li><b>Supabase</b> (cuentas y base de datos) y <b>jsDelivr</b> (librería de Supabase): reciben los pedidos técnicos necesarios para funcionar. No ponen cookies de seguimiento.</li>
+          <li><b>Pagos (Mercado Pago, PayPal, Stripe y otras plataformas):</b> solo si vas a donar. El pago se hace en su sitio y ahí rigen sus propias cookies y políticas.</li>
+          <li><b>Verificación "No soy un robot" (Cloudflare Turnstile):</b> si está activada, se usa solo en el formulario de iniciar sesión o registrarse para frenar bots.</li>
+        </ul>
+
+        <h2 id="no-usamos">Lo que no usamos</h2>
+        <ul>
+          <li>Cookies de publicidad o de redes sociales.</li>
+          <li>Google Analytics ni otras herramientas de seguimiento. Las visitas se cuentan en nuestra propia base de datos, asociadas a tu cuenta, solo para las estadísticas del estudio.</li>
+          <li>Tipografías de Google: las letras del sitio están guardadas en nuestro propio servidor.</li>
+        </ul>
+
+        <h2 id="control">Cómo controlarlas</h2>
+        <p>Podés cambiar tu elección con el botón de arriba o desde <b>Preferencias de cookies</b> al pie de cualquier página. También podés borrar todo desde la configuración de tu navegador (si borrás el almacenamiento del sitio, se cierra tu sesión).</p>
+
+        <h2 id="mas">Más información</h2>
+        <p>Para saber qué datos personales guardamos y cuáles son tus derechos, leé la <a href="privacidad.html">Política de privacidad</a>. Por dudas, escribinos desde el formulario de <a href="index.html#contacto">contacto</a>.</p>
+      </article>
+    </div>
+  </main>
+  <script type="module" src="js/legal.js"></script>
+</body>
+</html>

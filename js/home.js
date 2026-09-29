@@ -1,6 +1,6 @@
 import './core/components.js';
 import { html, raw, render, safeUrl, cssUrl } from './core/html.js';
-import { $, $$, on, transition } from './core/dom.js';
+import { $, $$, on, transition, swr } from './core/dom.js';
 import { sb } from './core/supabase.js';
 import { getUser } from './core/session.js';
 import { renderLayout } from './core/layout.js';
@@ -151,13 +151,20 @@ function renderRelease() {
 
 async function loadGames() {
   if (!sb) return render($('#gamesGrid'), empty('Configurá Supabase para ver los juegos.'));
-  const { data, error } = await sb.from('games').select('*').order('sort_order').order('created_at', { ascending: false });
-  if (error) return render($('#gamesGrid'), empty(`No se pudieron cargar los juegos: ${errorMsg(error)}`));
-  state.games = data;
-  $('#statGames').setAttribute('value', data.length);
-  renderRelease();
-  renderHero();
-  renderGames();
+  let failed = null;
+  // Se muestra al instante la última lista guardada (hasta 10 min) y se actualiza en paralelo
+  const data = await swr('games:v1', 600_000, async () => {
+    const { data: rows, error } = await sb.from('games').select('*').order('sort_order').order('created_at', { ascending: false });
+    if (error) { failed = error; return undefined; }
+    return rows;
+  }, (rows) => {
+    state.games = rows;
+    $('#statGames').setAttribute('value', rows.length);
+    renderRelease();
+    renderHero();
+    renderGames();
+  });
+  if (!data) return render($('#gamesGrid'), empty(`No se pudieron cargar los juegos: ${errorMsg(failed)}`));
 
   state.stats = await fetchRobloxStats(data.map((g) => g.roblox_place_id));
   const values = Object.values(state.stats);
@@ -169,8 +176,14 @@ async function loadGames() {
 // ---------- Novedades ----------
 async function loadNews() {
   if (!sb) return render($('#newsList'), empty('Configurá Supabase para ver las novedades.'));
-  const { data } = await sb.from('news').select('*, games(title, slug)').eq('published', true)
-    .order('created_at', { ascending: false }).limit(6);
+  const got = await swr('news:v1', 600_000, async () => {
+    const { data, error } = await sb.from('news').select('*, games(title, slug)').eq('published', true)
+      .order('created_at', { ascending: false }).limit(6);
+    return error ? undefined : data;
+  }, (data) => paintNews(data));
+  if (got === undefined) render($('#newsList'), empty('No se pudieron cargar las novedades. Probá recargar.'));
+}
+function paintNews(data) {
   render($('#newsList'), data?.length ? data.map((n) => html`
     <article class="news-card">
       ${safeUrl(n.image_url) ? html`<img src="${n.image_url}" alt="" loading="lazy" decoding="async">` : ''}

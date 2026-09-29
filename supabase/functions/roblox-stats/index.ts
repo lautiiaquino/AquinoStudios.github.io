@@ -36,6 +36,19 @@ const getJson = async (url: string, init?: RequestInit): Promise<Any | null> => 
 const universeCache = new Map<number, number>();
 const avatarCache = new Map<string, { at: number; value: Any }>();
 
+// Caché corta de respuestas: con muchos visitantes a la vez, Roblox se consulta
+// como mucho una vez cada 60 s (estadísticas) o 30 s (página del juego) por instancia.
+// Si llegan varios pedidos iguales juntos, comparten la misma consulta.
+const responseCache = new Map<string, { at: number; value: Promise<Any> }>();
+function cached(key: string, ttlMs: number, load: () => Promise<Any>): Promise<Any> {
+  const hit = responseCache.get(key);
+  if (hit && Date.now() - hit.at < ttlMs) return hit.value;
+  const value = load().catch((e) => { responseCache.delete(key); throw e; });
+  responseCache.set(key, { at: Date.now(), value });
+  if (responseCache.size > 500) responseCache.delete(responseCache.keys().next().value!);
+  return value;
+}
+
 async function placeToUniverse(placeId: number): Promise<number | null> {
   if (universeCache.has(placeId)) return universeCache.get(placeId)!;
   const data = await getJson(`https://apis.roblox.com/universes/v1/places/${placeId}/universe`);
@@ -171,7 +184,7 @@ Deno.serve(async (req) => {
     if (body.action === "details") {
       const placeId = Number(body.placeId);
       if (!Number.isSafeInteger(placeId) || placeId <= 0) return json({ error: "placeId inválido" }, 400);
-      return json(await details(placeId), 200, 30);
+      return json(await cached(`d:${placeId}`, 30_000, () => details(placeId)), 200, 30);
     }
     if (body.action === "avatars") {
       const names = [...new Set<string>((body.usernames ?? []).map(String))]
@@ -180,7 +193,8 @@ Deno.serve(async (req) => {
     }
     const placeIds = [...new Set((body.placeIds ?? []).map(Number))]
       .filter((n) => Number.isSafeInteger(n) && (n as number) > 0).slice(0, 50) as number[];
-    return json(placeIds.length ? await stats(placeIds) : {});
+    placeIds.sort((a, b) => a - b);
+    return json(placeIds.length ? await cached(`s:${placeIds.join(',')}`, 60_000, () => stats(placeIds)) : {});
   } catch (e) {
     return json({ error: "No se pudo contactar a Roblox", detail: String(e) }, 502);
   }
