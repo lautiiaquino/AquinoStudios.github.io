@@ -9,8 +9,8 @@ import { SOCIALS } from '../config.js';
 import { HEART, donationsOn, openDonate, donationReturn } from './donate.js';
 import { initConsent } from './consent.js';
 
-// Logo: la "A" del estudio sobre el cuadrado amarillo
-const LOGO = raw('<svg viewBox="0 0 36 36" width="34" height="34" aria-hidden="true"><rect width="36" height="36" rx="8" fill="var(--accent)"/><path d="M10.4 27.5 16 8.5h4l5.6 19h-4.3l-1.1-3.8h-4.4l-1.1 3.8zm6.5-7.4h2.2L18 16z" fill="var(--accent-ink)"/></svg>');
+// Logo: el emblema de los cubos (icons/logo-mark.webp); el logo completo está en icons/logo.png
+const LOGO = raw('<img class="brand-mark" src="icons/logo-mark.webp" width="38" height="38" alt="" decoding="async">');
 const BRAND = html`${LOGO}<span class="brand-word">Aquino<b>Studios</b></span>`;
 const SUN = raw('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>');
 const MOON = raw('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>');
