@@ -12,6 +12,11 @@ export const SUPABASE_ANON_KEY = 'sb_publishable_aZZGg_Q3YQXh3-slNovKYw_9paVn24W
 // Opciones: 'google', 'discord'.   Ejemplo: ['google', 'discord']
 export const AUTH_PROVIDERS = [];
 
+// Verificación "No soy un robot" (Cloudflare Turnstile) en login y registro.
+// Frena bots cuando el sitio tenga mucho tráfico. Pegá acá la "Site Key" (empieza con 0x)
+// y activalo también en Supabase (ver README → "Protección contra bots"). Vacío = desactivado.
+export const CAPTCHA_SITE_KEY = '';
+
 // Redes del estudio (dejá '' para ocultar el ícono)
 export const SOCIALS = {
   roblox: '',   // ej: https://www.roblox.com/communities/123456/Aquino-Studios

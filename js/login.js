@@ -6,6 +6,7 @@ import { renderLayout } from './core/layout.js';
 import { busy, say, validate, errorMsg } from './core/ui.js';
 import { AUTH_PROVIDERS } from './config.js';
 import { confetti } from './core/confetti.js';
+import { captchaOn, mountCaptcha } from './core/captcha.js';
 
 await renderLayout('', { bare: true });
 $('#year').textContent = new Date().getFullYear();
@@ -114,14 +115,34 @@ reg.elements.username.addEventListener('input', (e) => {
 
 if (!sb) $$('form [type=submit]').forEach((b) => (b.disabled = true));
 
+// ---------- Verificación anti-bots (opcional) ----------
+const captchas = new Map(); // formulario → widget
+if (captchaOn()) {
+  for (const form of $$('form[data-panel]')) {
+    mountCaptcha($('[data-captcha]', form)).then((w) => w && captchas.set(form, w))
+      .catch(() => say(form, 'No se pudo cargar la verificación. Recargá la página.'));
+  }
+}
+// Devuelve el token, o null si falta (y avisa). Sin captcha activado devuelve undefined.
+function captchaToken(form) {
+  if (!captchaOn()) return undefined;
+  const t = captchas.get(form)?.token();
+  if (!t) say(form, 'Completá la verificación "No soy un robot".');
+  return t || null;
+}
+const resetCaptcha = (form) => captchas.get(form)?.reset();
+
 // ---------- Iniciar sesión ----------
 $('#loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = e.currentTarget;
   const { ok, data, message } = validate(form);
   if (!ok) return say(form, message);
+  const captchaTokenValue = captchaToken(form);
+  if (captchaTokenValue === null) return;
   await busy(form.querySelector('[type=submit]'), async () => {
-    const { error } = await sb.auth.signInWithPassword({ email: data.email, password: form.elements.password.value });
+    const { error } = await sb.auth.signInWithPassword({ email: data.email, password: form.elements.password.value, options: { captchaToken: captchaTokenValue } });
+    resetCaptcha(form);
     if (error) return say(form, errorMsg(error));
     location.replace(next);
   });
@@ -134,6 +155,8 @@ reg.addEventListener('submit', async (e) => {
     password2: (v) => (v !== reg.elements.password.value ? 'Las contraseñas no coinciden.' : ''),
   });
   if (!ok) return say(reg, message);
+  const captchaTokenValue = captchaToken(reg);
+  if (captchaTokenValue === null) return;
   await busy(reg.querySelector('[type=submit]'), async () => {
     const { data: free, error: rpcError } = await sb.rpc('username_available', { name: data.username });
     if (rpcError) return say(reg, errorMsg(rpcError));
@@ -141,8 +164,9 @@ reg.addEventListener('submit', async (e) => {
     const { data: res, error } = await sb.auth.signUp({
       email: data.email,
       password: reg.elements.password.value,
-      options: { data: { username: data.username }, emailRedirectTo: new URL('cuenta.html', location.href).href },
+      options: { data: { username: data.username }, emailRedirectTo: new URL('cuenta.html', location.href).href, captchaToken: captchaTokenValue },
     });
+    resetCaptcha(reg);
     if (error) return say(reg, errorMsg(error));
     if (res.session) { confetti(); return setTimeout(() => location.replace(next), 900); } // confirmación de email desactivada
     if (res.user?.identities?.length === 0) return say(reg, 'Ya existe una cuenta con ese email.');
@@ -159,8 +183,11 @@ $('#forgotForm').addEventListener('submit', async (e) => {
   const form = e.currentTarget;
   const { ok, data, message } = validate(form);
   if (!ok) return say(form, message);
+  const captchaTokenValue = captchaToken(form);
+  if (captchaTokenValue === null) return;
   await busy(form.querySelector('[type=submit]'), async () => {
-    const { error } = await sb.auth.resetPasswordForEmail(data.email, { redirectTo: new URL('cuenta.html?reset=1', location.href).href });
+    const { error } = await sb.auth.resetPasswordForEmail(data.email, { redirectTo: new URL('cuenta.html?reset=1', location.href).href, captchaToken: captchaTokenValue });
+    resetCaptcha(form);
     if (error) return say(form, errorMsg(error));
     say(form, 'Si existe una cuenta con ese email, te va a llegar un enlace para cambiar la contraseña.', 'success');
   });

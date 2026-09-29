@@ -54,6 +54,19 @@ export const memo = {
   },
 };
 
+// "Stale-while-revalidate": muestra al instante lo último que se cargó (si tiene menos de maxAgeMs)
+// y en paralelo pide los datos nuevos. Menos espera para el usuario y menos carga para la base
+// cuando hay muchos visitantes. onData se llama 1 o 2 veces (cacheado y fresco).
+export async function swr(key, maxAgeMs, fetcher, onData) {
+  const cached = memo.get(key, maxAgeMs);
+  if (cached !== undefined && cached !== null) onData(cached, true);
+  const fresh = await fetcher();
+  if (fresh === undefined) return cached;
+  if (JSON.stringify(fresh) !== JSON.stringify(cached)) onData(fresh, false);
+  memo.set(key, fresh);
+  return fresh;
+}
+
 // Descarga un archivo generado en el navegador (Blob + URL temporal)
 export function download(filename, content, type = 'text/plain') {
   const url = URL.createObjectURL(new Blob([content], { type }));

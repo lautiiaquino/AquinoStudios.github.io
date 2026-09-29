@@ -98,6 +98,9 @@ export function ask(message, { ok = 'Confirmar', cancel = 'Cancelar', danger = f
 
 // ---------- Errores de Supabase en castellano ----------
 const ERRORS = [
+  ['rate limit', 'Demasiados intentos. Esperá unos minutos y probá de nuevo.'],
+  ['too many requests', 'Demasiados intentos. Esperá unos minutos y probá de nuevo.'],
+  ['captcha', 'Completá la verificación de seguridad ("No soy un robot") y probá de nuevo.'],
   ['invalid login credentials', 'Email o contraseña incorrectos.'],
   ['email not confirmed', 'Tenés que confirmar tu email antes de entrar. Revisá tu bandeja de entrada.'],
   ['user already registered', 'Ya existe una cuenta con ese email.'],

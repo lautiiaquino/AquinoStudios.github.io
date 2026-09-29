@@ -1,0 +1,8 @@
+# Aquino Studios — cómo reportar un problema de seguridad
+# Si encontraste una falla de seguridad en el sitio, avisanos por el formulario de contacto.
+# No hace falta que sea algo grave: preferimos saberlo.
+Contact: https://lautiiaquino.github.io/AquinoStudios.github.io/index.html#contacto
+Expires: 2027-09-29T00:00:00.000Z
+Preferred-Languages: es, en
+Canonical: https://lautiiaquino.github.io/AquinoStudios.github.io/.well-known/security.txt
+Policy: https://lautiiaquino.github.io/AquinoStudios.github.io/terminos.html

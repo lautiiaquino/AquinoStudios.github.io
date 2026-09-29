@@ -3,6 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Seguridad: solo se cargan scripts, estilos y conexiones de los orígenes de esta lista (CSP) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://challenges.cloudflare.com 'inline-speculation-rules' 'sha256-Owfb3qLivvTpN1SaMR0agfr8XVLT7k3FqsftskwARwA=' 'sha256-L4jZKYB2rl0fEimXN0mMjJ9DpzXonT1piPQMBLEGas0='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net; frame-src https://www.youtube-nocookie.com https://challenges.cloudflare.com; media-src 'self' https:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="color-scheme" content="dark light">
   <title>Política de privacidad · Aquino Studios</title>
   <meta name="description" content="Qué datos guarda el sitio de Aquino Studios, para qué y cómo podés borrarlos.">
   <meta name="theme-color" content="#0a0c11">
@@ -11,6 +15,8 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <script src="js/theme.js"></script>
+  <link rel="preload" href="fonts/poppins-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/poppins-600.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -63,7 +69,7 @@
         <p>Tu nombre de usuario, foto y comentarios se ven públicamente en el sitio. Tu email <b>no</b> se muestra a otros usuarios. Tus votos son anónimos: solo se muestra el total.</p>
 
         <h2 id="almacenamiento">Almacenamiento en tu navegador</h2>
-        <p>No usamos cookies de publicidad ni rastreadores. El sitio guarda en tu navegador solo lo necesario: la sesión (para que no tengas que iniciar sesión cada vez), el tema claro u oscuro que elegiste y una copia de los archivos del sitio para que cargue rápido y funcione sin conexión.</p>
+        <p>No usamos cookies de publicidad ni rastreadores. El sitio guarda en tu navegador solo lo necesario: la sesión (para que no tengas que iniciar sesión cada vez), el tema claro u oscuro que elegiste y una copia de los archivos del sitio para que cargue rápido y funcione sin conexión. El detalle completo está en la <a href="cookies.html">Política de cookies</a>.</p>
 
         <h2 id="menores">Menores de edad</h2>
         <p>El sitio no está pensado para menores de 13 años. Si sos madre, padre o tutor y creés que un menor de 13 nos dio datos, escribinos y los borramos.</p>

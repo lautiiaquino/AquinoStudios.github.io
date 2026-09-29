@@ -7,6 +7,7 @@
 //   <image-drop for="campoUrl" folder="juegos"></image-drop>
 // =====================================================================
 import { html, render } from './html.js';
+import { allows } from './consent.js';
 import { reducedMotion } from './dom.js';
 import * as fmt from './format.js';
 
@@ -100,12 +101,14 @@ class LiteYoutube extends HTMLElement {
       <img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="" loading="lazy" decoding="async">
       <button type="button" class="yt-play" aria-label="Reproducir video"><svg viewBox="0 0 68 48" aria-hidden="true"><path d="M66.5 7.7A8.5 8.5 0 0 0 60.5 1.7C55.2.3 34 .3 34 .3S12.8.3 7.5 1.7a8.5 8.5 0 0 0-6 6C.1 13 .1 24 .1 24s0 11 1.4 16.3a8.5 8.5 0 0 0 6 6c5.3 1.4 26.5 1.4 26.5 1.4s21.2 0 26.5-1.4a8.5 8.5 0 0 0 6-6C67.9 35 67.9 24 67.9 24s0-11-1.4-16.3z"/><path d="M45 24 27 14v20" fill="#fff"/></svg></button>`);
     this.querySelector('button').addEventListener('click', () => {
+      // Si la persona no aceptó contenido de terceros, el video se abre en YouTube en otra pestaña
+      if (!allows('youtube')) return void open(`https://www.youtube.com/watch?v=${id}`, '_blank', 'noopener');
       render(this, html`<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1" title="Video"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`);
     }, { once: true });
     // Precalienta la conexión a YouTube cuando el mouse se acerca
     this.addEventListener('pointerenter', () => {
-      if (document.querySelector('link[href="https://www.youtube-nocookie.com"]')) return;
+      if (!allows('youtube') || document.querySelector('link[href="https://www.youtube-nocookie.com"]')) return;
       document.head.append(Object.assign(document.createElement('link'), { rel: 'preconnect', href: 'https://www.youtube-nocookie.com' }));
     }, { once: true });
   }

@@ -123,6 +123,23 @@ Para probar sin plata real: Mercado Pago con credenciales `TEST-...`, PayPal con
 
 ---
 
+### 8. Seguridad, cookies y verificación (recomendado)
+El sitio ya trae: política de seguridad (CSP) en todas las páginas, aviso y política de **cookies** (`cookies.html`), tipografías propias (sin Google Fonts), `security.txt`, sitemap, reglas de seguridad en la base y límites anti-spam. Para dejarlo 100 % en regla:
+
+1. **Supabase → Authentication:**
+   - *Sign In / Providers → Email:* activá **Confirm email** (así no se crean cuentas con emails falsos).
+   - *Rate Limits:* dejá los límites por defecto o bajalos si ves abuso.
+   - *Attack Protection:* activá la protección de contraseñas filtradas (plan Pro).
+2. **Protección contra bots (Cloudflare Turnstile, gratis):**
+   - Creá un widget en https://dash.cloudflare.com → *Turnstile* con el dominio `lautiiaquino.github.io`.
+   - Pegá la **Site Key** en `js/config.js` → `CAPTCHA_SITE_KEY`.
+   - En Supabase → *Authentication → Attack Protection → Enable CAPTCHA protection*, elegí Turnstile y pegá la **Secret Key**.
+3. **Limpieza automática de la base:** en Supabase → *Database → Extensions*, activá **pg_cron** y volvé a correr `schema.sql`. Desde ahí se borran solos los datos viejos todos los días.
+4. **Google Search Console** (para aparecer y verificarte en Google): entrá a https://search.google.com/search-console, agregá la propiedad `https://lautiiaquino.github.io/AquinoStudios.github.io/`, elegí el método **etiqueta HTML** y pasame el código (o subí el archivo `google....html` que te dan a la raíz del repositorio). Después enviá el `sitemap.xml`.
+5. **Dominio propio (opcional, lo más "profesional"):** con un dominio (por ejemplo `aquinostudios.com`) configurado en *GitHub → Settings → Pages → Custom domain* con **Enforce HTTPS**, el `robots.txt` y el `security.txt` quedan en la raíz del dominio (donde los buscan Google y los investigadores de seguridad) y podés verificar el dominio completo en Google.
+
+Cómo está organizado el código y cómo agregar cosas sin romper nada: ver [`ARCHITECTURE.md`](ARCHITECTURE.md).
+
 ## Actualizar la base de datos
 Cuando el sitio agrega funciones nuevas, `supabase/schema.sql` trae las tablas nuevas.
 Volvé a pegar **todo** el archivo en **SQL Editor** y tocá **Run**. Se puede ejecutar

@@ -225,6 +225,27 @@ create table if not exists public.suggestions (
 );
 create index if not exists suggestions_status_idx on public.suggestions(status, created_at desc);
 
+-- ---------- ÍNDICES PARA ESCALAR ----------
+-- Cada consulta frecuente (por usuario, por juego, por fecha) tiene su índice,
+-- así la base sigue rápida con muchos usuarios y muchas filas.
+create index if not exists profiles_username_lower_idx on public.profiles (lower(username));
+create index if not exists profiles_created_idx       on public.profiles (created_at);
+create index if not exists comments_user_idx          on public.comments (user_id, created_at desc);
+create index if not exists favorites_game_idx         on public.favorites (game_id);
+create index if not exists poll_votes_user_idx        on public.poll_votes (user_id);
+create index if not exists poll_votes_option_idx      on public.poll_votes (option_id);
+create index if not exists poll_options_poll_idx      on public.poll_options (poll_id, sort_order);
+create index if not exists polls_game_idx             on public.polls (game_id, created_at desc);
+create index if not exists suggestions_user_idx       on public.suggestions (user_id, created_at desc);
+create index if not exists suggestions_game_idx       on public.suggestions (game_id);
+create index if not exists contact_user_idx           on public.contact_messages (user_id, created_at desc);
+create index if not exists contact_email_idx          on public.contact_messages (email, created_at desc);
+create index if not exists contact_unread_idx         on public.contact_messages (is_read, created_at desc);
+create index if not exists news_published_idx         on public.news (published, created_at desc);
+create index if not exists visits_user_path_idx       on public.visits (user_id, path, created_at desc);
+create index if not exists donations_user_idx         on public.donations (user_id, created_at desc);
+create index if not exists donations_status_idx       on public.donations (status, created_at desc);
+
 -- =====================================================================
 -- FUNCIONES
 -- =====================================================================
@@ -368,10 +389,13 @@ begin
       'donations_count',  (select count(*) from public.donations where status = 'aprobada')
     ),
     'visits', (
-      select coalesce(json_agg(json_build_object('day', d::date,
-        'count', (select count(*) from public.visits v where v.created_at::date = d::date),
-        'users', (select count(distinct user_id) from public.visits v where v.created_at::date = d::date)) order by d), '[]'::json)
-      from generate_series(current_date - 29, current_date, interval '1 day') d
+      select coalesce(json_agg(json_build_object('day', d.day, 'count', coalesce(v.count, 0), 'users', coalesce(v.users, 0)) order by d.day), '[]'::json)
+      from (select generate_series(current_date - 29, current_date, interval '1 day')::date as day) d
+      left join (
+        select created_at::date as day, count(*) as count, count(distinct user_id) as users
+        from public.visits where created_at >= current_date - 29
+        group by 1
+      ) v on v.day = d.day
     ),
     'top_pages', (
       select coalesce(json_agg(t), '[]'::json) from (
@@ -380,9 +404,13 @@ begin
         group by path order by count desc limit 8) t
     ),
     'signups', (
-      select coalesce(json_agg(json_build_object('day', d::date,
-        'count', (select count(*) from public.profiles p where p.created_at::date = d::date)) order by d), '[]'::json)
-      from generate_series(current_date - 29, current_date, interval '1 day') d
+      select coalesce(json_agg(json_build_object('day', d.day, 'count', coalesce(p.count, 0)) order by d.day), '[]'::json)
+      from (select generate_series(current_date - 29, current_date, interval '1 day')::date as day) d
+      left join (
+        select created_at::date as day, count(*) as count
+        from public.profiles where created_at >= current_date - 29
+        group by 1
+      ) p on p.day = d.day
     ),
     'top_favorites', (
       select coalesce(json_agg(t), '[]'::json) from (
@@ -427,106 +455,106 @@ drop policy if exists "profiles_select" on public.profiles;
 create policy "profiles_select" on public.profiles for select using (true);
 drop policy if exists "profiles_update_own" on public.profiles;
 create policy "profiles_update_own" on public.profiles for update
-  using (auth.uid() = id or public.is_admin())
-  with check (auth.uid() = id or public.is_admin());
+  using ((select auth.uid()) = id or (select public.is_admin()))
+  with check ((select auth.uid()) = id or (select public.is_admin()));
 
 -- Juegos: todos los ven, solo el admin los modifica.
 drop policy if exists "games_select" on public.games;
 create policy "games_select" on public.games for select using (true);
 drop policy if exists "games_admin" on public.games;
 create policy "games_admin" on public.games for all
-  using (public.is_admin()) with check (public.is_admin());
+  using ((select public.is_admin())) with check ((select public.is_admin()));
 
 -- Noticias: se ven las publicadas; el admin ve y modifica todo.
 drop policy if exists "news_select" on public.news;
-create policy "news_select" on public.news for select using (published or public.is_admin());
+create policy "news_select" on public.news for select using (published or (select public.is_admin()));
 drop policy if exists "news_admin" on public.news;
 create policy "news_admin" on public.news for all
-  using (public.is_admin()) with check (public.is_admin());
+  using ((select public.is_admin())) with check ((select public.is_admin()));
 
 -- Favoritos: cada usuario maneja los suyos.
 drop policy if exists "favorites_own" on public.favorites;
 create policy "favorites_own" on public.favorites for all
-  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 
 -- Comentarios: todos leen los visibles; los ocultos solo el autor y el admin.
 -- Comentan los usuarios logueados que no están baneados. Borran el autor o el admin.
 drop policy if exists "comments_select" on public.comments;
 create policy "comments_select" on public.comments for select
-  using (not hidden or auth.uid() = user_id or public.is_admin());
+  using (not hidden or (select auth.uid()) = user_id or (select public.is_admin()));
 drop policy if exists "comments_insert" on public.comments;
 create policy "comments_insert" on public.comments for insert
-  with check (auth.uid() = user_id and not hidden and not public.is_banned());
+  with check ((select auth.uid()) = user_id and not hidden and not (select public.is_banned()));
 drop policy if exists "comments_update_admin" on public.comments;
 create policy "comments_update_admin" on public.comments for update
-  using (public.is_admin()) with check (public.is_admin());
+  using ((select public.is_admin())) with check ((select public.is_admin()));
 drop policy if exists "comments_delete" on public.comments;
 create policy "comments_delete" on public.comments for delete
-  using (auth.uid() = user_id or public.is_admin());
+  using ((select auth.uid()) = user_id or (select public.is_admin()));
 
 -- Contacto: cualquiera envía; solo el admin lee/gestiona.
 drop policy if exists "contact_insert" on public.contact_messages;
 create policy "contact_insert" on public.contact_messages for insert
-  with check (user_id is null or user_id = auth.uid());
+  with check (user_id is null or user_id = (select auth.uid()));
 drop policy if exists "contact_admin" on public.contact_messages;
 create policy "contact_admin" on public.contact_messages for all
-  using (public.is_admin()) with check (public.is_admin());
+  using ((select public.is_admin())) with check ((select public.is_admin()));
 
 -- Palabras prohibidas: solo el admin.
 drop policy if exists "banned_words_admin" on public.banned_words;
 create policy "banned_words_admin" on public.banned_words for all
-  using (public.is_admin()) with check (public.is_admin());
+  using ((select public.is_admin())) with check ((select public.is_admin()));
 
 -- Equipo, galería, cambios y encuestas: todos los ven, solo el admin los modifica.
 drop policy if exists "team_select" on public.team_members;
 create policy "team_select" on public.team_members for select using (true);
 drop policy if exists "team_admin" on public.team_members;
-create policy "team_admin" on public.team_members for all using (public.is_admin()) with check (public.is_admin());
+create policy "team_admin" on public.team_members for all using ((select public.is_admin())) with check ((select public.is_admin()));
 
 drop policy if exists "media_select" on public.game_media;
 create policy "media_select" on public.game_media for select using (true);
 drop policy if exists "media_admin" on public.game_media;
-create policy "media_admin" on public.game_media for all using (public.is_admin()) with check (public.is_admin());
+create policy "media_admin" on public.game_media for all using ((select public.is_admin())) with check ((select public.is_admin()));
 
 drop policy if exists "updates_select" on public.game_updates;
 create policy "updates_select" on public.game_updates for select using (true);
 drop policy if exists "updates_admin" on public.game_updates;
-create policy "updates_admin" on public.game_updates for all using (public.is_admin()) with check (public.is_admin());
+create policy "updates_admin" on public.game_updates for all using ((select public.is_admin())) with check ((select public.is_admin()));
 
 drop policy if exists "polls_select" on public.polls;
 create policy "polls_select" on public.polls for select using (true);
 drop policy if exists "polls_admin" on public.polls;
-create policy "polls_admin" on public.polls for all using (public.is_admin()) with check (public.is_admin());
+create policy "polls_admin" on public.polls for all using ((select public.is_admin())) with check ((select public.is_admin()));
 
 drop policy if exists "poll_options_select" on public.poll_options;
 create policy "poll_options_select" on public.poll_options for select using (true);
 drop policy if exists "poll_options_admin" on public.poll_options;
-create policy "poll_options_admin" on public.poll_options for all using (public.is_admin()) with check (public.is_admin());
+create policy "poll_options_admin" on public.poll_options for all using ((select public.is_admin())) with check ((select public.is_admin()));
 
 -- Votos: cada uno ve y cambia el suyo, solo si la encuesta está abierta y no está baneado.
 drop policy if exists "votes_select" on public.poll_votes;
-create policy "votes_select" on public.poll_votes for select using (auth.uid() = user_id or public.is_admin());
+create policy "votes_select" on public.poll_votes for select using ((select auth.uid()) = user_id or (select public.is_admin()));
 drop policy if exists "votes_insert" on public.poll_votes;
 create policy "votes_insert" on public.poll_votes for insert with check (
-  auth.uid() = user_id and not public.is_banned() and exists (
+  (select auth.uid()) = user_id and not (select public.is_banned()) and exists (
     select 1 from public.polls p where p.id = poll_id and p.active and (p.closes_at is null or p.closes_at > now())));
 drop policy if exists "votes_update" on public.poll_votes;
-create policy "votes_update" on public.poll_votes for update using (auth.uid() = user_id) with check (
-  auth.uid() = user_id and not public.is_banned() and exists (
+create policy "votes_update" on public.poll_votes for update using ((select auth.uid()) = user_id) with check (
+  (select auth.uid()) = user_id and not (select public.is_banned()) and exists (
     select 1 from public.polls p where p.id = poll_id and p.active and (p.closes_at is null or p.closes_at > now())));
 drop policy if exists "votes_delete" on public.poll_votes;
-create policy "votes_delete" on public.poll_votes for delete using (auth.uid() = user_id);
+create policy "votes_delete" on public.poll_votes for delete using ((select auth.uid()) = user_id);
 
 -- Sugerencias y bugs: cada uno ve los suyos; el admin ve y gestiona todos.
 drop policy if exists "suggestions_select" on public.suggestions;
-create policy "suggestions_select" on public.suggestions for select using (auth.uid() = user_id or public.is_admin());
+create policy "suggestions_select" on public.suggestions for select using ((select auth.uid()) = user_id or (select public.is_admin()));
 drop policy if exists "suggestions_insert" on public.suggestions;
 create policy "suggestions_insert" on public.suggestions for insert
-  with check (auth.uid() = user_id and status = 'nueva' and not public.is_banned());
+  with check ((select auth.uid()) = user_id and status = 'nueva' and not (select public.is_banned()));
 drop policy if exists "suggestions_admin" on public.suggestions;
-create policy "suggestions_admin" on public.suggestions for update using (public.is_admin()) with check (public.is_admin());
+create policy "suggestions_admin" on public.suggestions for update using ((select public.is_admin())) with check ((select public.is_admin()));
 drop policy if exists "suggestions_delete" on public.suggestions;
-create policy "suggestions_delete" on public.suggestions for delete using (public.is_admin());
+create policy "suggestions_delete" on public.suggestions for delete using ((select public.is_admin()));
 
 -- =====================================================================
 -- IMÁGENES (Supabase Storage): carpeta pública "media".
@@ -539,13 +567,13 @@ on conflict (id) do update set public = true, file_size_limit = excluded.file_si
 
 drop policy if exists "media_admin_insert" on storage.objects;
 create policy "media_admin_insert" on storage.objects for insert
-  with check (bucket_id = 'media' and public.is_admin());
+  with check (bucket_id = 'media' and (select public.is_admin()));
 drop policy if exists "media_admin_update" on storage.objects;
 create policy "media_admin_update" on storage.objects for update
-  using (bucket_id = 'media' and public.is_admin());
+  using (bucket_id = 'media' and (select public.is_admin()));
 drop policy if exists "media_admin_delete" on storage.objects;
 create policy "media_admin_delete" on storage.objects for delete
-  using (bucket_id = 'media' and public.is_admin());
+  using (bucket_id = 'media' and (select public.is_admin()));
 
 -- =====================================================================
 -- BORRAR MI CUENTA (derecho de supresión, Ley 25.326)
@@ -569,7 +597,7 @@ revoke execute on function public.delete_my_account() from anon;
 -- por página cada 5 minutos y no llenar la tabla si alguien recarga mucho.
 -- =====================================================================
 drop policy if exists "visits_admin" on public.visits;
-create policy "visits_admin" on public.visits for select using (public.is_admin());
+create policy "visits_admin" on public.visits for select using ((select public.is_admin()));
 
 create or replace function public.log_visit(p_path text)
 returns void language plpgsql security definer set search_path = public as $$
@@ -591,12 +619,12 @@ revoke execute on function public.log_visit(text) from anon;
 -- (No hay políticas de insert/update: solo la Edge Function puede escribir.)
 -- =====================================================================
 drop policy if exists "donations_select" on public.donations;
-create policy "donations_select" on public.donations for select using (auth.uid() = user_id or public.is_admin());
+create policy "donations_select" on public.donations for select using ((select auth.uid()) = user_id or (select public.is_admin()));
 
 drop policy if exists "donations_admin" on public.donations;
-create policy "donations_admin" on public.donations for update using (public.is_admin()) with check (public.is_admin());
+create policy "donations_admin" on public.donations for update using ((select public.is_admin())) with check ((select public.is_admin()));
 drop policy if exists "donations_admin_delete" on public.donations;
-create policy "donations_admin_delete" on public.donations for delete using (public.is_admin());
+create policy "donations_admin_delete" on public.donations for delete using ((select public.is_admin()));
 
 -- Cuando una donación se aprueba, el usuario recibe la insignia de donador
 create or replace function public.mark_supporter()
@@ -638,13 +666,13 @@ revoke execute on function public.report_manual_donation(text, numeric, text, te
 drop policy if exists "settings_select" on public.settings;
 create policy "settings_select" on public.settings for select using (true);
 drop policy if exists "settings_admin" on public.settings;
-create policy "settings_admin" on public.settings for all using (public.is_admin()) with check (public.is_admin());
+create policy "settings_admin" on public.settings for all using ((select public.is_admin())) with check ((select public.is_admin()));
 
 -- Códigos: se ven los activos; el admin ve y edita todos
 drop policy if exists "codes_select" on public.game_codes;
-create policy "codes_select" on public.game_codes for select using (active or public.is_admin());
+create policy "codes_select" on public.game_codes for select using (active or (select public.is_admin()));
 drop policy if exists "codes_admin" on public.game_codes;
-create policy "codes_admin" on public.game_codes for all using (public.is_admin()) with check (public.is_admin());
+create policy "codes_admin" on public.game_codes for all using ((select public.is_admin())) with check ((select public.is_admin()));
 
 -- Pasa cualquier donación aprobada a pesos, para la meta del mes y el ranking
 create or replace function public.donation_in_ars(amount numeric, currency text)
@@ -687,6 +715,74 @@ returns json language sql stable security definer set search_path = public as $$
     'count', (select count(*) from public.donations where status = 'aprobada')
   );
 $$;
+
+-- =====================================================================
+-- LÍMITES ANTI-SPAM: nadie puede mandar cientos de cosas por minuto.
+-- Uso: trigger ... execute function public.rate_limit('máximo', 'intervalo')
+-- (el admin no tiene límite)
+-- =====================================================================
+create or replace function public.rate_limit()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  max_rows int := tg_argv[0]::int;
+  window_len interval := tg_argv[1]::interval;
+  recent int;
+  data jsonb := to_jsonb(new);
+begin
+  if auth.uid() is null or public.is_admin() then return new; end if;
+  if data->>'user_id' is not null then
+    execute format('select count(*) from public.%I where user_id = $1 and created_at > now() - $2', tg_table_name)
+      into recent using (data->>'user_id')::uuid, window_len;
+  elsif tg_table_name = 'contact_messages' then
+    select count(*) into recent from public.contact_messages
+      where email = data->>'email' and created_at > now() - window_len;
+  else
+    return new;
+  end if;
+  if recent >= max_rows then
+    raise exception 'Estás yendo muy rápido. Esperá un momento y probá de nuevo.' using errcode = 'P0001';
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists comments_rate_limit on public.comments;
+create trigger comments_rate_limit before insert on public.comments
+  for each row execute function public.rate_limit('5', '1 minute');
+drop trigger if exists suggestions_rate_limit on public.suggestions;
+create trigger suggestions_rate_limit before insert on public.suggestions
+  for each row execute function public.rate_limit('5', '1 hour');
+drop trigger if exists contact_rate_limit on public.contact_messages;
+create trigger contact_rate_limit before insert on public.contact_messages
+  for each row execute function public.rate_limit('3', '10 minutes');
+
+-- =====================================================================
+-- LIMPIEZA AUTOMÁTICA: borra datos viejos que ya no hacen falta, para que
+-- la base no crezca sin control. Si activás pg_cron (Database → Extensions),
+-- corre sola todos los días a las 4:15 (UTC). También se puede correr a mano:
+--   select public.prune_old_data();
+-- =====================================================================
+create or replace function public.prune_old_data()
+returns json language plpgsql security definer set search_path = public as $$
+declare
+  v int; d int;
+begin
+  delete from public.visits where created_at < now() - interval '180 days';
+  get diagnostics v = row_count;
+  -- intentos de pago que nunca se completaron
+  update public.donations set status = 'cancelada' where status = 'pendiente' and created_at < now() - interval '2 days';
+  delete from public.donations where status = 'cancelada' and created_at < now() - interval '90 days';
+  get diagnostics d = row_count;
+  return json_build_object('visits_deleted', v, 'donations_deleted', d);
+end;
+$$;
+revoke execute on function public.prune_old_data() from public, anon, authenticated;
+
+do $$
+begin
+  if exists (select 1 from pg_extension where extname = 'pg_cron') then
+    perform cron.schedule('aquino-limpieza-diaria', '15 4 * * *', 'select public.prune_old_data()');
+  end if;
+end $$;
 
 -- =====================================================================
 -- TIEMPO REAL: los comentarios nuevos aparecen sin recargar la página.

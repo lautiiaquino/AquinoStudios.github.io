@@ -7,6 +7,7 @@ import { avatar, hydrateRobloxAvatars } from './view.js';
 import { toast, errorMsg } from './ui.js';
 import { SOCIALS } from '../config.js';
 import { HEART, donationsOn, openDonate, donationReturn } from './donate.js';
+import { initConsent } from './consent.js';
 
 // Logo: la "A" del estudio sobre el cuadrado amarillo
 const LOGO = raw('<svg viewBox="0 0 36 36" width="34" height="34" aria-hidden="true"><rect width="36" height="36" rx="8" fill="var(--accent)"/><path d="M10.4 27.5 16 8.5h4l5.6 19h-4.3l-1.1-3.8h-4.4l-1.1 3.8zm6.5-7.4h2.2L18 16z" fill="var(--accent-ink)"/></svg>');
@@ -135,6 +136,9 @@ function shareElementTransitions() {
 }
 
 // ---------- Precarga inteligente de páginas (Speculation Rules API) ----------
+// OJO: la política de seguridad (CSP, en el <head> de cada página) permite estas reglas por su huella
+// (sha256). Si cambiás el texto de las reglas, hay que actualizar esa huella en todos los .html
+// (el navegador la muestra en la consola: "a hash ('sha256-…') is required").
 function speculate() {
   if (!HTMLScriptElement.supports?.('speculationrules')) return;
   const s = document.createElement('script');
@@ -187,6 +191,7 @@ export async function renderLayout(active = '', { bare = false } = {}) {
   if (bare) {
     registerServiceWorker();
     globalErrors();
+    initConsent();
     if (!configured) {
       const warn = Object.assign(document.createElement('div'), { className: 'config-warning' });
       render(warn, html`Falta configurar Supabase en <code>js/config.js</code>. Mirá el archivo <code>README.md</code>.`);
@@ -255,7 +260,8 @@ export async function renderLayout(active = '', { bare = false } = {}) {
       </nav>
       <nav aria-label="Legal"><h4>Legal</h4>
         ${donationsOn() ? html`<a href="#donar" data-donate>Donar al estudio</a>` : ''}
-        <a href="terminos.html">Términos y condiciones</a><a href="privacidad.html">Privacidad</a>
+        <a href="terminos.html">Términos y condiciones</a><a href="privacidad.html">Privacidad</a><a href="cookies.html">Cookies</a>
+        <a href="#cookies" data-open-consent>Preferencias de cookies</a>
       </nav>
     </div>
     <div class="container footer-bottom">
@@ -274,6 +280,7 @@ export async function renderLayout(active = '', { bare = false } = {}) {
   on(document, 'click', '[data-donate]', (e) => { e.preventDefault(); openDonate(); });
   donationReturn();
 
+  initConsent();
   autoReveal();
   scrollExtras(header);
   shareElementTransitions();

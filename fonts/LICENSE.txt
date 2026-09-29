@@ -1,0 +1,10 @@
+Fuentes incluidas en esta carpeta
+
+- Poppins — Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins)
+- Pixelify Sans — Copyright 2021 The Pixelify Sans Project Authors (https://github.com/eifetx/Pixelify-Sans)
+
+Ambas se distribuyen bajo la SIL Open Font License, versión 1.1:
+https://openfontlicense.org
+
+Se pueden usar, incrustar y redistribuir libremente (también en sitios web),
+siempre que no se vendan por separado y se mantenga este aviso.
