@@ -15,7 +15,7 @@ export const AUTH_PROVIDERS = [];
 // Verificación "No soy un robot" (Cloudflare Turnstile) en login y registro.
 // Frena bots cuando el sitio tenga mucho tráfico. Pegá acá la "Site Key" (empieza con 0x)
 // y activalo también en Supabase (ver README → "Protección contra bots"). Vacío = desactivado.
-export const CAPTCHA_SITE_KEY = '';
+export const CAPTCHA_SITE_KEY = '0x4AAAAAAFIkJwGRpQESH17P';
 
 // Redes del estudio (dejá '' para ocultar el ícono)
 export const SOCIALS = {

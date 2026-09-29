@@ -5,7 +5,7 @@
 // - Tipografías: están en el propio sitio (carpeta fonts/), se guardan con el resto.
 // - Supabase (datos, login) NUNCA se guarda: siempre va directo a la red.
 // Cambiá VERSION cuando quieras forzar que todos descarguen los archivos nuevos.
-const VERSION = 'v10';
+const VERSION = 'v11';
 const STATIC = `aquino-static-${VERSION}`;
 const PAGES = `aquino-pages-${VERSION}`;
 const FONTS = 'aquino-fonts';
