@@ -193,12 +193,16 @@ code { background: var(--card-2); padding: .1em .4em; border-radius: 6px; font-s
 .link-btn:hover { text-decoration: underline; }
 
 /* ---------- Encabezado ---------- */
-.site-header { position: sticky; top: 0; z-index: 50; background: var(--header-bg); backdrop-filter: blur(16px) saturate(1.4); border-bottom: 1px solid transparent; transition: border-color .2s; }
+.site-header { position: sticky; top: 0; z-index: 50; border-bottom: 1px solid transparent; transition: border-color .2s; }
+/* El fondo borroso va en una capa aparte: si el blur estuviera en el header mismo, el menú del celular
+   (position: fixed) quedaría atrapado adentro del header y no se vería. */
+.site-header::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--header-bg); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); }
 .site-header.scrolled { border-bottom-color: var(--line); }
 .nav { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 16px; }
 .brand { display: inline-flex; align-items: center; gap: 11px; color: var(--text); text-decoration: none !important; }
-.brand svg { transition: filter .3s, scale .3s var(--ease); }
-.brand:hover svg { scale: 1.06; filter: drop-shadow(0 0 12px color-mix(in oklab, var(--accent) 60%, transparent)); }
+.brand svg, .brand-mark { transition: filter .3s, scale .3s var(--ease); }
+.brand-mark { border-radius: 9px; box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 35%, transparent); }
+.brand:hover svg, .brand:hover .brand-mark { scale: 1.06; filter: drop-shadow(0 0 12px color-mix(in oklab, var(--accent) 60%, transparent)); }
 .brand-word { font: 700 1.35rem/1 var(--font-pixel); letter-spacing: .02em; }
 .brand-word b { color: var(--accent-2); font-weight: 700; margin-left: 6px; }
 .nav-links { display: flex; align-items: center; gap: 2px; }
@@ -261,7 +265,8 @@ code { background: var(--card-2); padding: .1em .4em; border-radius: 6px; font-s
   .site-header.open .nav-links { display: flex; animation: drop .2s var(--ease); }
   .nav-links > a:not(.btn) { font-size: 1.3rem; padding: 14px 4px; color: var(--text); border-bottom: 1px solid var(--line); }
   .nav-links > a:not(.btn)::after { display: none; }
-  .nav-links > .btn-discord, .nav-links > .btn-donate { margin: 12px 0 0; }
+  .nav-links > .btn-discord, .nav-links > .btn-donate, .nav-links > .btn-donate + .btn-discord { margin: 12px 0 0; }
+  html.no-scroll .online-pill, html.no-scroll .to-top { opacity: 0; pointer-events: none; }
   .theme-btn { width: 100%; height: 46px; margin: 8px 0 0; }
   .nav-user { margin: 8px 0 0; flex-direction: column; }
   .nav-user > .btn { width: 100%; }
@@ -636,8 +641,12 @@ output { display: inline-block; }
   linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / 44px 44px,
   linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 44px 44px, var(--bg); background-attachment: fixed; }
 .auth-page { display: grid; justify-items: center; align-content: center; gap: 26px; padding: 48px 16px 36px; min-height: 100vh; }
-.auth-brand { display: grid; justify-items: center; gap: 12px; text-align: center; animation: rise .8s var(--ease) both; }
-.auth-logo { width: 104px; height: 104px; filter: drop-shadow(0 0 28px color-mix(in oklab, var(--accent) 70%, transparent)); animation: float 5s ease-in-out infinite; }
+.auth-brand { display: grid; justify-items: center; gap: 12px; text-align: center; }
+/* La animación va en los hijos (no en el contenedor) para que el logo pueda mezclarse con el fondo */
+.auth-brand > :not(.auth-logo) { animation: rise .8s var(--ease) both; }
+.auth-logo { width: min(260px, 64vw); height: auto; aspect-ratio: 1; margin: -10px 0 -26px; animation: float 5s ease-in-out infinite; mix-blend-mode: screen; }
+/* El logo tiene fondo negro: en modo oscuro "screen" hace que el negro desaparezca y quede solo el brillo */
+[data-theme="light"] .auth-logo { mix-blend-mode: normal; border-radius: 24px; box-shadow: 0 20px 50px -20px rgba(10, 14, 25, .5); margin-bottom: 0; }
 @keyframes float { 50% { translate: 0 -8px; } }
 .auth-title { margin: 6px 0 0; font: 700 clamp(2.2rem, 7vw, 3rem)/1 var(--font-pixel); letter-spacing: .02em; text-shadow: 0 0 30px color-mix(in oklab, var(--accent) 50%, transparent); }
 .auth-title b { color: var(--accent-2); font-weight: 700; }
