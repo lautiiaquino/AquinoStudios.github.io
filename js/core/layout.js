@@ -8,6 +8,7 @@ import { toast, errorMsg } from './ui.js';
 import { SOCIALS } from '../config.js';
 import { HEART, donationsOn, openDonate, donationReturn } from './donate.js';
 import { initConsent } from './consent.js';
+import { initI18n, langPicker } from './i18n.js';
 
 // Logo: el emblema de los cubos (icons/logo-mark.webp); el logo completo está en icons/logo.png
 const LOGO = raw('<img class="brand-mark" src="icons/logo-mark.webp" width="38" height="38" alt="" decoding="async">');
@@ -189,11 +190,13 @@ function onlineNow(profile) {
 
 // =====================================================================
 export async function renderLayout(active = '', { bare = false } = {}) {
+  await initI18n();
   // Pantallas sin menú (el login): solo lo básico
   if (bare) {
     registerServiceWorker();
     globalErrors();
     initConsent();
+    $('.auth-foot')?.append(' · ', langPicker('lang-inline'));
     if (!configured) {
       const warn = Object.assign(document.createElement('div'), { className: 'config-warning' });
       render(warn, html`Falta configurar Supabase en <code>js/config.js</code>. Mirá el archivo <code>README.md</code>.`);
@@ -237,6 +240,7 @@ export async function renderLayout(active = '', { bare = false } = {}) {
   on(header, 'click', '[data-donate]', () => setOpen(false));
   addEventListener('keydown', (e) => e.key === 'Escape' && setOpen(false));
 
+  if (!/admin\.html$/.test(location.pathname)) $('#themeBtn', header).before(langPicker());
   const themeBtn = $('#themeBtn', header);
   paintThemeButton(themeBtn);
   themeBtn.addEventListener('click', (e) => toggleTheme(e, themeBtn));

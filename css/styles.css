@@ -227,6 +227,14 @@ code { background: var(--card-2); padding: .1em .4em; border-radius: 6px; font-s
   display: grid; place-items: center; margin-left: 6px; transition: color .15s, border-color .15s;
 }
 .theme-btn:hover { color: var(--text); border-color: var(--muted); }
+.lang-select {
+  height: 38px; margin-left: 6px; padding: 0 26px 0 10px; border-radius: 8px; border: 1px solid var(--line-2); color: var(--muted); cursor: pointer;
+  font: 500 .84rem var(--font-body, inherit); appearance: none; width: auto;
+  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a93a6' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center / 12px;
+}
+.lang-select:hover { color: var(--text); border-color: var(--muted); }
+.lang-select option { background: var(--card); color: var(--text); }
+.lang-select.lang-inline { height: 28px; margin: 0; font-size: .8rem; }
 .theme-btn svg { width: 17px; height: 17px; }
 .nav-user { position: relative; margin-left: 8px; display: flex; gap: 8px; }
 .user-btn {
@@ -268,6 +276,7 @@ code { background: var(--card-2); padding: .1em .4em; border-radius: 6px; font-s
   .nav-links > .btn-discord, .nav-links > .btn-donate, .nav-links > .btn-donate + .btn-discord { margin: 12px 0 0; }
   html.no-scroll .online-pill, html.no-scroll .to-top { opacity: 0; pointer-events: none; }
   .theme-btn { width: 100%; height: 46px; margin: 8px 0 0; }
+  .lang-select:not(.lang-inline) { width: 100%; height: 46px; margin: 12px 0 0; font-size: 1rem; }
   .nav-user { margin: 8px 0 0; flex-direction: column; }
   .nav-user > .btn { width: 100%; }
 }

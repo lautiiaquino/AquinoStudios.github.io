@@ -93,7 +93,7 @@ function messageView(m, prev) {
           ${p?.supporter ? html`<span class="badge badge-supporter" title="Apoyó al estudio con una donación">Donador</span>` : ''}
           <time class="muted small" datetime="${m.created_at}" title="${fmt.dateTime(m.created_at)}">${timeLabel(m.created_at)}</time>
         </div>`}
-        <p>${body(m.body)}</p>
+        <p translate="no">${body(m.body)}</p>
       </div>
       <div class="chat-tools">
         ${p?.username && profile && !mine ? html`<button class="link-btn" type="button" data-reply="${p.username}" title="Responder">↩</button>` : ''}

@@ -167,6 +167,10 @@ El juego manda el progreso de cada jugador (etapa máxima, mejor tiempo, victori
 5. La clave: en el *Creator Dashboard → tu experiencia → Secrets* creá **`aquino_api_key`** con la misma clave (para probar en Studio podés ponerla en `API_KEY_FALLBACK`; ese script corre solo en el servidor, los jugadores no lo ven).
 El script ya detecta las muertes y lee `leaderstats → Stage`. Si tu obby marca las etapas de otra forma, llamá `_G.AquinoStats.setStage(player, n)` y `_G.AquinoStats.win(player)` desde tus scripts.
 
+### 14. Idiomas (español, inglés y francés)
+El sitio detecta el idioma del navegador y se puede cambiar con el selector del menú (queda guardado). Se traduce toda la interfaz pública; el **panel de admin** y los **textos legales** quedan en español, y lo que cargás vos (títulos, descripciones, noticias) y lo que escriben los usuarios se muestra tal cual.
+Para traducir un texto nuevo, agregalo en `js/core/i18n-dict.js` copiando exactamente lo que se ve en español: `'Texto': ['English', 'Français']`.
+
 Cómo está organizado el código y cómo agregar cosas sin romper nada: ver [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ## Actualizar la base de datos

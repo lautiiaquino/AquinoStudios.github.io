@@ -1,12 +1,12 @@
-// Formatos con la API Intl del navegador (idioma: español de Argentina).
+// Formatos con la API Intl del navegador, en el idioma elegido (ver i18n.js).
+import { LANG, LOCALE } from './i18n.js';
 
-const LOCALE = 'es-AR';
 const compact = new Intl.NumberFormat(LOCALE, { notation: 'compact', maximumFractionDigits: 1 });
 const plain = new Intl.NumberFormat(LOCALE);
 const dateFmt = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'long', year: 'numeric' });
 const dateTimeFmt = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 const shortDate = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'short' });
-const relative = new Intl.RelativeTimeFormat('es', { numeric: 'auto' });
+const relative = new Intl.RelativeTimeFormat(LANG, { numeric: 'auto' });
 
 export const number = (n) => compact.format(Number(n) || 0);
 export const fullNumber = (n) => plain.format(Number(n) || 0);
