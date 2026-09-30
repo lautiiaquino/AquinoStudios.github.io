@@ -43,8 +43,10 @@ do
 	end)
 	if ok and secret then
 		apiKey = secret
+		print("[AquinoStats] Usando la clave de Secrets (" .. CONFIG.SECRET_NAME .. ")")
 	elseif CONFIG.API_KEY_FALLBACK ~= "" then
 		apiKey = CONFIG.API_KEY_FALLBACK
+		print("[AquinoStats] Usando API_KEY_FALLBACK")
 	else
 		warn("[AquinoStats] No hay clave: cargá el Secret '" .. CONFIG.SECRET_NAME .. "' o API_KEY_FALLBACK. No se mandan estadísticas.")
 		return
@@ -116,12 +118,15 @@ local function send(list)
 		warn("[AquinoStats] No se pudo enviar: " .. tostring(res))
 	elseif not res.Success then
 		warn("[AquinoStats] La web respondió " .. res.StatusCode .. ": " .. res.Body)
+	else
+		print("[AquinoStats] Enviado OK: " .. res.Body)
 	end
 end
 
 -- Arma la lista con lo pendiente y lo vacía (los contadores se mandan como "lo nuevo")
 local function collect(onlyPlayer)
 	local list = {}
+	-- (en Studio, el Output muestra cada envío para que puedas ver si llega)
 	for _, player in ipairs(onlyPlayer and { onlyPlayer } or Players:GetPlayers()) do
 		addPlaytime(player)
 		local e = pending[player.UserId]
