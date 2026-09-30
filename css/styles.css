@@ -1100,6 +1100,23 @@ body:has(#toasts:not(:empty)) .to-top { translate: 0 -70px; }
 .captcha { min-height: 65px; }
 .captcha:empty { display: none; }
 
+/* ---------- Perfil público ---------- */
+.profile-hero { padding: 48px 0 36px; border-bottom: 1px solid var(--line); }
+.profile-hero-inner { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+.profile-hero .avatar { outline: 3px solid color-mix(in oklab, var(--accent) 55%, transparent); outline-offset: 4px; font-size: 3rem !important; }
+.profile-id h1 { margin: 0 0 6px; font-size: clamp(2rem, 5vw, 3rem); }
+.profile-id p { margin: 0 0 10px; }
+.profile-bio { max-width: 620px; color: var(--prose); white-space: pre-line; }
+.profile-h { font-size: 1.4rem; margin: 34px 0 14px; }
+.achievements { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.achievement { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); }
+.achievement > span { font-size: 1.6rem; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 10px; background: var(--bg-2); }
+.achievement div { display: grid; }
+.achievement small { color: var(--muted); font-size: .8rem; }
+.comment-author { font-weight: 700; color: var(--text); }
+.comment-author:hover { color: var(--accent-2); }
+.top-list a, .shout a { color: inherit; }
+
 /* ---------- Aviso de cookies ---------- */
 .consent {
   position: fixed; z-index: 1100; left: 50%; bottom: 18px; width: min(720px, calc(100% - 24px)); translate: -50% 20px; opacity: 0;

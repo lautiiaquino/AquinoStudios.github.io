@@ -139,6 +139,17 @@ El sitio ya trae: política de seguridad (CSP) en todas las páginas, aviso y po
 4. **Google Search Console** (para aparecer y verificarte en Google): entrá a https://search.google.com/search-console, agregá la propiedad `https://lautiiaquino.github.io/AquinoStudios.github.io/`, elegí el método **etiqueta HTML** y pasame el código (o subí el archivo `google....html` que te dan a la raíz del repositorio). Después enviá el `sitemap.xml`.
 5. **Dominio propio (opcional, lo más "profesional"):** con un dominio (por ejemplo `aquinostudios.com`) configurado en *GitHub → Settings → Pages → Custom domain* con **Enforce HTTPS**, el `robots.txt` y el `security.txt` quedan en la raíz del dominio (donde los buscan Google y los investigadores de seguridad) y podés verificar el dominio completo en Google.
 
+### 9. Notificaciones (WhatsApp, Telegram, Discord o email — gratis)
+1. Supabase → **Database → Extensions**: activá **pg_net**.
+2. Volvé a correr `supabase/schema.sql`.
+3. Publicá la Edge Function **`notify`** (`supabase/functions/notify/index.ts`) con **Verify JWT desactivado**.
+4. En el sitio: **Panel de admin → Notificaciones → Activar**. Te muestra una clave: cargala en Supabase → *Edge Functions → Secrets* como `NOTIFY_SECRET`.
+5. Cargá los secretos del canal que quieras (las instrucciones de cada uno están en esa misma sección del panel): `CALLMEBOT_PHONE` + `CALLMEBOT_APIKEY` (WhatsApp), `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`, `DISCORD_WEBHOOK_URL` o `RESEND_API_KEY` + `NOTIFY_EMAIL`.
+6. Elegí qué te avisa (donaciones, mensajes, bugs, comentarios, usuarios nuevos) y tocá **Enviar prueba**.
+
+### 10. Perfiles públicos
+Cada usuario tiene su página `perfil.html?u=usuario` con avatar (o el de Roblox), insignias, números, favoritos (si los hace públicos en Mi cuenta) y últimos comentarios. Se llega tocando el nombre en los comentarios, en el muro de donadores o desde **Mi perfil** en el menú.
+
 Cómo está organizado el código y cómo agregar cosas sin romper nada: ver [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ## Actualizar la base de datos

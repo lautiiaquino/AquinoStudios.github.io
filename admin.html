@@ -33,6 +33,7 @@
       <a href="#mensajes" data-sec="mensajes">Mensajes <span id="unreadBadge"></span></a>
       <a href="#donaciones" data-sec="donaciones">Donaciones <span id="donationsBadge"></span></a>
       <a href="#codigos" data-sec="codigos">Códigos</a>
+      <a href="#notificaciones" data-sec="notificaciones">Notificaciones</a>
     </nav>
 
     <div>
@@ -58,6 +59,34 @@
         <div class="admin-grid">
           <div class="card"><h3>Juegos más favoriteados</h3><div class="bar-list" id="topFavs"></div></div>
           <div class="card"><h3>Juegos más comentados</h3><div class="bar-list" id="topComments"></div></div>
+        </div>
+      </section>
+
+      <!-- NOTIFICACIONES -->
+      <section class="hidden" data-sec="notificaciones">
+        <div class="section-head"><h2>Notificaciones</h2></div>
+        <p class="muted" style="margin-top:-12px">Te llega un aviso al celular o al mail cuando pasa algo importante. Todo gratis.</p>
+        <div class="card" style="margin-bottom:20px" id="notifyStatus"><div class="skeleton" style="height:60px"></div></div>
+        <form class="card form" id="notifyEvents" style="margin-bottom:20px">
+          <h3 style="margin:0">¿Qué te aviso?</h3>
+          <label class="check"><input type="checkbox" name="donations"> <span><b>Donaciones</b> — aprobadas y las que tenés que confirmar</span></label>
+          <label class="check"><input type="checkbox" name="messages"> <span><b>Mensajes de contacto</b></span></label>
+          <label class="check"><input type="checkbox" name="reports"> <span><b>Bugs y sugerencias</b></span></label>
+          <label class="check"><input type="checkbox" name="comments"> <span><b>Comentarios nuevos</b> (pueden ser muchos)</span></label>
+          <label class="check"><input type="checkbox" name="signups"> <span><b>Usuarios nuevos</b></span></label>
+          <div class="msg"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" type="submit">Guardar</button>
+            <button class="btn btn-ghost" type="button" id="notifyTest">Enviar prueba</button></div>
+        </form>
+        <div class="card legal-content" style="padding:24px">
+          <h3 style="margin-top:0">Cómo elegir por dónde te llega</h3>
+          <p>Cargá en Supabase → <b>Edge Functions → Secrets</b> los datos del canal (o de varios):</p>
+          <ul>
+            <li><b>WhatsApp (CallMeBot, gratis):</b> entrá a <a href="https://www.callmebot.com/blog/free-api-whatsapp-messages/" target="_blank" rel="noopener">callmebot.com</a>, agendá el número que figura ahí y mandale por WhatsApp <code>I allow callmebot to send me messages</code>; te responde con tu <i>apikey</i>. Secretos: <code>CALLMEBOT_PHONE</code> (tu número con +54 9…) y <code>CALLMEBOT_APIKEY</code>.</li>
+            <li><b>Telegram (gratis y el más confiable):</b> hablale a <code>@BotFather</code>, creá un bot con <code>/newbot</code> y copiá el token; mandale un mensaje a tu bot y buscá tu <i>chat_id</i> con <code>@userinfobot</code>. Secretos: <code>TELEGRAM_BOT_TOKEN</code> y <code>TELEGRAM_CHAT_ID</code>.</li>
+            <li><b>Discord:</b> en tu servidor, Editar canal → Integraciones → Webhooks → Nuevo → Copiar URL. Secreto: <code>DISCORD_WEBHOOK_URL</code>.</li>
+            <li><b>Email (Resend, gratis hasta 100 por día):</b> creá una cuenta en resend.com con tu mail y una API key. Secretos: <code>RESEND_API_KEY</code> y <code>NOTIFY_EMAIL</code> (el mismo mail de tu cuenta de Resend).</li>
+          </ul>
         </div>
       </section>
 

@@ -4,7 +4,7 @@ import { sb } from './core/supabase.js';
 import { getProfile, getUser, requireAuth, signOut } from './core/session.js';
 import { renderLayout } from './core/layout.js';
 import { toast, busy, say, validate, ask, errorMsg } from './core/ui.js';
-import { avatar, gameCard, fetchRobloxStats, bannedNotice, robloxUserUrl, gameUrl, REPORT_STATUS, REPORT_KIND } from './core/view.js';
+import { avatar, profileUrl, gameCard, fetchRobloxStats, bannedNotice, robloxUserUrl, gameUrl, REPORT_STATUS, REPORT_KIND } from './core/view.js';
 import * as fmt from './core/format.js';
 
 // El enlace de "recuperar contraseña" llega con ?reset=1 (o Supabase avisa con PASSWORD_RECOVERY)
@@ -55,6 +55,8 @@ if (recovery) {
 // ---------- Perfil ----------
 const pf = $('#profileForm');
 for (const k of ['username', 'roblox_username', 'avatar_url', 'bio']) pf.elements[k].value = profile[k] ?? '';
+pf.elements.show_favorites.checked = !!profile.show_favorites;
+$('#myProfileLink').href = profileUrl(profile.username);
 const bio = pf.elements.bio;
 const countBio = () => ($('#bioCount').value = `${bio.value.length}/300`);
 bio.addEventListener('input', countBio);
@@ -71,7 +73,9 @@ pf.addEventListener('submit', async (e) => {
       const { data: free } = await sb.rpc('username_available', { name: data.username });
       if (!free) return say(pf, 'Ese nombre de usuario ya está en uso.');
     }
+    delete data.show_favorites; // es un checkbox: se toma aparte como true/false
     const changes = Object.fromEntries(Object.entries(data).map(([k, v]) => [k, v || (k === 'username' ? v : null)]));
+    changes.show_favorites = pf.elements.show_favorites.checked;
     const { error } = await sb.from('profiles').update(changes).eq('id', profile.id);
     if (error) return say(pf, errorMsg(error));
     profile = await getProfile({ force: true });

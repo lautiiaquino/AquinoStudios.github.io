@@ -7,7 +7,7 @@ import { renderLayout } from './core/layout.js';
 import { mountPolls } from './core/polls.js';
 import { toast, busy, say, validate, errorMsg } from './core/ui.js';
 import {
-  gameCard, gameImage, avatar, codeCard, robloxGameUrl, robloxUserUrl, gameUrl, fetchRobloxStats, likePct, ICON,
+  gameCard, gameImage, avatar, codeCard, profileUrl, robloxGameUrl, robloxUserUrl, gameUrl, fetchRobloxStats, likePct, ICON,
 } from './core/view.js';
 import * as fmt from './core/format.js';
 import { SOCIALS } from './config.js';
@@ -243,14 +243,14 @@ async function loadWall() {
         <div><b>${fmt.fullNumber(w.month_count)}</b><span>donaciones este mes</span></div>
       </div>
       <h3>Top donadores</h3>
-      ${w.top.length ? html`<ol class="top-list">${w.top.map((t) => html`<li>${avatar(t, 30)}<b>${t.username}</b><span class="muted small">${fmt.plural(t.count, 'donación', 'donaciones')}</span></li>`)}</ol>`
+      ${w.top.length ? html`<ol class="top-list">${w.top.map((t) => html`<li>${avatar(t, 30)}<a href="${profileUrl(t.username)}"><b>${t.username}</b></a><span class="muted small">${fmt.plural(t.count, 'donación', 'donaciones')}</span></li>`)}</ol>`
         : html`<p class="muted">Todavía nadie. ¡Podés ser el primero!</p>`}
     </div>
     <div class="card">
       <h3>Últimos mensajes</h3>
       ${w.recent.length ? w.recent.map((r) => html`
         <div class="shout">${avatar(r, 38)}
-          <div><b>${r.username}</b> <span class="badge badge-supporter">Donador</span> <small>${fmt.ago(r.created_at)}</small>
+          <div><a href="${profileUrl(r.username)}"><b>${r.username}</b></a> <span class="badge badge-supporter">Donador</span> <small>${fmt.ago(r.created_at)}</small>
             ${r.message ? html`<p>${r.message}</p>` : ''}</div>
         </div>`) : html`<p class="muted">Cuando alguien done, su mensaje aparece acá.</p>`}
     </div>`);

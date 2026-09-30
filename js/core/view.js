@@ -86,6 +86,7 @@ export const robloxServerUrl = (placeId, serverId) => `https://www.roblox.com/ga
 export const robloxGameUrl = (placeId) => (placeId ? `https://www.roblox.com/games/${encodeURIComponent(placeId)}` : '');
 export const robloxUserUrl = (name) => `https://www.roblox.com/search/users?keyword=${encodeURIComponent(name)}`;
 export const gameUrl = (slug) => `juego.html?slug=${encodeURIComponent(slug)}`;
+export const profileUrl = (username) => `perfil.html?u=${encodeURIComponent(username)}`;
 
 // Imagen de un juego: la que cargó el admin, o el ícono de Roblox, o nada (se ve el placeholder)
 export const gameImage = (game, stats) => safeUrl(game.thumbnail_url) || safeUrl(stats?.icon);

@@ -8,7 +8,7 @@ import { mountPolls } from './core/polls.js';
 import { toast, busy, say, validate, ask, errorMsg } from './core/ui.js';
 import {
   statusBadge, avatar, robloxGameUrl, gameImage, bgStyle, placeholder, fetchRobloxStats, bannedNotice, releaseIcs, REPORT_KIND,
-  ICON, likePct, codeCard, fetchRobloxDetails, ROBUX, robloxPassUrl, robloxBadgeUrl, robloxServerUrl,
+  ICON, likePct, codeCard, profileUrl, fetchRobloxDetails, ROBUX, robloxPassUrl, robloxBadgeUrl, robloxServerUrl,
 } from './core/view.js';
 import * as fmt from './core/format.js';
 
@@ -395,7 +395,7 @@ function setupComments(game) {
           ${avatar(c.profiles, 40)}
           <div class="comment-body">
             <div class="comment-head">
-              <strong>${c.profiles?.username ?? 'Usuario'}</strong>
+              ${c.profiles?.username ? html`<a class="comment-author" href="${profileUrl(c.profiles.username)}">${c.profiles.username}</a>` : html`<strong>Usuario</strong>`}
               ${c.profiles?.role === 'admin' ? html`<span class="badge badge-accent">Staff</span>` : ''}
               ${c.profiles?.supporter ? html`<span class="badge badge-supporter" title="Apoyó al estudio con una donación">Donador</span>` : ''}
               <time class="muted small" datetime="${c.created_at}" title="${fmt.dateTime(c.created_at)}">${fmt.ago(c.created_at)}</time>
