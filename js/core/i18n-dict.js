@@ -353,6 +353,8 @@ export default {
   'Otras formas': ['Other ways', 'Autres moyens'],
   'Transferencia': ['Bank transfer', 'Virement'],
   'Saldo Payoneer': ['Payoneer balance', 'Solde Payoneer'],
+  'Desde otra cuenta Payoneer': ['From another Payoneer account', 'Depuis un autre compte Payoneer'],
+  'Desde otra cuenta Payoneer, en dólares': ['From another Payoneer account, in US dollars', 'Depuis un autre compte Payoneer, en dollars US'],
   'Pesos argentinos, con alias o CVU': ['Argentine pesos, with alias or CVU', 'Pesos argentins, avec alias ou CVU'],
   'Cualquier banco': ['Any bank', 'Toute banque'],
   'Cripto': ['Crypto', 'Crypto'],

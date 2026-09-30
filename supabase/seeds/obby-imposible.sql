@@ -62,4 +62,5 @@ from p, (values ('Más niveles', 0), ('Modo por equipos', 1), ('Tienda de skins'
 
 -- Cuando publiques el juego en Roblox: cambiá el estado y cargá el ID del lugar
 -- (o hacelo desde Panel de admin → Juegos → Editar):
---   update public.games set status = 'publicado', roblox_place_id = 123456789 where slug = 'obby-imposible';
+--   update public.games set roblox_place_id = 72827132625646 where slug = 'obby-imposible';   -- ID del lugar
+--   update public.games set status = 'publicado' where slug = 'obby-imposible';              -- cuando salga (revela los códigos de lanzamiento)
