@@ -104,7 +104,7 @@ function pickView(m) {
       ${m.transfer || m.crypto || m.robux || m.paypalme || m.payoneer ? html`<p class="pay-group">Otras formas</p>
         <div class="pay-grid">
           ${m.paypalme ? tile('paypalme', 'PP', '#0070e0', 'PayPal', 'Dólares', ['Cuenta PayPal', 'Tarjeta']) : ''}
-          ${m.payoneer ? tile('payoneer', 'P', '#ff4800', 'Payoneer', 'Dólares', ['Tarjeta', 'Transferencia', 'Saldo Payoneer']) : ''}
+          ${m.payoneer ? tile('payoneer', 'P', '#ff4800', 'Payoneer', 'Dólares', m.payoneer.link ? ['Tarjeta', 'Transferencia', 'Saldo Payoneer'] : ['Desde otra cuenta Payoneer']) : ''}
           ${m.transfer ? tile('transferencia', I.bank, '#16a34a', 'Transferencia', 'Pesos argentinos, con alias o CVU', ['Cualquier banco', 'Mercado Pago', 'Ualá', 'Brubank']) : ''}
           ${m.crypto ? tile('cripto', '₿', '#f7931a', 'Cripto', 'Desde cualquier billetera o exchange', [...m.cryptos.map(([n]) => n.replace(/ \(.*\)$/, '')), ...(filled(D.binance) ? ['Binance Pay'] : [])].filter((v, i, a) => a.indexOf(v) === i)) : ''}
           ${m.robux ? tile('robux', 'R$', '#00b06f', 'Robux', 'Comprando el pase de donación en Roblox', ['Tu cuenta de Roblox']) : ''}
@@ -172,7 +172,7 @@ function manualViews(m) {
   return html`
     ${m.payoneer ? html`<div class="pay-view hidden" data-view="payoneer">
       ${backBtn}
-      <div class="pay-title"><span class="pay-ico" style="--c:#ff4800">P</span><div><b>Payoneer</b><small>Tarjeta, transferencia bancaria o saldo de Payoneer, en dólares</small></div></div>
+      <div class="pay-title"><span class="pay-ico" style="--c:#ff4800">P</span><div><b>Payoneer</b><small>${m.payoneer.link ? 'Tarjeta, transferencia bancaria o saldo de Payoneer, en dólares' : 'Desde otra cuenta Payoneer, en dólares'}</small></div></div>
       ${m.payoneer.link ? html`
         <a class="btn btn-block btn-pay" style="--pay:#ff4800" id="poGo" href="${m.payoneer.link}" target="_blank" rel="noopener">Pagar con Payoneer ${OUT}</a>
         <p class="muted small" style="margin:0">Se abre la página de pago segura de Payoneer. Podés pagar con tarjeta o transferencia, aunque no tengas cuenta.</p>` : ''}

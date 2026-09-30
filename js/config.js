@@ -19,7 +19,7 @@ export const CAPTCHA_SITE_KEY = '0x4AAAAAAFIkJwGRpQESH17P';
 
 // Redes del estudio (dejá '' para ocultar el ícono)
 export const SOCIALS = {
-  roblox: '',   // ej: https://www.roblox.com/communities/123456/Aquino-Studios
+  roblox: 'https://www.roblox.com/share/g/1105653061',   // grupo de Roblox
   discord: '',  // ej: https://discord.gg/xxxx
   youtube: '',
   tiktok: '',
@@ -49,7 +49,7 @@ export const DONATIONS = {
   // Con el link cualquiera paga con tarjeta o transferencia; con el email, desde otra cuenta Payoneer.
   payoneer: {
     link: '',          // ej: https://link.payoneer.com/Token?t=...
-    email: '',         // ej: tuemail@gmail.com (el de tu cuenta Payoneer)
+    email: 'lauty.aquino.a@gmail.com', // el de tu cuenta Payoneer
   },
 
   // Transferencia bancaria / billetera (Argentina)
