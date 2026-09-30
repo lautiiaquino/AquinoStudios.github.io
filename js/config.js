@@ -43,7 +43,7 @@ export const DONATIONS = {
 
   // PayPal.me (sin claves): la gente elige el monto y se abre tu PayPal.me con ese monto.
   // Después avisa la donación y vos la confirmás en el panel.
-  paypalme: '',        // ej: https://paypal.me/tuusuario
+  paypalme: 'https://www.paypal.com/paypalme/lautiaquino',
 
   // Payoneer (sin claves): link de "solicitud de pago" (Request a payment) y/o el email de tu cuenta.
   // Con el link cualquiera paga con tarjeta o transferencia; con el email, desde otra cuenta Payoneer.
@@ -54,10 +54,10 @@ export const DONATIONS = {
 
   // Transferencia bancaria / billetera (Argentina)
   transfer: {
-    alias: '',     // ej: aquino.studios.mp
-    cvu: '',       // CVU o CBU (22 números)
+    alias: 'lautiaquinoo',
+    cvu: '0000003100084249393585',
     holder: '',    // titular de la cuenta
-    bank: '',      // ej: Mercado Pago, Ualá, Brubank
+    bank: 'Mercado Pago (cuenta en pesos)',
   },
 
   // Cripto: dirección de cada billetera ('' para ocultar)
