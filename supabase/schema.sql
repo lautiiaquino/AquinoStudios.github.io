@@ -673,9 +673,16 @@ create policy "settings_select" on public.settings for select using (true);
 drop policy if exists "settings_admin" on public.settings;
 create policy "settings_admin" on public.settings for all using ((select public.is_admin())) with check ((select public.is_admin()));
 
--- Códigos: se ven los activos; el admin ve y edita todos
+-- Códigos: se ven los activos; el admin ve y edita todos.
+-- Los "de lanzamiento" quedan ocultos (nadie puede leerlos, ni mirando la API) hasta que
+-- sale el juego: cuando llega su fecha de salida o cuando el admin lo marca como publicado.
+alter table public.game_codes add column if not exists on_launch boolean not null default false;
 drop policy if exists "codes_select" on public.game_codes;
-create policy "codes_select" on public.game_codes for select using (active or (select public.is_admin()));
+create policy "codes_select" on public.game_codes for select using (
+  (active and (not on_launch or exists (
+    select 1 from public.games g where g.id = game_id
+      and (g.status = 'publicado' or (g.release_at is not null and g.release_at <= now())))))
+  or (select public.is_admin()));
 drop policy if exists "codes_admin" on public.game_codes;
 create policy "codes_admin" on public.game_codes for all using ((select public.is_admin())) with check ((select public.is_admin()));
 
@@ -769,7 +776,7 @@ create trigger contact_rate_limit before insert on public.contact_messages
 create or replace function public.prune_old_data()
 returns json language plpgsql security definer set search_path = public as $$
 declare
-  v int; d int;
+  v int; d int; c int;
 begin
   delete from public.visits where created_at < now() - interval '180 days';
   get diagnostics v = row_count;
@@ -777,7 +784,10 @@ begin
   update public.donations set status = 'cancelada' where status = 'pendiente' and created_at < now() - interval '2 days';
   delete from public.donations where status = 'cancelada' and created_at < now() - interval '90 days';
   get diagnostics d = row_count;
-  return json_build_object('visits_deleted', v, 'donations_deleted', d);
+  -- el chat público guarda los últimos 30 días
+  delete from public.chat_messages where created_at < now() - interval '30 days';
+  get diagnostics c = row_count;
+  return json_build_object('visits_deleted', v, 'donations_deleted', d, 'chat_deleted', c);
 end;
 $$;
 revoke execute on function public.prune_old_data() from public, anon, authenticated;
@@ -960,6 +970,146 @@ begin
     alter publication supabase_realtime add table public.comments;
   end if;
 end $$;
+
+-- =====================================================================
+-- LANZAMIENTOS: qué recompensa trae cada juego que todavía no salió, SIN revelar el código.
+-- (El código en sí lo protege la regla "codes_select" de arriba.)
+-- =====================================================================
+create or replace function public.launch_teasers(p_game_id bigint default null)
+returns table (game_id bigint, rewards text[], total int)
+language sql stable security definer set search_path = public as $$
+  select c.game_id, array_agg(coalesce(c.reward, 'Recompensa sorpresa') order by c.id), count(*)::int
+  from public.game_codes c join public.games g on g.id = c.game_id
+  where c.active and c.on_launch
+    and not (g.status = 'publicado' or (g.release_at is not null and g.release_at <= now()))
+    and (p_game_id is null or c.game_id = p_game_id)
+  group by c.game_id;
+$$;
+
+-- =====================================================================
+-- CHAT PÚBLICO: todos lo leen; para escribir hay que tener cuenta (y no estar suspendido).
+-- Límite anti-spam, filtro de palabras, el admin oculta o borra, y cada uno puede borrar
+-- lo suyo. Se guardan los últimos 30 días (ver prune_old_data).
+-- =====================================================================
+create table if not exists public.chat_messages (
+  id         bigint generated always as identity primary key,
+  user_id    uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  body       text not null check (char_length(btrim(body)) between 1 and 400),
+  hidden     boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create index if not exists chat_messages_recent_idx on public.chat_messages(created_at desc);
+create index if not exists chat_messages_user_idx on public.chat_messages(user_id, created_at desc);
+alter table public.chat_messages enable row level security;
+
+drop policy if exists "chat_select" on public.chat_messages;
+create policy "chat_select" on public.chat_messages for select using (not hidden or (select public.is_admin()));
+drop policy if exists "chat_insert" on public.chat_messages;
+create policy "chat_insert" on public.chat_messages for insert to authenticated
+  with check ((select auth.uid()) = user_id and not hidden and not (select public.is_banned()));
+drop policy if exists "chat_update_admin" on public.chat_messages;
+create policy "chat_update_admin" on public.chat_messages for update
+  using ((select public.is_admin())) with check ((select public.is_admin()));
+drop policy if exists "chat_delete" on public.chat_messages;
+create policy "chat_delete" on public.chat_messages for delete
+  using ((select auth.uid()) = user_id or (select public.is_admin()));
+
+drop trigger if exists chat_banned_words on public.chat_messages;
+create trigger chat_banned_words before insert or update of body on public.chat_messages
+  for each row execute function public.check_banned_words();
+drop trigger if exists chat_rate_limit on public.chat_messages;
+create trigger chat_rate_limit before insert on public.chat_messages
+  for each row execute function public.rate_limit('6', '30 seconds');
+
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+     and not exists (select 1 from pg_publication_tables
+                     where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'chat_messages') then
+    alter publication supabase_realtime add table public.chat_messages;
+  end if;
+end $$;
+
+-- =====================================================================
+-- ESTADÍSTICAS DE LOS JUGADORES (las manda el juego de Roblox)
+-- El juego llama a la Edge Function "game-events" con una clave secreta, y la función
+-- guarda los datos con ingest_player_stats (que solo puede usar el servidor).
+-- Todos pueden verlas: salen en la tabla de récords del juego y en los perfiles.
+-- =====================================================================
+create table if not exists public.player_stats (
+  game_id         bigint not null references public.games(id) on delete cascade,
+  roblox_user_id  bigint not null check (roblox_user_id > 0),
+  roblox_username text not null check (roblox_username ~ '^[A-Za-z0-9_]{3,20}$'),
+  display_name    text check (char_length(display_name) <= 40),
+  best_stage      int not null default 0 check (best_stage >= 0),
+  wins            int not null default 0 check (wins >= 0),
+  deaths          int not null default 0 check (deaths >= 0),
+  best_time_ms    int check (best_time_ms > 0),
+  playtime_s      bigint not null default 0 check (playtime_s >= 0),
+  sessions        int not null default 0 check (sessions >= 0),
+  first_seen      timestamptz not null default now(),
+  updated_at      timestamptz not null default now(),
+  primary key (game_id, roblox_user_id)
+);
+create index if not exists player_stats_rank_idx on public.player_stats(game_id, best_stage desc, best_time_ms asc nulls last);
+create index if not exists player_stats_name_idx on public.player_stats(lower(roblox_username));
+alter table public.player_stats enable row level security;
+drop policy if exists "player_stats_select" on public.player_stats;
+create policy "player_stats_select" on public.player_stats for select using (true);
+drop policy if exists "player_stats_admin" on public.player_stats;
+create policy "player_stats_admin" on public.player_stats for delete using ((select public.is_admin()));
+
+-- p_players: [{ userId, username, displayName, stage, bestTimeMs, wins, deaths, playtime, joined }]
+--   stage y bestTimeMs son el récord (se queda el mejor);
+--   wins, deaths y playtime (segundos) son lo que sumó DESDE EL ÚLTIMO ENVÍO;
+--   joined = true la primera vez que se manda en esa partida (cuenta una sesión más).
+create or replace function public.ingest_player_stats(p_game text, p_players jsonb)
+returns int language plpgsql security definer set search_path = public as $$
+declare
+  gid bigint; n int := 0; p jsonb;
+begin
+  select id into gid from public.games where slug = p_game or roblox_place_id::text = p_game limit 1;
+  if gid is null then raise exception 'Juego desconocido: %', p_game; end if;
+  if jsonb_typeof(p_players) <> 'array' then raise exception 'players tiene que ser una lista'; end if;
+  for p in select * from jsonb_array_elements(p_players) limit 100 loop
+    continue when coalesce(p->>'userId', '') !~ '^[1-9][0-9]{0,15}$'
+             or coalesce(p->>'username', '') !~ '^[A-Za-z0-9_]{3,20}$';
+    insert into public.player_stats as s (game_id, roblox_user_id, roblox_username, display_name,
+        best_stage, best_time_ms, wins, deaths, playtime_s, sessions)
+    values (gid, (p->>'userId')::bigint, p->>'username', left(p->>'displayName', 40),
+        least(greatest(coalesce((p->>'stage')::int, 0), 0), 100000),
+        nullif(greatest(coalesce((p->>'bestTimeMs')::int, 0), 0), 0),
+        least(greatest(coalesce((p->>'wins')::int, 0), 0), 1000),
+        least(greatest(coalesce((p->>'deaths')::int, 0), 0), 100000),
+        least(greatest(coalesce((p->>'playtime')::int, 0), 0), 86400),
+        case when coalesce((p->>'joined')::boolean, false) then 1 else 0 end)
+    on conflict (game_id, roblox_user_id) do update set
+      roblox_username = excluded.roblox_username,
+      display_name    = coalesce(excluded.display_name, s.display_name),
+      best_stage      = greatest(s.best_stage, excluded.best_stage),
+      best_time_ms    = case when s.best_time_ms is null then excluded.best_time_ms
+                             when excluded.best_time_ms is null then s.best_time_ms
+                             else least(s.best_time_ms, excluded.best_time_ms) end,
+      wins            = s.wins + excluded.wins,
+      deaths          = s.deaths + excluded.deaths,
+      playtime_s      = s.playtime_s + excluded.playtime_s,
+      sessions        = s.sessions + excluded.sessions,
+      updated_at      = now();
+    n := n + 1;
+  end loop;
+  return n;
+end;
+$$;
+revoke execute on function public.ingest_player_stats(text, jsonb) from public, anon, authenticated;
+grant execute on function public.ingest_player_stats(text, jsonb) to service_role;
+
+-- Resumen para la tabla de récords: jugadores totales, partidas, muertes, etc.
+create or replace function public.player_stats_summary(p_game_id bigint)
+returns json language sql stable security definer set search_path = public as $$
+  select json_build_object('players', count(*), 'wins', coalesce(sum(wins), 0), 'deaths', coalesce(sum(deaths), 0),
+    'playtime_s', coalesce(sum(playtime_s), 0), 'best_stage', coalesce(max(best_stage), 0))
+  from public.player_stats where game_id = p_game_id;
+$$;
 
 -- =====================================================================
 -- DATOS DE EJEMPLO (solo se cargan si no hay juegos; podés borrarlos desde el panel)

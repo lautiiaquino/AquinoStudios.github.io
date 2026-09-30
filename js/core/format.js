@@ -24,3 +24,16 @@ export function ago(iso) {
 }
 
 export const plural = (n, one, many) => `${fullNumber(n)} ${n === 1 ? one : many}`;
+
+// Tiempo de una carrera (ms) → 1:23.45
+export function runTime(ms) {
+  if (!ms) return '—';
+  const s = ms / 1000;
+  const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, sec = (s % 60).toFixed(2).padStart(5, '0');
+  return h ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
+}
+// Segundos jugados → "3 h 20 min"
+export function playtime(sec) {
+  const h = Math.floor(sec / 3600), m = Math.floor(sec / 60) % 60;
+  return h ? `${h} h ${m} min` : `${m} min`;
+}

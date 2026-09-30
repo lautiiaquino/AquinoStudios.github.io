@@ -6,6 +6,7 @@ import { getUser } from './core/session.js';
 import { renderLayout } from './core/layout.js';
 import { mountPolls } from './core/polls.js';
 import { toast, busy, say, validate, errorMsg } from './core/ui.js';
+import { launchTeaser } from './core/launch.js';
 import {
   gameCard, gameImage, avatar, codeCard, profileUrl, robloxGameUrl, robloxUserUrl, gameUrl, fetchRobloxStats, likePct, ICON,
 } from './core/view.js';
@@ -146,7 +147,16 @@ function renderRelease() {
     <count-down to="${next.release_at}"></count-down>
     <a class="btn btn-primary" href="proximamente.html">Avisame</a>`);
   box.classList.remove('hidden');
-  box.querySelector('count-down').addEventListener('end', () => box.classList.add('hidden'));
+  box.querySelector('count-down').addEventListener('end', () => render(box, html`
+    <div><span class="pill pill-red">¡Ya salió!</span><h3>${next.title}</h3><p>Ya está disponible. Entrá a ver todo.</p></div>
+    <span></span>
+    <a class="btn btn-primary" href="${gameUrl(next.slug)}">Ver el juego</a>`));
+  // Si trae código de lanzamiento, se avisa (sin mostrar el código)
+  launchTeaser(next.id).then((t) => {
+    if (t && box.querySelector('count-down') && !box.querySelector('.lr-mini')) {
+      box.querySelector('p').insertAdjacentHTML('afterend', `<span class="lr-mini">🎁 Trae ${t.total > 1 ? `${t.total} códigos secretos` : 'un código secreto'} que se revela al salir</span>`);
+    }
+  });
 }
 
 async function loadGames() {
