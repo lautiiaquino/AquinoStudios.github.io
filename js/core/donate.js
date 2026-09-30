@@ -106,7 +106,7 @@ function pickView(m) {
           ${m.paypalme ? tile('paypalme', 'PP', '#0070e0', 'PayPal', 'Dólares', ['Cuenta PayPal', 'Tarjeta']) : ''}
           ${m.payoneer ? tile('payoneer', 'P', '#ff4800', 'Payoneer', 'Dólares', ['Tarjeta', 'Transferencia', 'Saldo Payoneer']) : ''}
           ${m.transfer ? tile('transferencia', I.bank, '#16a34a', 'Transferencia', 'Pesos argentinos, con alias o CVU', ['Cualquier banco', 'Mercado Pago', 'Ualá', 'Brubank']) : ''}
-          ${m.crypto ? tile('cripto', '₿', '#f7931a', 'Cripto', 'Desde cualquier billetera o exchange', ['USDT', 'Bitcoin', 'Ethereum', 'Binance Pay']) : ''}
+          ${m.crypto ? tile('cripto', '₿', '#f7931a', 'Cripto', 'Desde cualquier billetera o exchange', [...m.cryptos.map(([n]) => n.replace(/ \(.*\)$/, '')), ...(filled(D.binance) ? ['Binance Pay'] : [])].filter((v, i, a) => a.indexOf(v) === i)) : ''}
           ${m.robux ? tile('robux', 'R$', '#00b06f', 'Robux', 'Comprando el pase de donación en Roblox', ['Tu cuenta de Roblox']) : ''}
         </div>` : ''}
       ${m.links.length ? html`<p class="pay-group">Plataformas</p>
@@ -141,6 +141,9 @@ function autoView(key) {
       <p class="donate-safe">${LOCK} Pagás en ${c.name}. Nosotros nunca vemos tu tarjeta.</p>
     </form>`;
 }
+
+// QR de una billetera: una imagen del sitio (img/...) o un link https
+const qrSrc = (name) => { const u = D.cryptoQr?.[name]; return typeof u === 'string' && /^img\/[\w.-]+$/.test(u) ? u : safeUrl(u); };
 
 const copyRow = (label, value) => html`
   <div class="copy-row"><div><small>${label}</small><code>${value}</code></div>
@@ -207,7 +210,7 @@ function manualViews(m) {
       ${backBtn}
       <div class="pay-title"><span class="pay-ico" style="--c:#f7931a">₿</span><div><b>Cripto</b><small>Revisá bien la red antes de enviar</small></div></div>
       <div class="copy-list">
-        ${m.cryptos.map(([name, addr]) => copyRow(name, addr))}
+        ${m.cryptos.map(([name, addr]) => html`${copyRow(name, addr)}${qrSrc(name) ? html`<img class="crypto-qr" src="${qrSrc(name)}" alt="Código QR de ${name}" width="180" height="180">` : ''}`)}
         ${filled(D.binance) ? copyRow('Binance Pay ID', D.binance) : ''}
       </div>
       <p class="notice small" style="margin:12px 0 0">Enviá solo por la red indicada. Si mandás por otra red, los fondos se pierden.</p>
