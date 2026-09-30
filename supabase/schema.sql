@@ -830,6 +830,9 @@ create table if not exists private.config (
   value text not null
 );
 revoke all on private.config from public, anon, authenticated;
+-- Además, Row Level Security sin políticas: aunque alguien llegara a la tabla, no ve nada.
+-- (Las funciones del sistema la leen igual porque son de su dueño.)
+alter table private.config enable row level security;
 
 insert into public.settings (key, value)
 values ('notify_events', '{"donations": true, "messages": true, "reports": true, "comments": false, "signups": false}')
