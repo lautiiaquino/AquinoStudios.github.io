@@ -11,6 +11,7 @@ import {
   ICON, likePct, codeCard, profileUrl, fetchRobloxDetails, ROBUX, robloxPassUrl, robloxBadgeUrl, robloxServerUrl,
 } from './core/view.js';
 import * as fmt from './core/format.js';
+import { mountLaunchReward } from './core/launch.js';
 
 const profile = await renderLayout('games');
 const page = $('#page');
@@ -66,7 +67,8 @@ function renderGame(game) {
               <p class="muted small" style="margin-bottom:10px">Sale el <time datetime="${game.release_at}">${fmt.dateTime(game.release_at)}</time></p>
               <count-down to="${game.release_at}"></count-down>
               <button class="link-btn" id="icsBtn" type="button" style="margin-top:12px">+ Agregar a mi calendario</button>
-            </div>` : ''}
+            </div>
+            <div id="launchReward" hidden></div>` : ''}
         </div>
       </div>
     </div>
@@ -102,6 +104,20 @@ function renderGame(game) {
           <section class="card hidden" id="galleryCard" aria-labelledby="galTitle" style="padding:28px">
             <h2 id="galTitle">Galería</h2>
             <div class="gallery" id="gallery"></div>
+          </section>
+          <section class="card hidden" id="recordsCard" aria-labelledby="recTitle" style="padding:28px">
+            <div class="panel-head" style="margin-bottom:12px"><div><h2 id="recTitle" style="margin:0">Récords</h2>
+              <p class="muted small" style="margin:4px 0 0">Datos que manda el juego en vivo desde Roblox.</p></div>
+              <div class="chips" id="recSort" role="group" aria-label="Ordenar récords">
+                <button class="chip active" type="button" data-sort="stage">Etapa</button>
+                <button class="chip" type="button" data-sort="time">Tiempo</button>
+                <button class="chip" type="button" data-sort="wins">Victorias</button>
+              </div></div>
+            <div class="rec-summary" id="recSummary"></div>
+            <div class="table-wrap"><table class="rec-table">
+              <thead><tr><th>#</th><th>Jugador</th><th>Etapa</th><th>Mejor tiempo</th><th>Victorias</th><th>Muertes</th></tr></thead>
+              <tbody id="recList"></tbody></table></div>
+            <p class="small muted" id="recMine" style="margin:10px 0 0"></p>
           </section>
           <section class="card" aria-labelledby="comTitle" style="padding:28px">
             <h2 id="comTitle">Comentarios <span class="muted" id="commentCount"></span> <span class="live-dot hidden" id="liveDot" title="Se actualiza solo">en vivo</span></h2>
@@ -145,6 +161,7 @@ function renderGame(game) {
       <img id="lbImg" alt="">
     </dialog>`);
 
+  mountLaunchReward(game, $('#launchReward'), $('#releaseBox count-down'));
   $('#releaseBox count-down')?.addEventListener('end', () => $('#releaseBox').remove());
   $('#icsBtn')?.addEventListener('click', () => {
     download(`${game.slug}-lanzamiento.ics`, releaseIcs(game, location.href), 'text/calendar');
@@ -161,6 +178,7 @@ function renderGame(game) {
   loadChangelog(game);
   loadNews(game);
   loadCodes(game);
+  loadRecords(game);
   mountPolls($('#gamePolls'), { profile, filter: (q) => q.eq('game_id', game.id) })
     .then((n) => n && $('#gamePolls').classList.remove('hidden'));
 }
@@ -435,6 +453,47 @@ function setupComments(game) {
       .subscribe((status) => $('#liveDot').classList.toggle('hidden', status !== 'SUBSCRIBED'));
     addEventListener('pagehide', () => sb.removeChannel(channel), { once: true });
   }
+}
+
+// ---------- Récords (estadísticas que manda el juego de Roblox) ----------
+async function loadRecords(game, sort = 'stage') {
+  const SORTS = {
+    stage: [['best_stage', false], ['best_time_ms', true]],
+    time: [['best_time_ms', true]],
+    wins: [['wins', false], ['best_stage', false]],
+  };
+  let q = sb.from('player_stats').select('roblox_user_id, roblox_username, display_name, best_stage, best_time_ms, wins, deaths, playtime_s').eq('game_id', game.id);
+  if (sort === 'time') q = q.not('best_time_ms', 'is', null);
+  for (const [col, asc] of SORTS[sort]) q = q.order(col, { ascending: asc, nullsFirst: false });
+  const [{ data, error }, { data: sum }] = await Promise.all([q.limit(50), sort === 'stage' ? sb.rpc('player_stats_summary', { p_game_id: game.id }) : { data: null }]);
+  if (error || (!data?.length && sort === 'stage')) return; // todavía no hay datos (o no se corrió el schema nuevo)
+  const card = $('#recordsCard');
+  const firstTime = card.classList.contains('hidden');
+  card.classList.remove('hidden');
+  if (sum) {
+    render($('#recSummary'), [
+      ['Jugadores', fmt.fullNumber(sum.players)], ['Victorias', fmt.fullNumber(sum.wins)],
+      ['Muertes', fmt.fullNumber(sum.deaths)], ['Horas jugadas', fmt.fullNumber(Math.round(sum.playtime_s / 3600))],
+    ].map(([k, v]) => html`<div><b>${v}</b><span>${k}</span></div>`));
+  }
+  const mine = profile?.roblox_username?.toLowerCase();
+  render($('#recList'), data.length ? data.map((r, i) => html`
+    <tr class="${r.roblox_username.toLowerCase() === mine ? 'is-me' : ''}">
+      <td class="rec-pos">${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</td>
+      <td><a class="rec-player" href="https://www.roblox.com/users/${r.roblox_user_id}/profile" target="_blank" rel="noopener">
+        ${avatar({ username: r.roblox_username, roblox_username: r.roblox_username }, 28)}
+        <span>${r.display_name && r.display_name !== r.roblox_username ? html`${r.display_name} <small class="muted">@${r.roblox_username}</small>` : r.roblox_username}</span></a></td>
+      <td>${fmt.fullNumber(r.best_stage)}</td><td class="mono">${fmt.runTime(r.best_time_ms)}</td>
+      <td>${fmt.fullNumber(r.wins)}</td><td>${fmt.fullNumber(r.deaths)}</td>
+    </tr>`) : html`<tr><td colspan="6" class="muted">Todavía nadie terminó el juego. ¡Podés ser el primero!</td></tr>`);
+  const inTop = mine && data.some((r) => r.roblox_username.toLowerCase() === mine);
+  $('#recMine').textContent = profile && !profile.roblox_username
+    ? 'Poné tu usuario de Roblox en Mi cuenta para que tu fila se resalte.'
+    : mine && !inTop && sort === 'stage' ? 'Todavía no estás en el top 50. ¡Seguí jugando!' : '';
+  if (firstTime) on($('#recSort'), 'click', '[data-sort]', (e, b) => {
+    for (const c of $$('#recSort .chip')) c.classList.toggle('active', c === b);
+    loadRecords(game, b.dataset.sort);
+  });
 }
 
 // ---------- Códigos del juego ----------

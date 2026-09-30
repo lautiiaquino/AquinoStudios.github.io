@@ -150,6 +150,23 @@ El sitio ya trae: política de seguridad (CSP) en todas las páginas, aviso y po
 ### 10. Perfiles públicos
 Cada usuario tiene su página `perfil.html?u=usuario` con avatar (o el de Roblox), insignias, números, favoritos (si los hace públicos en Mi cuenta) y últimos comentarios. Se llega tocando el nombre en los comentarios, en el muro de donadores o desde **Mi perfil** en el menú.
 
+### 11. Lanzamiento con código secreto
+1. **Panel → Juegos → Editar**: poné la **Fecha de salida**. Aparece la cuenta regresiva en el inicio, en `proximamente.html` y en la página del juego.
+2. **Panel → Códigos**: cargá el código y la recompensa y marcá **🚀 Código de lanzamiento**.
+3. Hasta la fecha se ve solo la recompensa con el código tapado (la base **no** lo entrega, ni mirando el código de la página). Cuando la cuenta llega a cero se revela solo, con confeti. También se revela si marcás el juego como *Publicado* antes.
+
+### 12. Chat público
+`chat.html` (en el menú: **Chat**). Mensajes en tiempo real, quién está conectado, menciones con `@usuario` y botón para responder. Límite de 6 mensajes cada 30 segundos, filtro de palabras prohibidas (Panel → Moderación) y los usuarios suspendidos no pueden escribir. Como admin, en cada mensaje tenés **Ocultar** y **Borrar**. Se guardan los últimos 30 días (con pg_cron activado).
+
+### 13. Estadísticas del juego de Roblox en la página
+El juego manda el progreso de cada jugador (etapa máxima, mejor tiempo, victorias, muertes y tiempo jugado) y aparecen en la pestaña **Récords** del juego y en el perfil de quien tenga ese usuario de Roblox en Mi cuenta.
+1. Inventá una clave larga (por ejemplo 40 letras y números al azar) y cargala en Supabase → *Edge Functions → Secrets* como **`GAME_API_KEY`**.
+2. Publicá la Edge Function **`game-events`** (`supabase/functions/game-events/index.ts`) con **Verify JWT desactivado**.
+3. En Roblox Studio: *Game Settings → Security →* **Allow HTTP Requests**.
+4. En *ServerScriptService* creá un **Script** y pegá `supabase/roblox/AquinoStats.server.lua`. Arriba de todo, en `CONFIG`, poné el slug del juego (`obby-imposible`) y cuántas etapas tiene.
+5. La clave: en el *Creator Dashboard → tu experiencia → Secrets* creá **`aquino_api_key`** con la misma clave (para probar en Studio podés ponerla en `API_KEY_FALLBACK`; ese script corre solo en el servidor, los jugadores no lo ven).
+El script ya detecta las muertes y lee `leaderstats → Stage`. Si tu obby marca las etapas de otra forma, llamá `_G.AquinoStats.setStage(player, n)` y `_G.AquinoStats.win(player)` desde tus scripts.
+
 Cómo está organizado el código y cómo agregar cosas sin romper nada: ver [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ## Actualizar la base de datos

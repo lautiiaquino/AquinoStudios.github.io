@@ -940,7 +940,7 @@ async function loadCodes() {
   render($('#codesTable'), data.length ? data.map((c) => {
     const expired = c.expires_at && new Date(c.expires_at) < now;
     return html`<tr class="${!c.active || expired ? 'is-muted' : ''}">
-      <td><code>${c.code}</code></td><td>${c.games?.title ?? ''}</td><td>${c.reward ?? ''}</td>
+      <td><code>${c.code}</code>${c.on_launch ? html` <span class="badge badge-accent" title="Se revela cuando sale el juego">🚀 Lanzamiento</span>` : ''}</td><td>${c.games?.title ?? ''}</td><td>${c.reward ?? ''}</td>
       <td>${c.expires_at ? fmt.dateTime(c.expires_at) : html`<span class="muted">Nunca</span>`}</td>
       <td>${expired ? html`<span class="badge">Vencido</span>` : c.active ? html`<span class="badge badge-green">Activo</span>` : html`<span class="badge">Pausado</span>`}</td>
       <td><div class="actions">
@@ -958,6 +958,7 @@ $('#codeForm').addEventListener('submit', async (e) => {
   await busy(form.querySelector('[type=submit]'), async () => {
     const { error } = await sb.from('game_codes').insert({
       game_id: Number(data.game_id), code: data.code.trim().toUpperCase(), reward: data.reward.trim() || null, expires_at: fromLocalInput(data.expires_at),
+      on_launch: form.elements.on_launch.checked,
     });
     if (error) return say(form, errorMsg(error));
     form.reset();

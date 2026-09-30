@@ -70,6 +70,8 @@ else {
           ${achievements(p).map(([icon, title, desc]) => html`<div class="achievement" title="${desc}"><span>${icon}</span><div><b>${title}</b><small>${desc}</small></div></div>`)}
         </div>
 
+        <div id="playStats"></div>
+
         ${p.show_favorites ? html`
           <h2 class="profile-h">Juegos favoritos</h2>
           ${p.favorites.length ? html`<div class="grid">${p.favorites.map((g) => gameCard(g))}</div>`
@@ -85,7 +87,29 @@ else {
             </div>
           </article>`)}</div>` : html`<p class="muted">Todavía no comentó nada.</p>`}
       </div>`);
+    if (p.roblox_username) loadPlayStats(p.roblox_username);
     // Link para compartir el perfil propio
     if (mine) history.replaceState(null, '', profileUrl(p.username));
   }
+}
+
+// Estadísticas en los juegos del estudio (las manda el juego de Roblox)
+async function loadPlayStats(robloxName) {
+  const { data } = await sb.from('player_stats')
+    .select('best_stage, best_time_ms, wins, deaths, playtime_s, games(title, slug)')
+    .ilike('roblox_username', robloxName.replace(/_/g, '\\_'));
+  if (!data?.length) return;
+  render($('#playStats'), html`
+    <h2 class="profile-h">En nuestros juegos</h2>
+    <div class="profile-stats">${data.map((s) => html`
+      <div class="profile-stat-game">
+        <h4><a href="${gameUrl(s.games?.slug ?? '')}">${s.games?.title ?? 'Juego'}</a></h4>
+        <dl>
+          <div><dt>Etapa máxima</dt><dd>${fmt.fullNumber(s.best_stage)}</dd></div>
+          <div><dt>Mejor tiempo</dt><dd class="mono">${fmt.runTime(s.best_time_ms)}</dd></div>
+          <div><dt>Victorias</dt><dd>${fmt.fullNumber(s.wins)}</dd></div>
+          <div><dt>Muertes</dt><dd>${fmt.fullNumber(s.deaths)}</dd></div>
+          <div><dt>Jugado</dt><dd>${fmt.playtime(s.playtime_s)}</dd></div>
+        </dl>
+      </div>`)}</div>`);
 }

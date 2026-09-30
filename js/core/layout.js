@@ -25,6 +25,7 @@ const NAV = [
   ['index.html#juegos', 'Juegos', 'games'],
   ['index.html#noticias', 'Novedades', 'news'],
   ['proximamente.html', 'Próximo', 'next'],
+  ['chat.html', 'Chat', 'chat'],
   ['index.html#nosotros', 'Comunidad', 'about'],
 ];
 
@@ -254,7 +255,7 @@ export async function renderLayout(active = '', { bare = false } = {}) {
       </div>
       <nav aria-label="Sitio"><h4>Sitio</h4>
         <a href="index.html#juegos">Juegos</a><a href="index.html#noticias">Novedades</a>
-        <a href="proximamente.html">Próximo lanzamiento</a><a href="index.html#faq">Preguntas</a><a href="index.html#contacto">Contacto</a>
+        <a href="proximamente.html">Próximo lanzamiento</a><a href="chat.html">Chat</a><a href="index.html#faq">Preguntas</a><a href="index.html#contacto">Contacto</a>
       </nav>
       <nav aria-label="Cuenta"><h4>Cuenta</h4>
         <a href="login.html">Iniciar sesión</a><a href="login.html?tab=register">Crear cuenta</a><a href="cuenta.html">Mi cuenta</a>

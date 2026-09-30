@@ -185,7 +185,7 @@ export const codeCard = (c, gameTitle) => html`
     <div>
       <code>${c.code}</code>
       ${c.reward ? html`<span class="reward">${c.reward}</span>` : ''}
-      <small>${gameTitle ? html`${gameTitle} · ` : ''}${c.expires_at ? html`vence ${fmt.ago(c.expires_at)}` : 'sin vencimiento'}</small>
+      <small>${c.on_launch ? '🚀 lanzamiento · ' : ''}${gameTitle ? html`${gameTitle} · ` : ''}${c.expires_at ? html`vence ${fmt.ago(c.expires_at)}` : 'sin vencimiento'}</small>
     </div>
     <button class="btn btn-sm btn-ghost" type="button" data-code="${c.code}" aria-label="Copiar código ${c.code}">${COPY} Copiar</button>
   </div>`;

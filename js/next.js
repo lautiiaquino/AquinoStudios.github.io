@@ -7,6 +7,7 @@ import { renderLayout } from './core/layout.js';
 import { toast, errorMsg } from './core/ui.js';
 import { statusBadge, robloxGameUrl, gameUrl, gameImage, bgStyle, placeholder, fetchRobloxStats, releaseIcs } from './core/view.js';
 import * as fmt from './core/format.js';
+import { mountLaunchReward } from './core/launch.js';
 
 const profile = await renderLayout('next');
 const page = $('#page');
@@ -52,6 +53,7 @@ function renderLaunch(game) {
           <count-down to="${game.release_at}" size="lg"></count-down>`
         : html`<p class="muted" style="margin-bottom:28px">Todavía no tiene fecha. Seguinos en Discord para enterarte.</p>`}
       </div>
+      <div id="launchReward" hidden style="max-width:620px;margin:0 auto 28px"></div>
       <p class="muted" style="max-width:620px;margin:0 auto 28px">${game.short_description ?? ''}</p>
       <div class="hero-actions" style="justify-content:center">
         <button class="btn btn-primary" id="notifyBtn" type="button" aria-pressed="false">Avisame cuando salga</button>
@@ -62,10 +64,11 @@ function renderLaunch(game) {
       ${game.youtube_id ? html`<div style="max-width:820px;margin:48px auto 0"><lite-youtube videoid="${game.youtube_id}"></lite-youtube></div>` : ''}
     </div>`);
 
+  mountLaunchReward(game, $('#launchReward'), $('count-down'));
   $('count-down')?.addEventListener('end', () => {
     render($('#whenBox'), html`<h2 class="stroke-title" style="margin-bottom:24px">¡Ya salió!</h2>
       ${game.roblox_place_id ? html`<a class="btn btn-play" href="${robloxGameUrl(game.roblox_place_id)}" target="_blank" rel="noopener" style="margin-bottom:28px">Jugar</a>` : ''}`);
-    notify(`¡Ya salió ${game.title}!`, 'Entrá a jugarlo en Roblox.');
+    notify(`¡Ya salió ${game.title}!`, $('#launchReward').hidden ? 'Entrá a jugarlo en Roblox.' : 'Entrá a ver el código de lanzamiento.');
   });
 
   $('#icsBtn')?.addEventListener('click', () => {
