@@ -843,7 +843,7 @@ const DONATION_STATUS = {
   aprobada: ['Aprobada', 'badge-green'], pendiente: ['Pendiente', 'badge-amber'], por_confirmar: ['Por confirmar', 'badge-amber'],
   rechazada: ['Rechazada', ''], cancelada: ['Cancelada', ''], reembolsada: ['Reembolsada', 'badge-accent'],
 };
-const METHOD = { mercadopago: 'Mercado Pago', paypal: 'PayPal', stripe: 'Stripe', transferencia: 'Transferencia', cripto: 'Cripto', robux: 'Robux', otro: 'Otro' };
+const METHOD = { mercadopago: 'Mercado Pago', paypal: 'PayPal', stripe: 'Stripe', payoneer: 'Payoneer', transferencia: 'Transferencia', cripto: 'Cripto', robux: 'Robux', otro: 'Otro' };
 const anyMoney = (n, c) => (c === 'ARS' ? money(n) : c === 'USD' ? `US$${fmt.fullNumber(n)}` : `${fmt.fullNumber(n)} ${c === 'ROBUX' ? 'R$' : c}`);
 let donations = [];
 let goal = {};

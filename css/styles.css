@@ -724,6 +724,8 @@ dialog.donate { width: min(480px, calc(100% - 32px)); }
 .pay-txt b { font-weight: 600; }
 .pay-txt small { color: var(--muted); font-size: .82rem; line-height: 1.35; }
 .pay-out { color: var(--muted); display: grid; }
+.pay-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.pay-chips span { padding: 1px 7px; border-radius: 99px; background: var(--card-2); border: 1px solid var(--line); color: var(--prose); font-size: .72rem; line-height: 1.6; }
 .pay-out svg, .btn svg.out { width: 16px; height: 16px; }
 .pay-back { display: inline-flex; align-items: center; gap: 4px; justify-self: start; color: var(--muted); font-weight: 500; }
 .pay-back svg { width: 16px; height: 16px; }

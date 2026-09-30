@@ -29,9 +29,11 @@ const I = {
 
 // Métodos de pago automático (moneda, límites y cómo se ve cada uno)
 const AUTO = {
-  mercadopago: { name: 'Mercado Pago', sub: 'Tarjeta, débito, dinero en cuenta o efectivo', tag: 'MP', color: '#009ee3', currency: 'ARS', min: 100, max: 1_000_000 },
-  paypal: { name: 'PayPal', sub: 'Cuenta PayPal o tarjeta (dólares)', tag: 'PP', color: '#0070e0', currency: 'USD', min: 1, max: 1000 },
-  stripe: { name: 'Tarjeta internacional', sub: 'Visa, Mastercard, Apple Pay, Google Pay (dólares)', tag: I.card, color: '#635bff', currency: 'USD', min: 1, max: 1000 },
+  mercadopago: { name: 'Mercado Pago', sub: 'Pesos argentinos', tag: 'MP', color: '#009ee3', currency: 'ARS', min: 100, max: 1_000_000,
+    accepts: ['Crédito', 'Débito', 'Dinero en cuenta', 'Rapipago', 'Pago Fácil'] },
+  paypal: { name: 'PayPal', sub: 'Dólares', tag: 'PP', color: '#0070e0', currency: 'USD', min: 1, max: 1000, accepts: ['Cuenta PayPal', 'Tarjeta'] },
+  stripe: { name: 'Tarjeta internacional', sub: 'Dólares', tag: I.card, color: '#635bff', currency: 'USD', min: 1, max: 1000,
+    accepts: ['Visa', 'Mastercard', 'Amex', 'Apple Pay', 'Google Pay'] },
 };
 const LINKS = {
   cafecito: ['Cafecito', I.cup, '#8b5a2b', 'Invitame un cafecito (Argentina)'],
@@ -57,13 +59,18 @@ function methods() {
   const pm = [D.paypalme, D.links?.paypalme, D.links?.paypal].find((u) => safeUrl(u) && /paypal\.me\//i.test(u));
   const paypalme = pm ? pm.trim().replace(/\/+$/, '') : null;
   const links = Object.entries(D.links ?? {}).filter(([k, url]) => LINKS[k] && safeUrl(url) && !(paypalme && (k === 'paypalme' || k === 'paypal')));
-  return { auto, transfer, cryptos, crypto, robux, paypalme, links };
+  // Payoneer: link de solicitud de pago y/o email de la cuenta
+  const po = D.payoneer ?? {};
+  const payoneer = (safeUrl(po.link) && /payoneer\.com/i.test(po.link)) || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(po.email ?? '')
+    ? { link: safeUrl(po.link) && /payoneer\.com/i.test(po.link) ? po.link.trim() : null, email: /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(po.email ?? '') ? po.email.trim() : null }
+    : null;
+  return { auto, transfer, cryptos, crypto, robux, paypalme, payoneer, links };
 }
 
 export const donationsOn = () => {
   if (!D.enabled) return false;
   const m = methods();
-  return Boolean(m.auto.length || m.transfer || m.crypto || m.robux || m.paypalme || m.links.length);
+  return Boolean(m.auto.length || m.transfer || m.crypto || m.robux || m.paypalme || m.payoneer || m.links.length);
 };
 
 // Muro de donadores + meta del mes (se pide una sola vez por página)
@@ -81,23 +88,26 @@ export function goalBar(w) {
     </div>`;
 }
 
-const tileInner = (tag, color, name, sub) => html`
+// Chips con lo que acepta cada método (tarjetas, billeteras, etc.)
+const chips = (list) => (list?.length ? html`<span class="pay-chips">${list.map((c) => html`<span>${c}</span>`)}</span>` : '');
+const tileInner = (tag, color, name, sub, accepts) => html`
   <span class="pay-ico" style="--c:${color}">${tag}</span>
-  <span class="pay-txt"><b>${name}</b><small>${sub}</small></span>`;
-const tile = (method, tag, color, name, sub) => html`<button type="button" class="pay-opt" data-method="${method}">${tileInner(tag, color, name, sub)}</button>`;
+  <span class="pay-txt"><b>${name}</b><small>${sub}</small>${chips(accepts)}</span>`;
+const tile = (method, tag, color, name, sub, accepts) => html`<button type="button" class="pay-opt" data-method="${method}">${tileInner(tag, color, name, sub, accepts)}</button>`;
 const linkTile = (url, tag, color, name, sub) => html`<a class="pay-opt" href="${url}" target="_blank" rel="noopener">${tileInner(tag, color, name, sub)}<span class="pay-out">${OUT}</span></a>`;
 
 function pickView(m) {
   return html`
     <div class="pay-view" data-view="pick">
       ${m.auto.length ? html`<p class="pay-group">Pago automático</p>
-        <div class="pay-grid">${m.auto.map((k) => tile(k, AUTO[k].tag, AUTO[k].color, AUTO[k].name, AUTO[k].sub))}</div>` : ''}
-      ${m.transfer || m.crypto || m.robux || m.paypalme ? html`<p class="pay-group">Otras formas</p>
+        <div class="pay-grid">${m.auto.map((k) => tile(k, AUTO[k].tag, AUTO[k].color, AUTO[k].name, AUTO[k].sub, AUTO[k].accepts))}</div>` : ''}
+      ${m.transfer || m.crypto || m.robux || m.paypalme || m.payoneer ? html`<p class="pay-group">Otras formas</p>
         <div class="pay-grid">
-          ${m.paypalme ? tile('paypalme', 'PP', '#0070e0', 'PayPal', 'Con tu cuenta PayPal o tarjeta (dólares)') : ''}
-          ${m.transfer ? tile('transferencia', I.bank, '#16a34a', 'Transferencia', 'Alias o CVU, desde cualquier banco o billetera') : ''}
-          ${m.crypto ? tile('cripto', '₿', '#f7931a', 'Cripto', 'USDT, Bitcoin, Ethereum o Binance Pay') : ''}
-          ${m.robux ? tile('robux', 'R$', '#00b06f', 'Robux', 'Comprando el pase de donación en Roblox') : ''}
+          ${m.paypalme ? tile('paypalme', 'PP', '#0070e0', 'PayPal', 'Dólares', ['Cuenta PayPal', 'Tarjeta']) : ''}
+          ${m.payoneer ? tile('payoneer', 'P', '#ff4800', 'Payoneer', 'Dólares', ['Tarjeta', 'Transferencia', 'Saldo Payoneer']) : ''}
+          ${m.transfer ? tile('transferencia', I.bank, '#16a34a', 'Transferencia', 'Pesos argentinos, con alias o CVU', ['Cualquier banco', 'Mercado Pago', 'Ualá', 'Brubank']) : ''}
+          ${m.crypto ? tile('cripto', '₿', '#f7931a', 'Cripto', 'Desde cualquier billetera o exchange', ['USDT', 'Bitcoin', 'Ethereum', 'Binance Pay']) : ''}
+          ${m.robux ? tile('robux', 'R$', '#00b06f', 'Robux', 'Comprando el pase de donación en Roblox', ['Tu cuenta de Roblox']) : ''}
         </div>` : ''}
       ${m.links.length ? html`<p class="pay-group">Plataformas</p>
         <div class="pay-grid">${m.links.map(([k, url]) => { const [name, tag, color, sub] = LINKS[k]; return linkTile(url, tag, color, name, sub); })}</div>` : ''}
@@ -157,6 +167,17 @@ function manualViews(m) {
   const t = D.transfer ?? {};
   const usd = D.amounts?.USD ?? [2, 5, 10, 20];
   return html`
+    ${m.payoneer ? html`<div class="pay-view hidden" data-view="payoneer">
+      ${backBtn}
+      <div class="pay-title"><span class="pay-ico" style="--c:#ff4800">P</span><div><b>Payoneer</b><small>Tarjeta, transferencia bancaria o saldo de Payoneer, en dólares</small></div></div>
+      ${m.payoneer.link ? html`
+        <a class="btn btn-block btn-pay" style="--pay:#ff4800" id="poGo" href="${m.payoneer.link}" target="_blank" rel="noopener">Pagar con Payoneer ${OUT}</a>
+        <p class="muted small" style="margin:0">Se abre la página de pago segura de Payoneer. Podés pagar con tarjeta o transferencia, aunque no tengas cuenta.</p>` : ''}
+      ${m.payoneer.email ? html`
+        <div class="copy-list">${copyRow('Email de Payoneer', m.payoneer.email)}</div>
+        <p class="muted small" style="margin:0">¿Tenés cuenta de Payoneer? Andá a <b>Pagar → Hacer un pago</b> y mandá a este email (sin comisión entre cuentas Payoneer).</p>` : ''}
+      ${reportForm('payoneer', 'USD', 'Monto enviado (USD)', 'Ej: 10')}
+    </div>` : ''}
     ${m.paypalme ? html`<div class="pay-view hidden" data-view="paypalme">
       ${backBtn}
       <div class="pay-title"><span class="pay-ico" style="--c:#0070e0">PP</span><div><b>PayPal</b><small>Se abre PayPal con el monto ya cargado</small></div></div>
@@ -235,7 +256,7 @@ function build() {
   donationWall().then((w) => render($('#donateGoal', dialog), goalBar(w)));
 
   // Si hay un solo método automático y nada más, se abre directo
-  const only = m.auto.length === 1 && !m.transfer && !m.crypto && !m.robux && !m.paypalme && !m.links.length;
+  const only = m.auto.length === 1 && !m.transfer && !m.crypto && !m.robux && !m.paypalme && !m.payoneer && !m.links.length;
   if (only) show(m.auto[0]);
 
   on(dialog, 'click', '[data-close]', () => dialog.close());
@@ -279,6 +300,9 @@ function build() {
       });
     });
   }
+
+  // ---- Payoneer: al abrir el pago se despliega el "Ya doné, quiero avisar"
+  $('#poGo', dialog)?.addEventListener('click', () => { $('[data-view="payoneer"] .report-box', dialog).open = true; });
 
   // ---- PayPal.me: el link lleva el monto (paypal.me/usuario/5USD) ----
   if (m.paypalme) {

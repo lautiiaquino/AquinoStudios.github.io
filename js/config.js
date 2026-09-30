@@ -45,6 +45,13 @@ export const DONATIONS = {
   // Después avisa la donación y vos la confirmás en el panel.
   paypalme: '',        // ej: https://paypal.me/tuusuario
 
+  // Payoneer (sin claves): link de "solicitud de pago" (Request a payment) y/o el email de tu cuenta.
+  // Con el link cualquiera paga con tarjeta o transferencia; con el email, desde otra cuenta Payoneer.
+  payoneer: {
+    link: '',          // ej: https://link.payoneer.com/Token?t=...
+    email: '',         // ej: tuemail@gmail.com (el de tu cuenta Payoneer)
+  },
+
   // Transferencia bancaria / billetera (Argentina)
   transfer: {
     alias: '',     // ej: aquino.studios.mp

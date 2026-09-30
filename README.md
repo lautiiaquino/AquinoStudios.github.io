@@ -85,6 +85,7 @@ Todo se configura en `js/config.js` → `DONATIONS`. **Cada método aparece solo
 | **PayPal** (dólares) | `paypal: true` + secretos `PAYPAL_CLIENT_ID` y `PAYPAL_SECRET` | Sí |
 | **Tarjeta internacional / Apple Pay / Google Pay** (Stripe, dólares) | `stripe: true` + secreto `STRIPE_SECRET_KEY` | Sí |
 | **PayPal.me** (dólares, sin claves) | Poné tu link en `paypalme` (ej: `https://paypal.me/tuusuario`) | No: se abre PayPal con el monto cargado, la persona avisa y vos confirmás |
+| **Payoneer** (dólares, sin claves) | En `payoneer`, poné tu link de **Request a payment** (tarjeta o transferencia) y/o el email de tu cuenta | No: la persona avisa y vos confirmás |
 | **Transferencia** (alias / CVU) | Completá `transfer` con tu alias y CVU | No: la persona avisa y vos confirmás en el panel |
 | **Cripto** (USDT, BTC, ETH, Binance Pay) | Completá las direcciones en `crypto` y/o `binance` | No: igual que transferencia |
 | **Robux** | Creá un Game Pass de donación y poné el link en `robux` | No: igual que transferencia |

@@ -112,7 +112,7 @@ alter table public.donations drop constraint if exists donations_currency_check;
 alter table public.donations add  constraint donations_currency_check check (currency in ('ARS', 'USD', 'ROBUX', 'USDT', 'BTC', 'ETH'));
 alter table public.donations drop constraint if exists donations_provider_check;
 alter table public.donations add  constraint donations_provider_check
-  check (provider in ('mercadopago', 'paypal', 'stripe', 'transferencia', 'cripto', 'robux', 'otro'));
+  check (provider in ('mercadopago', 'paypal', 'stripe', 'payoneer', 'transferencia', 'cripto', 'robux', 'otro'));
 
 -- ---------- AJUSTES DEL SITIO (meta de donaciones, etc.) ----------
 create table if not exists public.settings (
@@ -649,7 +649,7 @@ declare
   new_id uuid;
 begin
   if auth.uid() is null then raise exception 'Tenés que iniciar sesión'; end if;
-  if p_provider not in ('transferencia', 'cripto', 'robux', 'paypal', 'otro') then raise exception 'Método inválido'; end if;
+  if p_provider not in ('transferencia', 'cripto', 'robux', 'paypal', 'payoneer', 'otro') then raise exception 'Método inválido'; end if;
   if (select count(*) from public.donations
       where user_id = auth.uid() and status = 'por_confirmar' and created_at > now() - interval '1 day') >= 5 then
     raise exception 'Ya avisaste varias donaciones hoy. Esperá a que las confirmemos.';
