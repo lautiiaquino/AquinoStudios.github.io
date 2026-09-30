@@ -962,10 +962,10 @@ begin
 end $$;
 
 -- =====================================================================
--- DATOS DE EJEMPLO (podés borrarlos desde el panel de admin)
+-- DATOS DE EJEMPLO (solo se cargan si no hay juegos; podés borrarlos desde el panel)
 -- =====================================================================
 insert into public.games (title, slug, genre, status, short_description, description, featured, sort_order)
-values
+select * from (values
   ('Mi Primer Juego', 'mi-primer-juego', 'Aventura', 'publicado',
    'Editá este juego desde el panel de administración.',
    'Esta es una descripción de ejemplo. Entrá a /admin.html para cambiar el título, la imagen, el ID del lugar de Roblox y todo lo demás.',
@@ -974,6 +974,8 @@ values
    'Un juego que todavía está en desarrollo.',
    'Descripción de ejemplo para un juego en desarrollo.',
    false, 2)
+) as ejemplo(title, slug, genre, status, short_description, description, featured, sort_order)
+where not exists (select 1 from public.games) -- solo si el sitio no tiene ningún juego todavía
 on conflict (slug) do nothing;
 
 insert into public.news (title, body)
