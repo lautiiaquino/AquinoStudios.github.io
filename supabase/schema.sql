@@ -138,6 +138,8 @@ create index if not exists game_codes_game_idx on public.game_codes(game_id, cre
 
 -- Insignia de donador en el perfil (la pone sola la base cuando se aprueba una donación)
 alter table public.profiles add column if not exists supporter boolean not null default false;
+-- Perfil público: cada uno decide si muestra sus juegos favoritos
+alter table public.profiles add column if not exists show_favorites boolean not null default false;
 
 -- ---------- COLUMNAS AGREGADAS EN LA VERSIÓN 2 ----------
 alter table public.profiles add column if not exists banned boolean not null default false;
@@ -473,6 +475,9 @@ create policy "news_admin" on public.news for all
   using ((select public.is_admin())) with check ((select public.is_admin()));
 
 -- Favoritos: cada usuario maneja los suyos.
+drop policy if exists "favorites_public" on public.favorites;
+create policy "favorites_public" on public.favorites for select
+  using (exists (select 1 from public.profiles p where p.id = user_id and p.show_favorites));
 drop policy if exists "favorites_own" on public.favorites;
 create policy "favorites_own" on public.favorites for all
   using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
@@ -783,6 +788,162 @@ begin
     perform cron.schedule('aquino-limpieza-diaria', '15 4 * * *', 'select public.prune_old_data()');
   end if;
 end $$;
+
+-- =====================================================================
+-- PERFILES PÚBLICOS: todo lo que se muestra en perfil.html?u=usuario,
+-- en una sola consulta y solo con datos públicos.
+-- =====================================================================
+create or replace function public.public_profile(p_username text)
+returns json language sql stable security definer set search_path = public as $$
+  select case when p.id is null then null else json_build_object(
+    'username', p.username, 'avatar_url', p.avatar_url, 'roblox_username', p.roblox_username, 'bio', p.bio,
+    'role', p.role, 'supporter', p.supporter, 'banned', p.banned, 'created_at', p.created_at,
+    'show_favorites', p.show_favorites,
+    'comments_count', (select count(*) from public.comments c where c.user_id = p.id and not c.hidden),
+    'favorites_count', (select count(*) from public.favorites f where f.user_id = p.id),
+    'votes_count', (select count(*) from public.poll_votes v where v.user_id = p.id),
+    'favorites', case when p.show_favorites then (
+      select coalesce(json_agg(json_build_object('title', g.title, 'slug', g.slug, 'status', g.status, 'genre', g.genre,
+        'thumbnail_url', g.thumbnail_url, 'roblox_place_id', g.roblox_place_id) order by f.created_at desc), '[]'::json)
+      from public.favorites f join public.games g on g.id = f.game_id where f.user_id = p.id) else '[]'::json end,
+    'recent_comments', (
+      select coalesce(json_agg(t), '[]'::json) from (
+        select c.id, c.body, c.created_at, g.title as game_title, g.slug as game_slug
+        from public.comments c join public.games g on g.id = c.game_id
+        where c.user_id = p.id and not c.hidden
+        order by c.created_at desc limit 10) t)
+  ) end
+  from (select 1) one left join public.profiles p on lower(p.username) = lower(p_username);
+$$;
+
+-- =====================================================================
+-- NOTIFICACIONES AL ADMIN (WhatsApp, Telegram, Discord o email)
+-- Cuando pasa algo importante (donación, mensaje, reporte...), la base llama a la
+-- Edge Function "notify" (con pg_net, sin frenar a quien hizo la acción) y la función
+-- manda el aviso por los canales configurados. Se activa desde Panel → Notificaciones.
+-- La URL y la clave se guardan en el esquema "private", que la API no expone.
+-- =====================================================================
+create schema if not exists private;
+revoke all on schema private from public, anon, authenticated;
+create table if not exists private.config (
+  key   text primary key,
+  value text not null
+);
+revoke all on private.config from public, anon, authenticated;
+
+insert into public.settings (key, value)
+values ('notify_events', '{"donations": true, "messages": true, "reports": true, "comments": false, "signups": false}')
+on conflict (key) do nothing;
+
+create or replace function public.send_notification(p_event text, p_text text)
+returns void language plpgsql security definer set search_path = public, private as $$
+declare
+  url text; secret text;
+begin
+  if p_event <> 'test' and not coalesce((select (value->>p_event)::boolean from public.settings where key = 'notify_events'), false) then
+    return;
+  end if;
+  select value into url from private.config where key = 'notify_url';
+  select value into secret from private.config where key = 'notify_secret';
+  if url is null or secret is null or to_regproc('net.http_post') is null then return; end if;
+  execute 'select net.http_post(url := $1, body := $2, headers := $3)'
+    using url, jsonb_build_object('event', p_event, 'text', left(p_text, 1500)),
+          jsonb_build_object('Content-Type', 'application/json', 'x-notify-secret', secret);
+exception when others then
+  raise warning 'Notificación no enviada: %', sqlerrm; -- nunca frena lo que hizo el usuario
+end;
+$$;
+revoke execute on function public.send_notification(text, text) from public, anon, authenticated;
+
+create or replace function public.notify_event()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  who text; game text; money text;
+begin
+  if to_jsonb(new) ? 'user_id' then
+    select username into who from public.profiles where id = (to_jsonb(new)->>'user_id')::uuid;
+  end if;
+  if tg_table_name = 'donations' then
+    money := case new.currency when 'ARS' then '$' || replace(to_char(new.amount, 'FM999,999,990'), ',', '.') || ' ARS'
+                               when 'USD' then 'US$' || new.amount else new.amount || ' ' || new.currency end;
+    if new.status = 'aprobada' and (tg_op = 'INSERT' or old.status is distinct from 'aprobada') then
+      perform public.send_notification('donations', '💙 Donación aprobada: ' || money || ' por ' || new.provider
+        || ' de ' || coalesce(who, 'alguien') || coalesce(E'\n«' || new.message || '»', ''));
+    elsif new.status = 'por_confirmar' and tg_op = 'INSERT' then
+      perform public.send_notification('donations', '⏳ Donación para confirmar: ' || money || ' por ' || new.provider
+        || ' de ' || coalesce(who, 'alguien') || coalesce(E'\n«' || new.message || '»', '') || E'\nRevisala en Panel → Donaciones.');
+    end if;
+  elsif tg_table_name = 'contact_messages' then
+    perform public.send_notification('messages', '✉️ Mensaje de ' || new.name || ' (' || new.email || E'):\n' || left(new.message, 500));
+  elsif tg_table_name = 'suggestions' then
+    select title into game from public.games where id = new.game_id;
+    perform public.send_notification('reports', case new.kind when 'bug' then '🐞 Bug' else '💡 Sugerencia' end
+      || coalesce(' en ' || game, '') || ' de ' || coalesce(who, 'alguien') || ': ' || new.title || E'\n' || left(new.body, 400));
+  elsif tg_table_name = 'comments' then
+    select title into game from public.games where id = new.game_id;
+    perform public.send_notification('comments', '💬 ' || coalesce(who, 'Alguien') || ' comentó en ' || coalesce(game, 'un juego') || ': ' || left(new.body, 300));
+  elsif tg_table_name = 'profiles' then
+    perform public.send_notification('signups', '🎉 Nuevo usuario: ' || new.username);
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists donations_notify on public.donations;
+create trigger donations_notify after insert or update of status on public.donations
+  for each row execute function public.notify_event();
+drop trigger if exists contact_notify on public.contact_messages;
+create trigger contact_notify after insert on public.contact_messages for each row execute function public.notify_event();
+drop trigger if exists suggestions_notify on public.suggestions;
+create trigger suggestions_notify after insert on public.suggestions for each row execute function public.notify_event();
+drop trigger if exists comments_notify on public.comments;
+create trigger comments_notify after insert on public.comments for each row execute function public.notify_event();
+drop trigger if exists profiles_notify on public.profiles;
+create trigger profiles_notify after insert on public.profiles for each row execute function public.notify_event();
+
+-- Panel: activar (genera la clave secreta la primera vez), ver el estado y mandar una prueba
+create or replace function public.notify_setup(p_url text)
+returns json language plpgsql security definer set search_path = public, private as $$
+declare
+  secret text;
+begin
+  if not public.is_admin() then raise exception 'Solo para admins'; end if;
+  if p_url !~ '^https://[a-z0-9-]+\.supabase\.co/functions/v1/notify$' then raise exception 'URL inválida'; end if;
+  insert into private.config (key, value) values ('notify_url', p_url)
+    on conflict (key) do update set value = excluded.value;
+  select value into secret from private.config where key = 'notify_secret';
+  if secret is null then
+    secret := replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', '');
+    insert into private.config (key, value) values ('notify_secret', secret);
+  end if;
+  return json_build_object('secret', secret, 'pg_net', to_regproc('net.http_post') is not null);
+end;
+$$;
+revoke execute on function public.notify_setup(text) from public, anon;
+grant execute on function public.notify_setup(text) to authenticated;
+
+create or replace function public.notify_status()
+returns json language plpgsql security definer set search_path = public, private as $$
+begin
+  if not public.is_admin() then raise exception 'Solo para admins'; end if;
+  return json_build_object(
+    'configured', exists (select 1 from private.config where key = 'notify_secret'),
+    'pg_net', to_regproc('net.http_post') is not null,
+    'events', (select value from public.settings where key = 'notify_events'));
+end;
+$$;
+revoke execute on function public.notify_status() from public, anon;
+grant execute on function public.notify_status() to authenticated;
+
+create or replace function public.notify_test()
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'Solo para admins'; end if;
+  perform public.send_notification('test', '✅ Prueba de notificaciones de Aquino Studios: ¡funciona!');
+end;
+$$;
+revoke execute on function public.notify_test() from public, anon;
+grant execute on function public.notify_test() to authenticated;
 
 -- =====================================================================
 -- TIEMPO REAL: los comentarios nuevos aparecen sin recargar la página.

@@ -8,6 +8,7 @@ import { uploadImage } from './core/images.js';
 import { toast, busy, say, ask, errorMsg, validate } from './core/ui.js';
 import { REPORT_STATUS, REPORT_KIND, avatar, statusBadge, gameUrl, youtubeId } from './core/view.js';
 import * as fmt from './core/format.js';
+import { SUPABASE_URL } from './config.js';
 
 await renderLayout();
 const me = await requireAuth({ admin: true });
@@ -50,7 +51,7 @@ const gameSelect = (emptyLabel) => html`<option value="">${emptyLabel}</option>$
 // ---------- Secciones por #hash (el botón "atrás" funciona) ----------
 const loaders = {
   stats: loadStats, juegos: loadGames, noticias: loadNews, encuestas: loadPolls, reportes: loadReports,
-  comentarios: loadComments, usuarios: loadUsers, equipo: loadTeam, mensajes: loadMessages, donaciones: loadDonations, codigos: loadCodes,
+  comentarios: loadComments, usuarios: loadUsers, equipo: loadTeam, mensajes: loadMessages, donaciones: loadDonations, codigos: loadCodes, notificaciones: loadNotify,
 };
 function route() {
   const name = loaders[location.hash.slice(1)] ? location.hash.slice(1) : 'stats';
@@ -682,7 +683,7 @@ function renderUsers() {
   const list = users.filter((u) => !q || u.username.toLowerCase().includes(q) || (u.roblox_username ?? '').toLowerCase().includes(q));
   render($('#usersBody'), list.length ? list.map((u) => html`
     <tr class="${u.banned ? 'is-muted' : ''}">
-      <td><div style="display:flex;align-items:center;gap:10px">${avatar(u, 32)}<span>${u.username}</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:10px">${avatar(u, 32)}<a href="perfil.html?u=${u.username}" target="_blank">${u.username}</a></div></td>
       <td>${u.roblox_username ?? '—'}</td>
       <td>${u.role === 'admin' ? html`<span class="badge badge-accent">Admin</span>` : html`<span class="muted">Usuario</span>`}</td>
       <td>${u.banned ? html`<span class="badge badge-amber" title="${u.banned_reason ?? ''}">Suspendido</span>` : html`<span class="muted">Activo</span>`}</td>
@@ -977,6 +978,55 @@ on($('#codesTable'), 'click', '[data-cdel]', async (e, b) => {
   toast('Código borrado');
   loadCodes();
 });
+
+// =====================================================================
+// NOTIFICACIONES (WhatsApp, Telegram, Discord o email vía la Edge Function "notify")
+// =====================================================================
+const notifyUrl = `${SUPABASE_URL.replace(/\/$/, '')}/functions/v1/notify`;
+async function loadNotify() {
+  const { data, error } = await sb.rpc('notify_status');
+  if (error) return render($('#notifyStatus'), html`<p class="muted">${errorMsg(error)} — ¿ejecutaste el schema.sql nuevo?</p>`);
+  const ev = data.events ?? {};
+  for (const el of $('#notifyEvents').elements) if (el.type === 'checkbox') el.checked = !!ev[el.name];
+  render($('#notifyStatus'), html`
+    <h3 style="margin-top:0">Estado</h3>
+    <ol class="steps">
+      <li>${data.pg_net ? '✅' : '❌'} Extensión <b>pg_net</b> ${data.pg_net ? 'activada' : html`desactivada: activala en Supabase → <b>Database → Extensions</b> → <code>pg_net</code> y recargá`}.</li>
+      <li>${data.configured ? '✅' : '❌'} Clave de notificaciones ${data.configured ? 'creada' : 'sin crear'}.
+        <button class="btn btn-sm ${data.configured ? 'btn-ghost' : 'btn-primary'}" type="button" id="notifySetup" style="margin-left:6px">${data.configured ? 'Ver clave' : 'Activar'}</button></li>
+      <li>Publicá la Edge Function <code>notify</code> (archivo <code>supabase/functions/notify/index.ts</code>) con <b>Verify JWT desactivado</b>.</li>
+      <li>Cargá los secretos del canal que quieras (abajo) y tocá <b>Enviar prueba</b>.</li>
+    </ol>
+    <div id="notifySecret"></div>`);
+}
+on(document, 'click', '#notifySetup', (e) => busy(e.target, async () => {
+  const { data, error } = await sb.rpc('notify_setup', { p_url: notifyUrl });
+  if (error) return toast(errorMsg(error), 'error');
+  render($('#notifySecret'), html`
+    <div class="notice" style="margin-top:12px">
+      Copiá esta clave y cargala en Supabase → <b>Edge Functions → Secrets</b> con el nombre <code>NOTIFY_SECRET</code>:
+      <div class="copy-row" style="margin-top:8px"><div><code>${data.secret}</code></div>
+        <button class="btn btn-sm btn-ghost" type="button" data-copy-secret="${data.secret}">Copiar</button></div>
+    </div>`);
+  if (!data.pg_net) toast('Falta activar pg_net en Supabase → Database → Extensions', 'error');
+}));
+on(document, 'click', '[data-copy-secret]', async (e, b) => { await navigator.clipboard.writeText(b.dataset.copySecret); toast('Clave copiada'); });
+$('#notifyEvents').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.currentTarget;
+  const value = Object.fromEntries([...form.elements].filter((el) => el.type === 'checkbox').map((el) => [el.name, el.checked]));
+  await busy(form.querySelector('[type=submit]'), async () => {
+    const { error } = await sb.from('settings').upsert({ key: 'notify_events', value, updated_at: new Date().toISOString() });
+    if (error) return say(form, errorMsg(error));
+    say(form, '');
+    toast('Preferencias guardadas');
+  });
+});
+$('#notifyTest').addEventListener('click', (e) => busy(e.currentTarget, async () => {
+  const { error } = await sb.rpc('notify_test');
+  if (error) return toast(errorMsg(error), 'error');
+  toast('Prueba enviada: te tiene que llegar en unos segundos');
+}));
 
 // ---------- Inicio ----------
 await loadGameOptions();

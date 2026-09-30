@@ -3,7 +3,7 @@ import { html, raw, render, safeUrl } from './html.js';
 import { $, $$, on, reducedMotion, idle } from './dom.js';
 import { sb, configured } from './supabase.js';
 import { getProfile, getSession, signOut, loginUrl } from './session.js';
-import { avatar, hydrateRobloxAvatars } from './view.js';
+import { avatar, hydrateRobloxAvatars, profileUrl } from './view.js';
 import { toast, errorMsg } from './ui.js';
 import { SOCIALS } from '../config.js';
 import { HEART, donationsOn, openDonate, donationReturn } from './donate.js';
@@ -75,6 +75,7 @@ function userMenu(profile) {
   return html`
     <button class="user-btn" popovertarget="userMenu" aria-haspopup="menu">${avatar(profile, 32)}<span>${profile.username}</span></button>
     <div class="user-menu" id="userMenu" popover role="menu">
+      <a href="${profileUrl(profile.username)}" role="menuitem">Mi perfil</a>
       <a href="cuenta.html" role="menuitem">Mi cuenta</a>
       ${profile.role === 'admin' ? html`<a href="admin.html" role="menuitem">Panel de admin</a>` : ''}
       <button role="menuitem" id="logoutBtn" type="button">Cerrar sesión</button>
