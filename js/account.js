@@ -115,7 +115,7 @@ async function loadReports() {
 }
 
 // ---------- Mis donaciones ----------
-const METHOD = { mercadopago: 'Mercado Pago', paypal: 'PayPal', stripe: 'Tarjeta', transferencia: 'Transferencia', cripto: 'Cripto', robux: 'Robux', otro: 'Otro' };
+const METHOD = { mercadopago: 'Mercado Pago', paypal: 'PayPal', stripe: 'Tarjeta', payoneer: 'Payoneer', transferencia: 'Transferencia', cripto: 'Cripto', robux: 'Robux', otro: 'Otro' };
 const DSTATUS = { aprobada: ['Aprobada', 'badge-green'], pendiente: ['Pendiente', 'badge-amber'], por_confirmar: ['Por confirmar', 'badge-amber'], rechazada: ['Rechazada', ''], cancelada: ['Cancelada', ''], reembolsada: ['Reembolsada', 'badge-accent'] };
 const money = (n, c) => (c === 'ARS' || c === 'USD' ? new Intl.NumberFormat('es-AR', { style: 'currency', currency: c, maximumFractionDigits: c === 'ARS' ? 0 : 2 }).format(n) : `${fmt.fullNumber(n)} ${c === 'ROBUX' ? 'R$' : c}`);
 async function loadDonations() {
