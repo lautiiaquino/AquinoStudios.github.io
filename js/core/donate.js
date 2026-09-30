@@ -56,7 +56,7 @@ function methods() {
   const crypto = cryptos.length || filled(D.binance);
   const robux = safeUrl(D.robux) ? D.robux : null;
   // PayPal.me: se acepta arriba en DONATIONS.paypalme o (versión vieja) dentro de links
-  const pm = [D.paypalme, D.links?.paypalme, D.links?.paypal].find((u) => safeUrl(u) && /paypal\.me\//i.test(u));
+  const pm = [D.paypalme, D.links?.paypalme, D.links?.paypal].find((u) => safeUrl(u) && /paypal\.(me|com\/paypalme)\//i.test(u));
   const paypalme = pm ? pm.trim().replace(/\/+$/, '') : null;
   const links = Object.entries(D.links ?? {}).filter(([k, url]) => LINKS[k] && safeUrl(url) && !(paypalme && (k === 'paypalme' || k === 'paypal')));
   // Payoneer: link de solicitud de pago y/o email de la cuenta
