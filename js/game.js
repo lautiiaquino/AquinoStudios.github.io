@@ -421,7 +421,7 @@ function setupComments(game) {
               ${isAdmin ? html`<button class="link-btn" data-hide="${c.id}" data-val="${!c.hidden}">${c.hidden ? 'Mostrar' : 'Ocultar'}</button>` : ''}
               ${profile && (profile.id === c.user_id || isAdmin) ? html`<button class="link-btn" data-del="${c.id}" style="margin-left:${isAdmin ? '0' : 'auto'}">Borrar</button>` : ''}
             </div>
-            <p class="${c.hidden ? 'muted' : ''}">${c.body}</p>
+            <p class="${c.hidden ? 'muted' : ''}" translate="no">${c.body}</p>
             ${c.hidden && profile?.id === c.user_id && !isAdmin ? html`<p class="small muted">Un moderador ocultó este comentario. Solo vos lo ves.</p>` : ''}
           </div>
         </article>`) : html`<p class="muted" style="margin-top:12px">Todavía no hay comentarios. ¡Sé el primero!</p>`);
