@@ -64,10 +64,14 @@ export const DONATIONS = {
   crypto: {
     'USDT (TRC20)': '',
     'USDT (BEP20)': '',
-    'Bitcoin (BTC)': '',
+    'Bitcoin (BTC)': 'bc1qxlzd0uqn7zuqp2f45xt7luzr0evlsvghcrcyte', // red Bitcoin (Native SegWit)
     'Ethereum (ETH)': '',
   },
   binance: '',         // Binance Pay ID (número)
+  // Código QR de cada billetera (imagen dentro del sitio), se muestra debajo de la dirección
+  cryptoQr: {
+    'Bitcoin (BTC)': 'img/qr-btc.png',
+  },
 
   // Robux: link a un Game Pass de donación en uno de tus juegos
   robux: '',           // ej: https://www.roblox.com/game-pass/123456/Donacion

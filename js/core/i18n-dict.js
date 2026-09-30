@@ -72,6 +72,7 @@ export default {
   'Copiar código {x}': ['Copy code {x}', 'Copier le code {x}'],
   'Código {x} copiado': ['Code {x} copied', 'Code {x} copié'],
   'Copiar {x}': ['Copy {x}', 'Copier {x}'],
+  'Código QR de {x}': ['{x} QR code', 'QR code {x}'],
   'Hola, {x}': ['Hi, {x}', 'Salut, {x}'],
   'Hola,': ['Hi,', 'Salut,'],
   'Disponible': ['Available', 'Disponible'],
