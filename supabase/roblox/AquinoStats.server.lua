@@ -17,8 +17,9 @@
 
   Funciona solo con cualquier obby que use leaderstats → "Stage" (o el nombre que
   pongas en STAGE_NAME). Si tu juego marca la victoria de otra forma, desde otro Script:
-       _G.AquinoStats.win(player)        -- terminó el obby
-       _G.AquinoStats.setStage(player, 5)
+       _G.AquinoStats.setStage(player, 5)          -- llegó a la etapa 5
+       _G.AquinoStats.finish(player, 754320)       -- terminó el obby en 754320 ms (su run timer)
+       _G.AquinoStats.win(player)                  -- terminó (el tiempo lo mide este script)
 ]]
 
 local CONFIG = {
@@ -100,7 +101,19 @@ local function setStage(player, stage)
 	end
 end
 
-_G.AquinoStats = { win = win, setStage = setStage }
+-- Terminó el obby con el tiempo que midió el run timer del propio juego (en milisegundos).
+-- Si tu juego usa esto, poné FINAL_STAGE = 0 para no contar la victoria dos veces.
+local function finish(player, ms)
+	local e = entry(player)
+	e.wins += 1
+	ms = tonumber(ms)
+	if ms and ms > 0 and (e.bestTimeMs == 0 or ms < e.bestTimeMs) then
+		e.bestTimeMs = math.floor(ms)
+	end
+	runStart[player] = os.clock()
+end
+
+_G.AquinoStats = { win = win, setStage = setStage, finish = finish }
 
 local function send(list)
 	if #list == 0 then
