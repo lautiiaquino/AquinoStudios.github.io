@@ -56,9 +56,10 @@
             </div>
           </div>
           <div class="field">
-            <label for="fAvatar">URL de tu foto de perfil</label>
-            <input id="fAvatar" name="avatar_url" type="url" pattern="https://.+" placeholder="https://..." data-msg="La URL de la foto tiene que empezar con https://">
-            <span class="hint">Tiene que empezar con https://. Dejalo vacío para usar tus iniciales.</span>
+            <label for="fAvatar">Foto de perfil</label>
+            <image-drop for="fAvatar" class="avatar-drop" aria-label="Subir foto de perfil"></image-drop>
+            <input id="fAvatar" name="avatar_url" type="url" pattern="https://.+" placeholder="O pegá un link que empiece con https://" data-msg="La URL de la foto tiene que empezar con https://">
+            <span class="hint">Subí una foto desde tu dispositivo (se ajusta sola) o pegá un link. Dejalo vacío para usar tus iniciales.</span>
           </div>
           <div class="field">
             <label for="fBio">Sobre vos</label>

@@ -150,6 +150,8 @@ El sitio ya trae: política de seguridad (CSP) en todas las páginas, aviso y po
 ### 10. Perfiles públicos
 Cada usuario tiene su página `perfil.html?u=usuario` con avatar (o el de Roblox), insignias, números, favoritos (si los hace públicos en Mi cuenta) y últimos comentarios. Se llega tocando el nombre en los comentarios, en el muro de donadores o desde **Mi perfil** en el menú.
 
+En **Mi cuenta → Editar perfil**, la foto se puede **subir desde el dispositivo** (se arrastra, se pega con Ctrl+V o se elige un archivo; se comprime y se sube sola a Supabase Storage, carpeta `avatars/<tu-user-id>/`) o pegar como link. Cada uno solo puede subir o borrar sus propias fotos (reglas en `schema.sql`); el admin puede borrar cualquiera. Si una foto no carga (link roto o caído), se muestra el avatar de Roblox si tenés uno cargado, o si no tus iniciales, nunca el ícono de imagen rota.
+
 ### 11. Lanzamiento con código secreto
 1. **Panel → Juegos → Editar**: poné la **Fecha de salida**. Aparece la cuenta regresiva en el inicio, en `proximamente.html` y en la página del juego.
 2. **Panel → Códigos**: cargá el código y la recompensa y marcá **🚀 Código de lanzamiento**.

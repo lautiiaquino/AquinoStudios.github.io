@@ -28,12 +28,33 @@ export const initials = (name) => (name || '?').trim().slice(0, 2).toUpperCase()
 export function avatar(profile, size = 36) {
   const url = safeUrl(profile?.avatar_url);
   const style = `width:${size}px;height:${size}px`;
+  const rbx = validRobloxName(profile?.roblox_username) ? profile.roblox_username : '';
+  // Si la foto no carga (link roto, o no es una imagen directa), se cae sola a las iniciales
+  // en vez de mostrar el ícono de imagen rota (ver el "error" global más abajo).
   return url
-    ? html`<img class="avatar" style="${style}" src="${url}" alt="" loading="lazy" decoding="async">`
+    ? html`<img class="avatar" style="${style}" src="${url}" alt="" loading="lazy" decoding="async"
+        data-fallback-size="${size}" data-fallback-name="${profile?.username ?? ''}" ${rbx ? raw(`data-fallback-rbx="${rbx}"`) : ''}>`
     : html`<span class="avatar avatar-fallback" style="${style};font-size:${Math.round(size * 0.4)}px" aria-hidden="true"
-        ${validRobloxName(profile?.roblox_username) ? raw(`data-rbx="${profile.roblox_username}"`) : ''}>${initials(profile?.username)}</span>`;
+        ${rbx ? raw(`data-rbx="${rbx}"`) : ''}>${initials(profile?.username)}</span>`;
 }
 const validRobloxName = (n) => typeof n === 'string' && /^[A-Za-z0-9_]{3,20}$/.test(n);
+
+// "error" no se propaga (no "burbujea"), así que se escucha en la fase de captura, una sola vez
+// para toda la página. Reemplaza cualquier <img class="avatar"> rota por las iniciales (o, si
+// tiene usuario de Roblox, el MutationObserver de layout.js la cambia después por su avatar real).
+document.addEventListener('error', (e) => {
+  const img = e.target;
+  if (!(img instanceof HTMLImageElement) || !img.classList.contains('avatar') || img.dataset.fallbackDone) return;
+  img.dataset.fallbackDone = '1';
+  const size = Number(img.dataset.fallbackSize) || 36;
+  const span = document.createElement('span');
+  span.className = 'avatar avatar-fallback';
+  span.setAttribute('aria-hidden', 'true');
+  span.style.cssText = `width:${size}px;height:${size}px;font-size:${Math.round(size * 0.4)}px`;
+  if (img.dataset.fallbackRbx) span.dataset.rbx = img.dataset.fallbackRbx;
+  span.textContent = initials(img.dataset.fallbackName);
+  img.replaceWith(span);
+}, true);
 
 // ---------- Avatares de Roblox ----------
 // Si alguien no subió foto pero puso su usuario de Roblox, se muestra la cara de su avatar de Roblox.

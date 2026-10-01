@@ -1,3 +1,4 @@
+import './core/components.js';
 import { html, render, safeUrl } from './core/html.js';
 import { $, $$, transition, download } from './core/dom.js';
 import { sb } from './core/supabase.js';
@@ -6,6 +7,7 @@ import { renderLayout } from './core/layout.js';
 import { toast, busy, say, validate, ask, errorMsg } from './core/ui.js';
 import { avatar, profileUrl, gameCard, fetchRobloxStats, bannedNotice, robloxUserUrl, gameUrl, REPORT_STATUS, REPORT_KIND } from './core/view.js';
 import * as fmt from './core/format.js';
+import { uploadAvatar } from './core/images.js';
 
 // El enlace de "recuperar contraseña" llega con ?reset=1 (o Supabase avisa con PASSWORD_RECOVERY)
 let recovery = new URLSearchParams(location.search).get('reset') === '1';
@@ -61,8 +63,13 @@ const bio = pf.elements.bio;
 const countBio = () => ($('#bioCount').value = `${bio.value.length}/300`);
 bio.addEventListener('input', countBio);
 countBio();
-// Vista previa de la foto mientras escribís la URL
+// Vista previa de la foto mientras escribís la URL (o cuando se sube una)
 pf.elements.avatar_url.addEventListener('input', (e) => render($('#bigAvatar'), avatar({ ...profile, avatar_url: safeUrl(e.target.value.trim()) }, 84)));
+
+// Subir una foto desde el dispositivo: va a su propia carpeta (una por usuario)
+$('image-drop[for="fAvatar"]').uploader = (file) => uploadAvatar(file, profile.id);
+document.addEventListener('uploaded', () => toast('Foto subida'));
+document.addEventListener('uploaderror', (e) => toast(errorMsg(e.detail), 'error'));
 
 pf.addEventListener('submit', async (e) => {
   e.preventDefault();

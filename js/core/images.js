@@ -28,15 +28,19 @@ export async function compressImage(file, { maxSize = 1920, quality = 0.86 } = {
   return blob && blob.type === 'image/webp' && blob.size < file.size ? blob : file;
 }
 
-export async function uploadImage(file, folder) {
-  const blob = await compressImage(file);
+export async function uploadImage(file, folder, { bucket = 'media', maxSize = 1920 } = {}) {
+  const blob = await compressImage(file, { maxSize });
   if (blob.size > MAX_BYTES) throw new Error('payload too large');
   const ext = { 'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif' }[blob.type] ?? 'img';
   const path = `${folder}/${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
-  const { error } = await sb.storage.from('media').upload(path, blob, { contentType: blob.type, cacheControl: '31536000' });
+  const { error } = await sb.storage.from(bucket).upload(path, blob, { contentType: blob.type, cacheControl: '31536000' });
   if (error) throw error;
-  return sb.storage.from('media').getPublicUrl(path).data.publicUrl;
+  return sb.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 }
+
+// Foto de perfil: va a su propia carpeta ("avatars/<tu-user-id>/...") para que las reglas
+// de la base solo te dejen subir o borrar las tuyas. Se achica más porque es chica en pantalla.
+export const uploadAvatar = (file, userId) => uploadImage(file, userId, { bucket: 'avatars', maxSize: 400 });
 
 // Lee las imágenes de un evento de soltar (drag & drop) o de pegar (Ctrl+V)
 export function imagesFrom(dataTransfer) {
