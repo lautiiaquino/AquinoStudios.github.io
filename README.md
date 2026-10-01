@@ -171,6 +171,12 @@ El script ya detecta las muertes y lee `leaderstats → Stage`. Si tu obby marca
 El sitio detecta el idioma del navegador y se puede cambiar con el selector del menú (queda guardado). Se traduce toda la interfaz pública; el **panel de admin** y los **textos legales** quedan en español, y lo que cargás vos (títulos, descripciones, noticias) y lo que escriben los usuarios se muestra tal cual.
 Para traducir un texto nuevo, agregalo en `js/core/i18n-dict.js` copiando exactamente lo que se ve en español: `'Texto': ['English', 'Français']`.
 
+### 15. Capa propia sobre las contraseñas
+Antes de mandarla a Supabase, el navegador convierte la contraseña en una huella (PBKDF2-SHA256, 100.000 vueltas, `js/core/passhash.js`). La contraseña real **nunca sale del dispositivo**; Supabase guarda esa huella cifrada con bcrypt (dos capas). Las cuentas anteriores se migran solas la próxima vez que entran.
+- **No cambies `SALT` ni `ROUNDS`** de `passhash.js` con cuentas creadas: nadie podría volver a entrar.
+- Con esto, la protección de contraseñas filtradas de Supabase (plan Pro) deja de servir, porque ve la huella y no la clave. Sigue valiendo el captcha y el límite de intentos.
+- Si olvidás tu contraseña, se recupera con el email como siempre.
+
 Cómo está organizado el código y cómo agregar cosas sin romper nada: ver [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ## Actualizar la base de datos

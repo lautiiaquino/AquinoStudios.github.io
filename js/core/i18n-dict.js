@@ -478,6 +478,8 @@ export default {
   'No se pudo cargar la verificación. Recargá la página.': ['Couldn’t load the verification. Reload the page.', 'Impossible de charger la vérification. Recharge la page.'],
   'No se pudo cargar la verificación': ['Couldn’t load the verification', 'Impossible de charger la vérification'],
   'Completá la verificación "No soy un robot".': ['Complete the "I’m not a robot" check.', 'Complète la vérification « Je ne suis pas un robot ».'],
+  'Tu navegador no permite el cifrado seguro. Abrí el sitio con https://.': ['Your browser doesn’t allow secure encryption. Open the site with https://.', 'Ton navigateur n’autorise pas le chiffrement sécurisé. Ouvre le site avec https://.'],
+  'Probá de nuevo: completá la verificación y tocá Entrar otra vez.': ['Try again: complete the verification and tap Log in again.', 'Réessaie : complète la vérification et touche Connexion à nouveau.'],
   'Las contraseñas no coinciden.': ['Passwords don’t match.', 'Les mots de passe ne correspondent pas.'],
   'Ese nombre de usuario ya está en uso.': ['That username is taken.', "Ce nom d'utilisateur est déjà pris."],
   'Ya existe una cuenta con ese email.': ['An account with that email already exists.', 'Un compte existe déjà avec cet e-mail.'],
