@@ -7,7 +7,6 @@ import { busy, say, validate, errorMsg } from './core/ui.js';
 import { AUTH_PROVIDERS } from './config.js';
 import { confetti } from './core/confetti.js';
 import { captchaOn, mountCaptcha } from './core/captcha.js';
-import { lock } from './core/passhash.js';
 
 await renderLayout('', { bare: true });
 $('#year').textContent = new Date().getFullYear();
@@ -133,19 +132,6 @@ function captchaToken(form) {
 }
 const resetCaptcha = (form) => captchas.get(form)?.reset();
 
-// Cada token del "No soy un robot" sirve una sola vez: para un segundo intento se espera uno nuevo
-async function freshToken(form) {
-  resetCaptcha(form);
-  for (let i = 0; i < 40; i++) {
-    await new Promise((r) => setTimeout(r, 250));
-    const t = captchas.get(form)?.token();
-    if (t) return t;
-  }
-  return null;
-}
-const isWrongCredentials = (err) => err?.code === 'invalid_credentials' || /invalid login credentials/i.test(err?.message ?? '');
-const legacyEmails = new Set(); // emails que ya fallaron con la huella (probablemente cuentas anteriores)
-
 // ---------- Iniciar sesión ----------
 $('#loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -155,26 +141,9 @@ $('#loginForm').addEventListener('submit', async (e) => {
   const captchaTokenValue = captchaToken(form);
   if (captchaTokenValue === null) return;
   await busy(form.querySelector('[type=submit]'), async () => {
-    const raw = form.elements.password.value;
-    let secret;
-    try { secret = await lock(raw); } catch { return say(form, 'Tu navegador no permite el cifrado seguro. Abrí el sitio con https://.'); }
-    const email = data.email.toLowerCase();
-    let token = captchaTokenValue;
-    let error = null;
-    if (!legacyEmails.has(email)) {
-      ({ error } = await sb.auth.signInWithPassword({ email: data.email, password: secret, options: { captchaToken: token } }));
-      resetCaptcha(form);
-      if (!error) return location.replace(next);
-      if (!isWrongCredentials(error)) return say(form, errorMsg(error));
-      // Cuentas creadas antes de la capa propia: se prueba con la contraseña tal cual y, si entra, se migra
-      legacyEmails.add(email);
-      token = captchaOn() ? await freshToken(form) : undefined;
-      if (captchaOn() && !token) return say(form, 'Probá de nuevo: completá la verificación y tocá Entrar otra vez.');
-    }
-    ({ error } = await sb.auth.signInWithPassword({ email: data.email, password: raw, options: { captchaToken: token } }));
+    const { error } = await sb.auth.signInWithPassword({ email: data.email, password: form.elements.password.value, options: { captchaToken: captchaTokenValue } });
     resetCaptcha(form);
     if (error) return say(form, errorMsg(error));
-    await sb.auth.updateUser({ password: secret }).catch(() => {}); // migra la cuenta a la capa propia
     location.replace(next);
   });
 });
@@ -192,11 +161,9 @@ reg.addEventListener('submit', async (e) => {
     const { data: free, error: rpcError } = await sb.rpc('username_available', { name: data.username });
     if (rpcError) return say(reg, errorMsg(rpcError));
     if (!free) return say(reg, 'Ese nombre de usuario ya está en uso.');
-    let secret;
-    try { secret = await lock(reg.elements.password.value); } catch { return say(reg, 'Tu navegador no permite el cifrado seguro. Abrí el sitio con https://.'); }
     const { data: res, error } = await sb.auth.signUp({
       email: data.email,
-      password: secret,
+      password: reg.elements.password.value,
       options: { data: { username: data.username }, emailRedirectTo: new URL('cuenta.html', location.href).href, captchaToken: captchaTokenValue },
     });
     resetCaptcha(reg);

@@ -6,7 +6,6 @@ import { renderLayout } from './core/layout.js';
 import { toast, busy, say, validate, ask, errorMsg } from './core/ui.js';
 import { avatar, profileUrl, gameCard, fetchRobloxStats, bannedNotice, robloxUserUrl, gameUrl, REPORT_STATUS, REPORT_KIND } from './core/view.js';
 import * as fmt from './core/format.js';
-import { lock } from './core/passhash.js';
 
 // El enlace de "recuperar contraseña" llega con ?reset=1 (o Supabase avisa con PASSWORD_RECOVERY)
 let recovery = new URLSearchParams(location.search).get('reset') === '1';
@@ -141,9 +140,7 @@ pass.addEventListener('submit', async (e) => {
   });
   if (!ok) return say(pass, message);
   await busy(pass.querySelector('[type=submit]'), async () => {
-    let secret;
-    try { secret = await lock(pass.elements.password.value); } catch { return say(pass, 'Tu navegador no permite el cifrado seguro. Abrí el sitio con https://.'); }
-    const { error } = await sb.auth.updateUser({ password: secret });
+    const { error } = await sb.auth.updateUser({ password: pass.elements.password.value });
     if (error) return say(pass, errorMsg(error));
     pass.reset();
     say(pass, 'Contraseña actualizada correctamente.', 'success');
