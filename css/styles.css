@@ -980,6 +980,9 @@ image-drop:not(.has-image) .drop-preview::before { content: '+'; font: 700 1.4re
 .drop-text { display: grid; gap: 2px; }
 .drop-text b { font-size: .96rem; }
 .drop-text small { color: var(--muted); font-size: .8rem; }
+.avatar-drop { display: inline-flex; width: fit-content; }
+.avatar-drop .drop-preview { width: 58px; height: 58px; border-radius: 50%; }
+.avatar-drop:not(.has-image) .drop-preview::before { content: '📷'; font-size: 1.2rem; }
 
 /* ---------- Vacíos, carga y avisos ---------- */
 .empty { text-align: center; padding: 44px 20px; color: var(--muted); border: 1px dashed var(--line-2); border-radius: 12px; }

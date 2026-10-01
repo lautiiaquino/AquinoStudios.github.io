@@ -581,6 +581,27 @@ create policy "media_admin_delete" on storage.objects for delete
   using (bucket_id = 'media' and (select public.is_admin()));
 
 -- =====================================================================
+-- FOTOS DE PERFIL (Supabase Storage): carpeta pública "avatars".
+-- Todos pueden ver las fotos; cada uno sube, reemplaza o borra solo las suyas,
+-- guardadas dentro de una carpeta con su propio user id (ej: avatars/<uid>/foto.webp).
+-- El admin puede borrar cualquiera (moderación).
+-- =====================================================================
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('avatars', 'avatars', true, 2097152, array['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
+on conflict (id) do update set public = true, file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "avatars_own_insert" on storage.objects;
+create policy "avatars_own_insert" on storage.objects for insert
+  with check (bucket_id = 'avatars' and (select auth.uid())::text = split_part(name, '/', 1) and not (select public.is_banned()));
+drop policy if exists "avatars_own_update" on storage.objects;
+create policy "avatars_own_update" on storage.objects for update
+  using (bucket_id = 'avatars' and (select auth.uid())::text = split_part(name, '/', 1));
+drop policy if exists "avatars_delete" on storage.objects;
+create policy "avatars_delete" on storage.objects for delete
+  using (bucket_id = 'avatars' and ((select auth.uid())::text = split_part(name, '/', 1) or (select public.is_admin())));
+
+-- =====================================================================
 -- BORRAR MI CUENTA (derecho de supresión, Ley 25.326)
 -- Borra el usuario; por las relaciones "on delete cascade" también se borran
 -- su perfil, favoritos, comentarios, votos y reportes.
