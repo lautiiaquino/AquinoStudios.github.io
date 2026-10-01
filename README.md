@@ -191,3 +191,6 @@ Después abrí http://localhost:8000
 - **Términos y privacidad:** `terminos.html` y `privacidad.html`. Son una base; revisalos y adaptalos a tu caso.
 - **Borrar cuenta / descargar datos:** está en *Mi cuenta → Seguridad*. Para que borrar funcione, tenés que haber corrido la versión nueva de `schema.sql` (función `delete_my_account`).
 - **Juegos y noticias:** desde el panel de admin, sin tocar código.
+
+## Licencia
+© 2026 Aquino Studios. **Todos los derechos reservados**: no se permite copiar, modificar ni reutilizar este código ni sus recursos sin permiso por escrito. Ver [`LICENSE`](LICENSE).
