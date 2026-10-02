@@ -134,7 +134,7 @@ export function gameCard(game, stats) {
   const like = likePct(stats);
   return html`
     <a class="game-card" href="${gameUrl(game.slug)}" data-slug="${game.slug}">
-      <div class="game-thumb" style="${bgStyle(img)}">
+      <div class="game-thumb" style="${bgStyle(img)}" aria-hidden="true">
         ${img ? '' : placeholder(game)}
         ${game.status !== 'publicado' ? statusBadge(game.status) : ''}
       </div>

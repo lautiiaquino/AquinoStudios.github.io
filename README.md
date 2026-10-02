@@ -175,6 +175,12 @@ Para traducir un texto nuevo, agregalo en `js/core/i18n-dict.js` copiando exacta
 
 Cómo está organizado el código y cómo agregar cosas sin romper nada: ver [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
+### 16. Captcha en el formulario de contacto
+El formulario de Contacto del inicio (`index.html#contacto`) ahora pasa por la Edge Function **`contact`**, que comprueba la verificación "No soy un robot" del lado del servidor (antes, aunque la página mostrara el cuadrito, nadie comprobaba si lo habían completado).
+1. Publicá la Edge Function **`contact`** (`supabase/functions/contact/index.ts`) con **Verify JWT desactivado**.
+2. Si ya tenés **Turnstile** activado (ver "Protección contra bots" más arriba), cargá la misma **Secret Key** en Supabase → *Edge Functions → Secrets* como **`TURNSTILE_SECRET_KEY`**.
+3. Sin ese secreto cargado, la función deja pasar los mensajes igual (no frena nada); con `CAPTCHA_SITE_KEY` vacío en `js/config.js`, el formulario ni siquiera muestra el cuadrito.
+
 ## Actualizar la base de datos
 Cuando el sitio agrega funciones nuevas, `supabase/schema.sql` trae las tablas nuevas.
 Volvé a pegar **todo** el archivo en **SQL Editor** y tocá **Run**. Se puede ejecutar

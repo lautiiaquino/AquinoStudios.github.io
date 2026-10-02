@@ -60,7 +60,7 @@ function renderLaunch(game) {
         ${hasDate ? html`<button class="btn btn-ghost" id="icsBtn" type="button">Agregar al calendario</button>` : ''}
         <a class="btn btn-ghost" href="${gameUrl(game.slug)}">Ver página del juego</a>
       </div>
-      <div class="game-hero-img" id="launchImg" style="${bgStyle(img)}">${img ? '' : placeholder(game, 'launchPh')}</div>
+      <div class="game-hero-img" id="launchImg" style="${bgStyle(img)}" aria-hidden="true">${img ? '' : placeholder(game, 'launchPh')}</div>
       ${game.youtube_id ? html`<div style="max-width:820px;margin:48px auto 0"><lite-youtube videoid="${game.youtube_id}"></lite-youtube></div>` : ''}
     </div>`);
 

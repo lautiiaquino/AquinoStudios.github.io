@@ -38,10 +38,10 @@ function renderGame(game) {
 
   render(page, html`
     <div class="game-hero">
-      <div class="game-hero-bg" style="${bgStyle(img)}"></div>
+      <div class="game-hero-bg" style="${bgStyle(img)}" aria-hidden="true"></div>
       <div class="container">
         <div class="rbx-media">
-          <div class="game-hero-img" id="heroImg" style="${bgStyle(img)}">${img ? '' : placeholder(game, 'heroPh')}</div>
+          <div class="game-hero-img" id="heroImg" style="${bgStyle(img)}" aria-hidden="true">${img ? '' : placeholder(game, 'heroPh')}</div>
           <button class="rbx-nav prev hidden" type="button" data-slide="-1" aria-label="Imagen anterior">‹</button>
           <button class="rbx-nav next hidden" type="button" data-slide="1" aria-label="Imagen siguiente">›</button>
           <div class="rbx-dots" id="mediaDots"></div>
