@@ -1,9 +1,10 @@
 Fuentes incluidas en esta carpeta
 
-- Plus Jakarta Sans — Tokotype
-- Unbounded — ADR Foundry
+- Syne — Bonjour Monde
+- Space Grotesk — Florian Karsten
+- JetBrains Mono — JetBrains
 
-Ambas se distribuyen bajo la SIL Open Font License, versión 1.1, a través de
+Todas se distribuyen bajo la SIL Open Font License, versión 1.1, a través de
 Google Fonts (fonts.google.com):
 https://openfontlicense.org
 
