@@ -5,7 +5,7 @@
 // - Tipografías: están en el propio sitio (carpeta fonts/), se guardan con el resto.
 // - Supabase (datos, login) NUNCA se guarda: siempre va directo a la red.
 // Cambiá VERSION cuando quieras forzar que todos descarguen los archivos nuevos.
-const VERSION = 'v22';
+const VERSION = 'v23';
 const STATIC = `aquino-static-${VERSION}`;
 const PAGES = `aquino-pages-${VERSION}`;
 const FONTS = 'aquino-fonts';
@@ -17,7 +17,7 @@ const CORE = [
   'css/styles.css', 'js/config.js', 'js/theme.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/favicon-32.png', 'icons/logo-mark.webp', 'icons/logo-512.webp',
   'js/core/html.js', 'js/core/dom.js', 'js/core/format.js', 'js/core/supabase.js', 'js/core/ui.js',
   'js/core/session.js', 'js/core/view.js', 'js/core/layout.js', 'js/core/components.js',
-  'js/core/polls.js', 'js/core/images.js', 'js/core/confetti.js', 'js/core/donate.js', 'js/core/consent.js', 'js/core/captcha.js', 'js/core/launch.js', 'js/core/i18n.js', 'js/core/i18n-dict.js', 'js/gate.js',
+  'js/core/polls.js', 'js/core/images.js', 'js/core/confetti.js', 'js/core/donate.js', 'js/core/consent.js', 'js/core/captcha.js', 'js/core/launch.js', 'js/core/i18n.js', 'js/core/i18n-dict.js', 'js/core/motion.js', 'js/gate.js',
   'js/home.js', 'js/game.js', 'js/next.js', 'js/login.js', 'js/account.js', 'js/legal.js', 'js/notfound.js', 'js/offline.js', 'js/profile.js', 'js/chat.js',
 ];
 
