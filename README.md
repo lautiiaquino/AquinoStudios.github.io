@@ -182,7 +182,9 @@ El formulario de Contacto del inicio (`index.html#contacto`) ahora pasa por la E
 3. Sin ese secreto cargado, la función deja pasar los mensajes igual (no frena nada); con `CAPTCHA_SITE_KEY` vacío en `js/config.js`, el formulario ni siquiera muestra el cuadrito.
 
 ### 17. Identidad visual y movimiento
-El sitio evolucionó a una paleta de firma índigo → violeta → rosa (`--accent`, `--accent-2` y el degradé `--signature` en `css/styles.css`), con una textura de grano fílmico muy sutil y un resplandor ambiente detrás del fondo. Cambiando esas variables en `:root` (y su versión para `[data-theme="light"]`) cambia todo el sitio.
+El sitio usa una paleta neutra: blanco, negro y azul (`--accent`, `--accent-2` en `css/styles.css`), sin degradés llamativos, con una textura de grano fílmico muy sutil y un resplandor azul centrado detrás del fondo. Cambiando esas variables en `:root` (y su versión para `[data-theme="light"]`) cambia todo el sitio.
+
+La tipografía combina **Unbounded** (títulos grandes, como el nombre "Aquino Studios" en el hero) con **Plus Jakarta Sans** (textos y botones), ambas autohospedadas en `fonts/` bajo licencia SIL Open Font License. El título del hero aparece grande y centrado, con una animación de entrada (desenfoque + escala) y un barrido de brillo una sola vez al cargar; respeta "reducir movimiento" igual que el resto del sitio.
 
 `js/core/motion.js` agrega las interacciones de firma, aplicadas solas con los mismos selectores de siempre (no hace falta tocar el HTML de cada página):
 - **Resplandor que sigue al mouse** en `.card` y `.game-card`.

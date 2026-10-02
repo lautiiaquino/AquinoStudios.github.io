@@ -1,9 +1,10 @@
 Fuentes incluidas en esta carpeta
 
-- Poppins — Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins)
-- Pixelify Sans — Copyright 2021 The Pixelify Sans Project Authors (https://github.com/eifetx/Pixelify-Sans)
+- Plus Jakarta Sans — Tokotype
+- Unbounded — ADR Foundry
 
-Ambas se distribuyen bajo la SIL Open Font License, versión 1.1:
+Ambas se distribuyen bajo la SIL Open Font License, versión 1.1, a través de
+Google Fonts (fonts.google.com):
 https://openfontlicense.org
 
 Se pueden usar, incrustar y redistribuir libremente (también en sitios web),
