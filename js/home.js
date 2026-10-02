@@ -7,6 +7,7 @@ import { renderLayout } from './core/layout.js';
 import { mountPolls } from './core/polls.js';
 import { toast, busy, say, validate, errorMsg } from './core/ui.js';
 import { launchTeaser } from './core/launch.js';
+import { captchaOn, mountCaptcha } from './core/captcha.js';
 import {
   gameCard, gameImage, avatar, codeCard, profileUrl, robloxGameUrl, robloxUserUrl, gameUrl, fetchRobloxStats, likePct, ICON,
 } from './core/view.js';
@@ -273,15 +274,33 @@ async function loadSiteStats() {
 }
 
 // ---------- Contacto ----------
-$('#contactForm').addEventListener('submit', async (e) => {
+// El captcha lo verifica la Edge Function "contact" del lado del servidor (antes
+// se guardaba directo desde acá y nadie comprobaba si lo habían completado).
+const contactForm = $('#contactForm');
+let contactCaptcha = null;
+if (captchaOn()) {
+  mountCaptcha($('[data-captcha]', contactForm)).then((w) => (contactCaptcha = w))
+    .catch(() => say(contactForm, 'No se pudo cargar la verificación. Recargá la página.'));
+}
+contactForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = e.currentTarget;
   const { ok, data, message } = validate(form);
   if (!ok) return say(form, message);
   if (!sb) return say(form, 'El sitio todavía no está configurado.');
+  let captchaToken;
+  if (captchaOn()) {
+    captchaToken = contactCaptcha?.token();
+    if (!captchaToken) return say(form, 'Completá la verificación "No soy un robot".');
+  }
   await busy(form.querySelector('[type=submit]'), async () => {
-    const { error } = await sb.from('contact_messages').insert({ ...data, user_id: profile?.id ?? null });
-    if (error) return say(form, errorMsg(error));
+    const { error } = await sb.functions.invoke('contact', { body: { ...data, captchaToken } });
+    contactCaptcha?.reset();
+    if (error) {
+      let msg = errorMsg(error);
+      try { msg = (await error?.context?.json?.())?.error ?? msg; } catch { /* sin detalle */ }
+      return say(form, msg);
+    }
     form.elements.message.value = '';
     say(form, '¡Listo! Te respondemos pronto.', 'success');
     toast('Mensaje enviado');
