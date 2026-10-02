@@ -181,6 +181,14 @@ El formulario de Contacto del inicio (`index.html#contacto`) ahora pasa por la E
 2. Si ya tenés **Turnstile** activado (ver "Protección contra bots" más arriba), cargá la misma **Secret Key** en Supabase → *Edge Functions → Secrets* como **`TURNSTILE_SECRET_KEY`**.
 3. Sin ese secreto cargado, la función deja pasar los mensajes igual (no frena nada); con `CAPTCHA_SITE_KEY` vacío en `js/config.js`, el formulario ni siquiera muestra el cuadrito.
 
+### 17. Identidad visual y movimiento
+El sitio evolucionó a una paleta de firma índigo → violeta → rosa (`--accent`, `--accent-2` y el degradé `--signature` en `css/styles.css`), con una textura de grano fílmico muy sutil y un resplandor ambiente detrás del fondo. Cambiando esas variables en `:root` (y su versión para `[data-theme="light"]`) cambia todo el sitio.
+
+`js/core/motion.js` agrega las interacciones de firma, aplicadas solas con los mismos selectores de siempre (no hace falta tocar el HTML de cada página):
+- **Resplandor que sigue al mouse** en `.card` y `.game-card`.
+- **Magnetismo** en los botones principales grandes (`.btn-primary.btn-lg`, `.btn-play.btn-lg`): se estiran un poco hacia el cursor.
+- Respeta "reducir movimiento" del sistema operativo: con esa preferencia, ninguno de los dos efectos se activa.
+
 ## Actualizar la base de datos
 Cuando el sitio agrega funciones nuevas, `supabase/schema.sql` trae las tablas nuevas.
 Volvé a pegar **todo** el archivo en **SQL Editor** y tocá **Run**. Se puede ejecutar

@@ -9,6 +9,7 @@ import { SOCIALS } from '../config.js';
 import { HEART, donationsOn, openDonate, donationReturn } from './donate.js';
 import { initConsent } from './consent.js';
 import { initI18n, langPicker } from './i18n.js';
+import { initMotion } from './motion.js';
 
 // Logo: el emblema de los cubos (icons/logo-mark.webp); el logo completo está en icons/logo.png
 const LOGO = raw('<img class="brand-mark" src="icons/logo-mark.webp" width="38" height="38" alt="" decoding="async">');
@@ -288,6 +289,7 @@ export async function renderLayout(active = '', { bare = false } = {}) {
 
   initConsent();
   autoReveal();
+  initMotion();
   scrollExtras(header);
   shareElementTransitions();
   speculate();

@@ -17,34 +17,39 @@
 @property --angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
 
 :root {
-  --accent: #2f7bff;              /* azul de la marca */
-  --accent-2: #5b9bff;            /* azul más claro, para textos sobre fondo oscuro */
-  --accent-ink: #ffffff;          /* texto sobre el azul */
+  --accent: #675bf5;              /* índigo-violeta: la firma de la marca (antes un azul más genérico) */
+  --accent-2: #a48bff;            /* violeta claro, para textos y acentos sobre fondo oscuro */
+  --accent-ink: #ffffff;          /* texto sobre el acento */
   --gold: #ffc83d;
   --play: #2bd26f;
   --red: #ff4f5e;
   --blue: #4c9dff;
-  --purple: #9a7bff;
+  --purple: #c968e8;
   --discord: #5865f2;
+  /* Degradé de firma: solo para momentos destacados (hero, CTA principal, divisores),
+     nunca como reemplazo de --accent en el resto del sistema. */
+  --signature: linear-gradient(125deg, #6457f0 0%, #9b5cf0 48%, #ff6ec7 100%);
 
   /* Oscuro (por defecto) */
-  --bg: #0b0d12;
-  --bg-2: #0f1219;
-  --card: #12161f;
-  --card-2: #1a1f2a;
+  --bg: #07080c;
+  --bg-2: #0d0f16;
+  --card: #12151f;
+  --card-2: #1a1e2b;
   --line: rgba(255, 255, 255, .08);
-  --line-2: rgba(255, 255, 255, .16);
-  --text: #eef1f6;
-  --muted: #8c95a6;
-  --prose: #c6ccd7;
-  --link: #7fb0ff;
+  --line-2: rgba(255, 255, 255, .17);
+  --text: #f1f2f8;
+  --muted: #8d95a9;
+  --prose: #c8cce0;
+  --link: #a9a2ff;
   --placeholder: #5d6576;
-  --header-bg: rgba(11, 13, 18, .78);
-  --shadow: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 20px 40px -20px rgba(0, 0, 0, .7);
-  --grid-line: rgba(255, 255, 255, .04);
-  --glow: 0 0 0 1px color-mix(in oklab, var(--accent) 22%, transparent), 0 24px 60px -18px color-mix(in oklab, var(--accent) 45%, transparent);
+  --header-bg: rgba(7, 8, 12, .78);
+  --shadow: 0 1px 0 rgba(255, 255, 255, .05) inset, 0 24px 48px -22px rgba(2, 2, 10, .8);
+  --shadow-lg: 0 1px 0 rgba(255, 255, 255, .06) inset, 0 40px 80px -28px rgba(2, 2, 10, .85);
+  --grid-line: rgba(255, 255, 255, .035);
+  --glow: 0 0 0 1px color-mix(in oklab, var(--accent) 24%, transparent), 0 24px 60px -18px color-mix(in oklab, var(--accent) 48%, transparent);
   --err-text: #ff8f98;
   --ok-text: #5fe39a;
+  --grain-opacity: .035;
 
   /* Nombres que usa el resto del código */
   --brand: var(--accent);
@@ -65,39 +70,51 @@
 
 /* Claro */
 [data-theme="light"] {
-  --accent: #1f6bf0;
-  --accent-2: #1a5fd8;
-  --bg: #f3f4f7;
-  --bg-2: #e9ebf0;
+  --accent: #5b4bdb;
+  --accent-2: #4535bd;
+  --signature: linear-gradient(125deg, #5b4bdb 0%, #8b3fd4 48%, #e0469f 100%);
+  --bg: #f4f4f8;
+  --bg-2: #eaebf1;
   --card: #ffffff;
-  --card-2: #f0f2f6;
+  --card-2: #f0f1f6;
   --line: rgba(10, 14, 25, .08);
   --line-2: rgba(10, 14, 25, .16);
   --text: #0d1017;
   --muted: #5b6474;
   --prose: #2d3440;
-  --link: #0a5fd1;
+  --link: #4535bd;
   --placeholder: #9aa2b1;
-  --header-bg: rgba(243, 244, 247, .8);
+  --header-bg: rgba(244, 244, 248, .8);
   --shadow: 0 1px 2px rgba(10, 14, 25, .06), 0 20px 40px -24px rgba(10, 14, 25, .25);
+  --shadow-lg: 0 1px 2px rgba(10, 14, 25, .06), 0 36px 70px -26px rgba(10, 14, 25, .3);
   --grid-line: rgba(10, 14, 25, .05);
   --err-text: #c62835;
   --ok-text: #0c7a3e;
+  --grain-opacity: .02;
   color-scheme: light;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 84px; overflow-x: clip; scrollbar-color: var(--line-2) var(--bg); }
 body {
+  position: relative;
   margin: 0; min-height: 100vh; display: flex; flex-direction: column; overflow-x: clip;
   color: var(--text); font: 400 15.5px/1.65 var(--font-body);
   -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
-  /* Grilla tenue en todo el fondo, como una hoja cuadriculada */
+  /* Grilla tenue + un resplandor de la firma (índigo→violeta→rosa) muy apagado, fijo arriba */
   background:
+    radial-gradient(1100px 620px at 14% -8%, color-mix(in oklab, var(--accent) 16%, transparent), transparent 60%),
+    radial-gradient(900px 560px at 100% 8%, color-mix(in oklab, #ff6ec7 10%, transparent), transparent 65%),
     linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / 44px 44px,
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 44px 44px,
     var(--bg);
   background-attachment: fixed;
+}
+/* Grano fílmico, muy sutil, sobre toda la página (firma visual "estudio de diseño").
+   Va en <html>, no en <body>, porque body::before/::after ya los usa la pantalla de carga. */
+html::after {
+  content: ''; position: fixed; inset: 0; z-index: 999; pointer-events: none; opacity: var(--grain-opacity); mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 body:has(dialog[open]) { overflow: hidden; }
 main { flex: 1; }
@@ -318,7 +335,13 @@ code { background: var(--card-2); padding: .1em .4em; border-radius: 6px; font-s
 .game-logo { margin: 8px 0 24px; font: 700 clamp(3.2rem, 8.5vw, 6.6rem)/.95 var(--font-pixel); letter-spacing: .01em; display: flex; flex-direction: column; text-shadow: 0 0 40px color-mix(in oklab, var(--accent) 45%, transparent); }
 .game-logo .word { display: block; animation: rise .9s var(--ease) both; }
 .game-logo .word + .word { color: var(--accent-2); animation-delay: .1s; }
-.game-logo .word + .word::after { content: '_'; color: var(--text); animation: caret 1s steps(1) infinite; }
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  /* La segunda palabra del logo lleva el degradé de firma (índigo → violeta → rosa) */
+  .game-logo .word + .word {
+    background: var(--signature); background-clip: text; -webkit-background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  }
+}
+.game-logo .word + .word::after { content: '_'; color: var(--text); -webkit-text-fill-color: var(--text); animation: caret 1s steps(1) infinite; }
 @keyframes caret { 50% { opacity: 0; } }
 @keyframes rise { from { opacity: 0; translate: 0 24px; } }
 .hero-copy > * { animation: rise .8s var(--ease) both; }
@@ -408,7 +431,11 @@ section { padding: 80px 0; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 26px 20px; }
 @media (max-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 20px 12px; } }
 .tile-skel { aspect-ratio: 1 / 1.28; }
-.game-card { container-type: inline-size; display: block; color: var(--text); text-decoration: none !important; }
+.game-card {
+  --spot: 0%;
+  position: relative; container-type: inline-size; display: block; color: var(--text); text-decoration: none !important; transition: background .4s;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), color-mix(in oklab, var(--accent) var(--spot), transparent), transparent 70%);
+}
 .game-thumb {
   position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: var(--card-2) center/cover;
   outline: 1px solid var(--line); outline-offset: -1px; transition: scale .5s var(--ease), box-shadow .4s, outline-color .3s;
@@ -630,7 +657,14 @@ button.poll-option:hover { border-color: var(--accent); }
 .contact { display: grid; grid-template-columns: 1fr 1.3fr; gap: 48px; align-items: start; }
 .contact p { color: var(--prose); max-width: 420px; }
 @media (max-width: 860px) { .contact { grid-template-columns: 1fr; gap: 24px; } }
-.card { background: color-mix(in oklab, var(--card) 92%, transparent); border: 1px solid var(--line); border-radius: 16px; padding: 26px; }
+.card {
+  --spot: 0%;
+  position: relative; border: 1px solid var(--line); border-radius: 16px; padding: 26px; transition: border-color .3s, background .4s;
+  /* El resplandor que sigue al mouse (--mx/--my/--spot, de js/core/motion.js) va DENTRO del
+     fondo (no en un pseudo-elemento aparte), así nunca puede quedar arriba del contenido. */
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), color-mix(in oklab, var(--accent) var(--spot), transparent), transparent 70%),
+    color-mix(in oklab, var(--card) 92%, transparent);
+}
 .card-hard { background: var(--card); }
 .form { display: grid; gap: 16px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -1192,6 +1226,11 @@ html.no-scroll { overflow: hidden; }
 .game-hero-img { view-transition-name: game-art; }
 html.theme-switch::view-transition-old(root), html.theme-switch::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 .reveal { opacity: 1; }
+/* Interacciones de firma (js/core/motion.js les pone --mx/--my/--spot/--pull) */
+.card.is-spot, .game-card.is-spot { --spot: 14%; }
+.card.is-spot { border-color: color-mix(in oklab, var(--accent) 30%, var(--line)); }
+.btn-primary.btn-lg[style*="--pull"]:hover, .btn-play.btn-lg[style*="--pull"]:hover { translate: var(--pull, 0 0); }
+@media (prefers-reduced-motion: reduce) { .card, .game-card { background-image: none !important; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
   html[data-gate]:not(.ready) body::after { display: none; }
