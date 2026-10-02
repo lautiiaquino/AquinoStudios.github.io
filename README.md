@@ -186,6 +186,8 @@ El sitio usa una paleta neutra: blanco, negro y azul (`--accent`, `--accent-2` e
 
 La tipografía combina **Unbounded** (títulos grandes, como el nombre "Aquino Studios" en el hero) con **Plus Jakarta Sans** (textos y botones), ambas autohospedadas en `fonts/` bajo licencia SIL Open Font License. El título del hero aparece grande y centrado, con una animación de entrada (desenfoque + escala) y un barrido de brillo una sola vez al cargar; respeta "reducir movimiento" igual que el resto del sitio.
 
+El resto del sitio (encabezado, tarjetas, diálogos, menús, pie de página) usa un estilo **"vidrio esmerilado"**: paneles translúcidos con desenfoque de fondo (`backdrop-filter`, variables `--glass-blur`/`--glass-sat`), esquinas bien redondeadas y unas esferas de luz difusas fijas detrás de todo (ver el bloque "Vidrio esmerilado" y `body::before` en `css/styles.css`). El blur de verdad solo se usa en paneles que no cambian de estado todo el tiempo (diálogos, menús flotantes, el encabezado); en pantallas con muchas secciones que se muestran/ocultan rápido (cuenta, admin) las tarjetas se quedan con el tinte translúcido pero sin blur, para que cambiar de pestaña siga sintiéndose instantáneo.
+
 `js/core/motion.js` agrega las interacciones de firma, aplicadas solas con los mismos selectores de siempre (no hace falta tocar el HTML de cada página):
 - **Resplandor que sigue al mouse** en `.card` y `.game-card`.
 - **Magnetismo** en los botones principales grandes (`.btn-primary.btn-lg`, `.btn-play.btn-lg`): se estiran un poco hacia el cursor.
