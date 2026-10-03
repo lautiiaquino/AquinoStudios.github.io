@@ -1,12 +1,10 @@
 Fuentes incluidas en esta carpeta
 
-- Syne — Bonjour Monde
-- Space Grotesk — Florian Karsten
-- JetBrains Mono — JetBrains
+- Sora — Jonathan Barnbrook y Julián Moncada
 
-Todas se distribuyen bajo la SIL Open Font License, versión 1.1, a través de
+Se distribuye bajo la SIL Open Font License, versión 1.1, a través de
 Google Fonts (fonts.google.com):
 https://openfontlicense.org
 
-Se pueden usar, incrustar y redistribuir libremente (también en sitios web),
-siempre que no se vendan por separado y se mantenga este aviso.
+Se puede usar, incrustar y redistribuir libremente (también en sitios web),
+siempre que no se venda por separado y se mantenga este aviso.

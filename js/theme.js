@@ -3,7 +3,7 @@
 (function () {
   var saved = null;
   try { saved = localStorage.getItem('theme'); } catch (e) {}
-  // Por defecto, claro (papel); el modo oscuro queda guardado si lo elegís
-  var theme = saved === 'dark' ? 'dark' : 'light';
+  // Por defecto, oscuro (es la identidad del sitio); el modo claro queda guardado si lo elegís
+  var theme = saved === 'light' ? 'light' : 'dark';
   document.documentElement.dataset.theme = theme;
 })();

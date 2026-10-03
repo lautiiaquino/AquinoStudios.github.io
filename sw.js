@@ -5,7 +5,7 @@
 // - Tipografías: están en el propio sitio (carpeta fonts/), se guardan con el resto.
 // - Supabase (datos, login) NUNCA se guarda: siempre va directo a la red.
 // Cambiá VERSION cuando quieras forzar que todos descarguen los archivos nuevos.
-const VERSION = 'v26';
+const VERSION = 'v27';
 const STATIC = `aquino-static-${VERSION}`;
 const PAGES = `aquino-pages-${VERSION}`;
 const FONTS = 'aquino-fonts';
@@ -13,7 +13,7 @@ const FONTS = 'aquino-fonts';
 const CORE = [
   './', 'index.html', 'juego.html', 'proximamente.html', 'login.html', 'cuenta.html', 'offline.html',
   'terminos.html', 'privacidad.html', 'cookies.html', '404.html', 'perfil.html', 'chat.html',
-  'fonts/syne-700.woff2', 'fonts/syne-800.woff2', 'fonts/grotesk-400.woff2', 'fonts/grotesk-500.woff2', 'fonts/grotesk-600.woff2', 'fonts/grotesk-700.woff2', 'fonts/mono-500.woff2',
+  'fonts/sora-300.woff2', 'fonts/sora-400.woff2', 'fonts/sora-600.woff2', 'fonts/sora-700.woff2',
   'css/styles.css', 'js/config.js', 'js/theme.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/favicon-32.png', 'icons/logo-mark.webp', 'icons/logo-512.webp',
   'js/core/html.js', 'js/core/dom.js', 'js/core/format.js', 'js/core/supabase.js', 'js/core/ui.js',
   'js/core/session.js', 'js/core/view.js', 'js/core/layout.js', 'js/core/components.js',
