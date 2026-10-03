@@ -182,11 +182,11 @@ El formulario de Contacto del inicio (`index.html#contacto`) ahora pasa por la E
 3. Sin ese secreto cargado, la función deja pasar los mensajes igual (no frena nada); con `CAPTCHA_SITE_KEY` vacío en `js/config.js`, el formulario ni siquiera muestra el cuadrito.
 
 ### 17. Identidad visual y movimiento
-El sitio tiene un estilo **editorial**: fondo de papel claro (modo por defecto), tinta negra y un azul eléctrico, con bordes negros marcados, esquinas casi rectas y sombras duras (sin desenfoque) que se "aprietan" al tocar los botones. Las bandas de Novedades, Donadores y Contacto, y el pie de página, invierten los colores (negras en modo claro, de papel en modo oscuro). Todos los colores están en las dos paletas al principio de `css/styles.css`.
+El sitio tiene un estilo **premium oscuro**: negro profundo, líneas finas, esquinas rectas, mucho aire y un azul que brilla poco. Los títulos van en mayúsculas y las etiquetas con letras muy espaciadas. Hay modo claro (papel blanco cálido) para quien lo elija. Todos los colores están en las dos paletas al principio de `css/styles.css`.
 
-Tipografía: **Syne** para los títulos grandes, **Space Grotesk** para textos y botones y **JetBrains Mono** para etiquetas y datos; las tres autohospedadas en `fonts/` (licencia SIL Open Font License).
+Tipografía: **Sora** (en cuatro grosores), autohospedada en `fonts/` con licencia SIL Open Font License.
 
-En la portada, "Aquino Studios" entra letra por letra desde atrás de una máscara; "Studios" llega en contorno y se rellena de azul de a una letra, y cada letra salta al pasarle el mouse. Debajo hay una cinta azul que se desplaza sin fin, y de adorno una estrella que gira despacio y un círculo rayado. Todo respeta "reducir movimiento" del sistema operativo.
+En la portada, "AQUINO" aparece letra por letra desde un desenfoque y "STUDIOS", fino y espaciado, se enciende de a una letra en azul. Detrás, el logo del estudio hace de luz de fondo y "respira" despacio; entre los botones y el juego destacado baja una línea con una luz. Todo respeta "reducir movimiento" del sistema operativo.
 
 `js/core/motion.js` agrega las interacciones de firma, aplicadas solas con los mismos selectores de siempre (no hace falta tocar el HTML de cada página):
 - **Resplandor que sigue al mouse** en `.card` y `.game-card`.
