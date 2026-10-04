@@ -9,7 +9,7 @@ import { toast, busy, say, validate, errorMsg } from './core/ui.js';
 import { launchTeaser } from './core/launch.js';
 import { captchaOn, mountCaptcha } from './core/captcha.js';
 import {
-  gameCard, gameImage, avatar, codeCard, profileUrl, robloxGameUrl, robloxUserUrl, gameUrl, fetchRobloxStats, likePct, ICON,
+  gameCard, gameImage, avatar, codeCard, profileUrl, robloxGameUrl, robloxUserUrl, gameUrl, fetchRobloxStats, likePct, ICON, trailerSrc, trailerVideo,
 } from './core/view.js';
 import * as fmt from './core/format.js';
 import { SOCIALS } from './config.js';
@@ -62,14 +62,12 @@ function renderHero() {
   const img = gameImage(g, s);
   const like = likePct(s);
   const canPlay = g.roblox_place_id && g.status === 'publicado';
-  // La imagen del juego también queda de fondo, tenue, detrás de todo el hero
-  const bg = $('#heroBg');
-  if (img) { bg.style.backgroundImage = cssUrl(img); bg.classList.add('on'); }
+  const trailer = trailerSrc(g);
   render($('#heroFeature'), html`
     <article class="poster">
       <span class="poster-sticker">${g.status === 'publicado' ? 'Destacado' : g.status === 'en_desarrollo' ? 'En desarrollo' : 'Próximamente'}</span>
       <a class="poster-art" href="${gameUrl(g.slug)}" style="${img ? `background-image:${cssUrl(img)}` : ''}" aria-label="Ver ${g.title}">
-        ${img ? '' : html`<span class="poster-initial">${g.title.slice(0, 1)}</span>`}
+        ${trailer ? trailerVideo(trailer, img, 'poster-video') : img ? '' : html`<span class="poster-initial">${g.title.slice(0, 1)}</span>`}
       </a>
       <div class="poster-body">
         <h2 class="poster-title">${g.title}</h2>

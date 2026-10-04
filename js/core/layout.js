@@ -2,7 +2,7 @@
 import { html, raw, render, safeUrl } from './html.js';
 import { $, $$, on, reducedMotion, idle } from './dom.js';
 import { sb, configured } from './supabase.js';
-import { getProfile, getSession, signOut, loginUrl } from './session.js';
+import { getProfile, signOut } from './session.js';
 import { avatar, hydrateRobloxAvatars, profileUrl } from './view.js';
 import { toast, errorMsg } from './ui.js';
 import { SOCIALS } from '../config.js';
@@ -301,12 +301,6 @@ export async function renderLayout(active = '', { bare = false } = {}) {
     render(warn, html`Falta configurar Supabase en <code>js/config.js</code>. Mirá el archivo <code>README.md</code>.`);
     header.after(warn);
     document.documentElement.classList.add('ready');
-    return null;
-  }
-
-  // Páginas con login obligatorio (las que cargan js/gate.js): sin sesión válida, al login
-  if (document.documentElement.dataset.gate && !(await getSession())) {
-    location.replace(loginUrl());
     return null;
   }
 

@@ -17,7 +17,7 @@ const next = /^[a-z0-9-]+\.html([?#][^\s]*)?$/i.test(params.get('next') ?? '') ?
 if (await getSession()) location.replace(next);
 
 const SIDE = {
-  login: ['Iniciar sesión', 'Iniciá sesión para entrar al sitio.'],
+  login: ['Iniciar sesión', 'Iniciá sesión para comentar, votar y guardar favoritos.'],
   register: ['Crear cuenta', 'Es gratis y tarda un minuto.'],
   forgot: ['Recuperar cuenta', 'Te mandamos un link a tu email para cambiar la contraseña.'],
 };

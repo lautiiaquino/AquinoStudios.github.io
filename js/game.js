@@ -8,7 +8,7 @@ import { mountPolls } from './core/polls.js';
 import { toast, busy, say, validate, ask, errorMsg } from './core/ui.js';
 import {
   statusBadge, avatar, robloxGameUrl, gameImage, bgStyle, placeholder, fetchRobloxStats, bannedNotice, releaseIcs, REPORT_KIND,
-  ICON, likePct, codeCard, profileUrl, fetchRobloxDetails, ROBUX, robloxPassUrl, robloxBadgeUrl, robloxServerUrl,
+  ICON, likePct, codeCard, profileUrl, fetchRobloxDetails, ROBUX, robloxPassUrl, robloxBadgeUrl, robloxServerUrl, trailerSrc, trailerVideo,
 } from './core/view.js';
 import * as fmt from './core/format.js';
 import { mountLaunchReward } from './core/launch.js';
@@ -42,6 +42,7 @@ function renderGame(game) {
       <div class="container">
         <div class="rbx-media">
           <div class="game-hero-img" id="heroImg" style="${bgStyle(img)}" aria-hidden="true">${img ? '' : placeholder(game, 'heroPh')}</div>
+          ${trailerSrc(game) ? trailerVideo(trailerSrc(game), img, 'hero-trailer') : ''}
           <button class="rbx-nav prev hidden" type="button" data-slide="-1" aria-label="Imagen anterior">‹</button>
           <button class="rbx-nav next hidden" type="button" data-slide="1" aria-label="Imagen siguiente">›</button>
           <div class="rbx-dots" id="mediaDots"></div>
@@ -311,7 +312,8 @@ function mediaCarousel(game, robloxImages) {
     return;
   }
   let i = 0;
-  const show = (n) => {
+  const show = (n, user = true) => {
+    if (user) $('.hero-trailer')?.remove();
     i = (n + slides.length) % slides.length;
     $('#heroImg').style.backgroundImage = cssUrl(slides[i]);
     $('#heroPh')?.remove();
@@ -324,7 +326,7 @@ function mediaCarousel(game, robloxImages) {
   let x0 = null;
   $('#heroImg').addEventListener('pointerdown', (e) => (x0 = e.clientX));
   $('#heroImg').addEventListener('pointerup', (e) => { if (x0 !== null && Math.abs(e.clientX - x0) > 40) show(i + (e.clientX < x0 ? 1 : -1)); x0 = null; });
-  show(0);
+  show(0, false);
 }
 
 // ---------- Compartir (Web Share API, o copiar el enlace) ----------

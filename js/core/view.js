@@ -1,7 +1,7 @@
 // Piezas de interfaz que se repiten en varias páginas.
 import { html, raw, safeUrl, cssUrl } from './html.js';
 import { sb } from './supabase.js';
-import { memo } from './dom.js';
+import { memo, reducedMotion } from './dom.js';
 import * as fmt from './format.js';
 
 export const STATUS = {
@@ -170,6 +170,28 @@ export async function fetchRobloxStats(placeIds) {
 }
 
 // Acepta un link de YouTube (watch, youtu.be, shorts, embed, live) o el ID de 11 caracteres.
+// Tráiler del juego: un video del propio sitio (videos/...) o un link https a un .mp4/.webm
+export function trailerSrc(game) {
+  const u = (game?.trailer_url ?? '').trim();
+  if (/^videos\/[\w-]+\.(mp4|webm)$/.test(u)) return u;
+  return /^https:\/\/\S+\.(mp4|webm)(\?\S*)?$/i.test(u) && safeUrl(u) ? u : null;
+}
+
+// <video> mudo que se reproduce solo y en loop (si la persona pidió "reducir movimiento", queda quieto con controles).
+// Para los videos del propio sitio se ofrece primero la versión .webm (anda en todos los navegadores) y después
+// la .mp4, y de portada la imagen .webp con el mismo nombre.
+export function trailerVideo(src, poster, className) {
+  const local = /^videos\/[\w-]+\.mp4$/.test(src);
+  const base = src.replace(/\.(mp4|webm)$/, '');
+  const sources = local
+    ? html`<source src="${base}.webm" type="video/webm"><source src="${src}" type="video/mp4">`
+    : html`<source src="${src}">`;
+  const cover = local ? `${base}.webp` : poster ?? '';
+  return reducedMotion()
+    ? html`<video class="${className}" poster="${cover}" muted loop playsinline preload="metadata" controls aria-label="Tráiler">${sources}</video>`
+    : html`<video class="${className}" poster="${cover}" muted loop playsinline autoplay preload="auto" aria-label="Tráiler">${sources}</video>`;
+}
+
 export function youtubeId(input) {
   const v = String(input ?? '').trim();
   if (/^[\w-]{11}$/.test(v)) return v;

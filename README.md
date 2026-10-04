@@ -34,7 +34,7 @@ Sitio oficial de Aquino Studios, un estudio de juegos de Roblox.
 
 **Extras:** códigos canjeables de los juegos (se cargan en **Panel de admin → Códigos** y aparecen en el inicio y en cada juego), contador de **personas en línea** en tiempo real (Supabase Realtime Presence), insignia de **Donador**, sección **Mis donaciones** en Mi cuenta.
 
-**Login obligatorio:** para ver el inicio, los juegos y "Próximo" hay que iniciar sesión (lo controla `js/gate.js`). Los términos, la privacidad y la página 404 se ven sin cuenta. Cada página que abre un usuario queda anotada en la tabla `visits` (como mucho una vez cada 5 minutos por página) y en el panel de admin ves visitas por día, usuarios activos y páginas más vistas.
+**Sin cuenta para entrar:** el inicio, los juegos, "Próximo", el chat y los perfiles se ven sin iniciar sesión. La cuenta se pide solo para comentar, votar, guardar favoritos, escribir en el chat o mandar sugerencias. Cada página que abre un usuario con sesión queda anotada en la tabla `visits` (como mucho una vez cada 5 minutos por página) y en el panel de admin ves visitas por día, usuarios activos y páginas más vistas.
 
 ---
 
@@ -186,12 +186,24 @@ El sitio tiene un estilo **premium oscuro**: negro profundo, líneas finas, esqu
 
 Tipografía: **Sora** (en cuatro grosores), autohospedada en `fonts/` con licencia SIL Open Font License.
 
-En la portada, "AQUINO" aparece letra por letra desde un desenfoque y "STUDIOS", fino y espaciado, se enciende de a una letra en azul. Detrás, el logo del estudio hace de luz de fondo y "respira" despacio; entre los botones y el juego destacado baja una línea con una luz. Todo respeta "reducir movimiento" del sistema operativo.
+En la portada, "AQUINO" aparece letra por letra desde un desenfoque y "STUDIOS", fino y espaciado, se enciende de a una letra en azul. Detrás hay un fondo negro azulado animado (una aurora azul que se mueve despacio y partículas de luz que suben) y el logo del estudio, tenue, que "respira"; entre los botones y el juego destacado baja una línea con una luz. Todo respeta "reducir movimiento" del sistema operativo.
 
 `js/core/motion.js` agrega las interacciones de firma, aplicadas solas con los mismos selectores de siempre (no hace falta tocar el HTML de cada página):
 - **Resplandor que sigue al mouse** en `.card` y `.game-card`.
 - **Magnetismo** en los botones principales grandes (`.btn-primary.btn-lg`, `.btn-play.btn-lg`): se estiran un poco hacia el cursor.
 - Respeta "reducir movimiento" del sistema operativo: con esa preferencia, ninguno de los dos efectos se activa.
+
+### 18. Tráiler en la portada de un juego
+Cada juego puede tener un tráiler: un video corto, sin sonido, que se reproduce solo y en loop en la tarjeta del juego destacado (inicio) y arriba de todo en la página del juego. Ya viene uno hecho para **Obby Imposible** en `videos/obby-imposible.mp4` (más su versión `.webm` y la imagen de portada `.webp`).
+
+Para activarlo:
+1. Volvé a correr `supabase/schema.sql` en el **SQL Editor** de Supabase (agrega la columna `trailer_url` a los juegos; no borra nada).
+2. En el panel de admin, editá el juego y en **Tráiler en la portada** poné `videos/obby-imposible.mp4`.
+
+También podés usar un link `https://` a cualquier `.mp4` o `.webm`. Para los videos de la carpeta `videos/`, si dejás al lado un `.webm` y un `.webp` con el mismo nombre, el sitio los usa solo (el `.webm` anda en todos los navegadores).
+
+### 19. Minijuego en la página 404
+Si alguien entra a una página que no existe, además del aviso hay un minijuego: un cubo que tiene que saltar bloques de lava y huecos (con Espacio, la flecha para arriba o tocando la pantalla). Va cada vez más rápido y guarda el récord en el navegador. Está en `js/notfound.js`.
 
 ## Actualizar la base de datos
 Cuando el sitio agrega funciones nuevas, `supabase/schema.sql` trae las tablas nuevas.

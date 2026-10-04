@@ -6,7 +6,7 @@ import { requireAuth } from './core/session.js';
 import { renderLayout } from './core/layout.js';
 import { uploadImage } from './core/images.js';
 import { toast, busy, say, ask, errorMsg, validate } from './core/ui.js';
-import { REPORT_STATUS, REPORT_KIND, avatar, statusBadge, gameUrl, youtubeId } from './core/view.js';
+import { REPORT_STATUS, REPORT_KIND, avatar, statusBadge, gameUrl, youtubeId, trailerSrc } from './core/view.js';
 import * as fmt from './core/format.js';
 import { SUPABASE_URL } from './config.js';
 
@@ -154,7 +154,7 @@ async function loadGames() {
     <tr>
       <td>${safeUrl(g.thumbnail_url) ? html`<img class="thumb-sm" src="${g.thumbnail_url}" alt="" loading="lazy">` : html`<div class="thumb-sm"></div>`}</td>
       <td><a href="${gameUrl(g.slug)}" target="_blank">${g.title}</a>
-        ${g.featured ? html` <span class="badge badge-accent">Destacado</span>` : ''}${g.youtube_id ? html` <span class="badge">Video</span>` : ''}</td>
+        ${g.featured ? html` <span class="badge badge-accent">Destacado</span>` : ''}${g.youtube_id || g.trailer_url ? html` <span class="badge">Video</span>` : ''}</td>
       <td>${statusBadge(g.status)}</td>
       <td class="muted small">${g.release_at ? `${new Date(g.release_at) > now ? 'Sale: ' : ''}${fmt.date(g.release_at)}` : '—'}</td>
       <td>${g.sort_order}</td>
@@ -173,7 +173,7 @@ function openGameDialog(game = null) {
   editingGame = game;
   $('#gameDialogTitle').textContent = game ? 'Editar juego' : 'Nuevo juego';
   const set = { gTitle: game?.title, gSlug: game?.slug, gStatus: game?.status ?? 'publicado', gGenre: game?.genre, gPlace: game?.roblox_place_id,
-    gOrder: game?.sort_order ?? 0, gRelease: toLocalInput(game?.release_at), gYoutube: game?.youtube_id ? `https://youtu.be/${game.youtube_id}` : '',
+    gOrder: game?.sort_order ?? 0, gRelease: toLocalInput(game?.release_at), gYoutube: game?.youtube_id ? `https://youtu.be/${game.youtube_id}` : '', gTrailer: game?.trailer_url,
     gThumb: game?.thumbnail_url, gShort: game?.short_description, gDesc: game?.description };
   for (const [id, v] of Object.entries(set)) $(`#${id}`).value = v ?? '';
   $('#gThumb').dispatchEvent(new Event('input'));
@@ -200,6 +200,7 @@ $('#gameForm').addEventListener('submit', async (e) => {
   const place = val('gPlace');
   const thumb = val('gThumb');
   const yt = val('gYoutube');
+  const trailer = val('gTrailer');
   const row = {
     title: val('gTitle'), slug: val('gSlug'), status: $('#gStatus').value, genre: val('gGenre') || null,
     roblox_place_id: place ? Number(place) : null, sort_order: parseInt($('#gOrder').value, 10) || 0,
@@ -211,6 +212,9 @@ $('#gameForm').addEventListener('submit', async (e) => {
   if (place && !/^\d{1,18}$/.test(place)) return say(form, 'El Place ID tiene que ser un número.');
   if (yt && !row.youtube_id) return say(form, 'No reconozco ese link de YouTube. Pegá el link del video (youtube.com/watch?v=... o youtu.be/...).');
   if (thumb && !safeUrl(thumb)) return say(form, 'La URL de la imagen tiene que empezar con https://');
+  if (trailer && !trailerSrc({ trailer_url: trailer })) return say(form, 'El tráiler tiene que ser un .mp4 o .webm: un archivo de la carpeta videos/ (por ejemplo videos/obby-imposible.mp4) o un link https.');
+  // Solo se manda si se usa, así el panel sigue andando aunque la base todavía no tenga la columna nueva
+  if (trailer || (editingGame && 'trailer_url' in editingGame)) row.trailer_url = trailer || null;
 
   await busy(form.querySelector('[type=submit]'), async () => {
     // Solo puede haber un juego destacado
