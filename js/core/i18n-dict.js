@@ -433,7 +433,7 @@ export default {
   // ---------- Login ----------
   'Entrar · Aquino Studios': ['Log in · Aquino Studios', 'Connexion · Aquino Studios'],
   'Entrá o creá tu cuenta gratis en Aquino Studios: jugá nuestros juegos de Roblox, votá lo que viene y sumate a la comunidad.': ['Log in or create your free Aquino Studios account: play our Roblox games, vote on what’s next and join the community.', 'Connecte-toi ou crée ton compte gratuit Aquino Studios : joue à nos jeux Roblox, vote pour la suite et rejoins la communauté.'],
-  'Iniciá sesión para entrar al sitio.': ['Log in to enter the site.', 'Connecte-toi pour accéder au site.'],
+  'Iniciá sesión para comentar, votar y guardar favoritos.': ['Log in to comment, vote and save favorites.', 'Connecte-toi pour commenter, voter et garder tes favoris.'],
   'Continuar con Google': ['Continue with Google', 'Continuer avec Google'],
   'Continuar con Discord': ['Continue with Discord', 'Continuer avec Discord'],
   'o con tu email': ['or with your email', 'ou avec ton e-mail'],
@@ -631,6 +631,12 @@ export default {
   // ---------- 404, sin conexión, legales, subida de imágenes ----------
   'Error 404': ['Error 404', 'Erreur 404'],
   'Te caíste del mapa': ['You fell off the map', 'Tu es tombé de la carte'],
+  'Puntos': ['Score', 'Points'],
+  'Tráiler': ['Trailer', 'Bande-annonce'],
+  'Récord': ['Best', 'Record'],
+  '¡Te caíste del obby!': ['You fell off the obby!', 'Tu es tombé de l’obby !'],
+  'Saltá con Espacio, la flecha para arriba o tocando la pantalla.': ['Jump with Space, the up arrow or by tapping the screen.', 'Saute avec Espace, la flèche du haut ou en touchant l’écran.'],
+  'Minijuego: saltá los bloques de lava y los huecos': ['Mini game: jump over the lava blocks and the gaps', 'Mini-jeu : saute les blocs de lave et les trous'],
   'Esta página no existe o se movió.': ['This page doesn’t exist or has moved.', "Cette page n'existe pas ou a été déplacée."],
   'Te caíste del mapa · Aquino Studios': ['You fell off the map · Aquino Studios', 'Tu es tombé de la carte · Aquino Studios'],
   'Sin conexión': ['Offline', 'Hors ligne'],

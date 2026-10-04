@@ -312,23 +312,42 @@ code { background: var(--card-2); padding: .1em .4em; border-radius: var(--r); f
 [data-theme="light"] .hero::after { mix-blend-mode: multiply; filter: invert(1) grayscale(1); opacity: .07; }
 @keyframes breathe { 50% { opacity: .22; scale: 1.03; } }
 [data-theme="light"] .hero::after { animation: none; }
-[data-theme="light"] .hero-bg.on { opacity: .1; }
 @media (max-width: 600px) { .hero::after { opacity: .08; animation: none; top: 240px; } }
 
 .hero { padding: 110px 0 96px; min-height: min(900px, 94svh); display: grid; align-items: center; }
-/* Imagen del juego destacado (la pone js/home.js): de fondo, muy oscurecida, como un póster de cine */
+/* Fondo animado de la portada: negro azulado con una aurora azul que se mueve muy despacio
+   y partículas de luz que suben. Solo se animan "transform" (lo hace la placa de video,
+   sin repintar la página), así no pesa ni en celulares. */
 .hero-bg {
-  position: absolute; inset: -40px; z-index: -3; background: center / cover no-repeat; opacity: 0; transition: opacity 1.2s;
-  filter: saturate(.9);
+  position: absolute; inset: 0; z-index: -3; overflow: hidden; pointer-events: none;
+  background: radial-gradient(120% 80% at 50% 0%, color-mix(in oklab, var(--accent) 16%, var(--bg)), var(--bg) 70%);
 }
-.hero-bg.on { opacity: .22; }
-.hero-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, color-mix(in oklab, var(--bg) 40%, transparent), var(--bg) 92%); }
-@supports (animation-timeline: scroll()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .hero-bg { animation: hero-parallax linear both; animation-timeline: scroll(root); animation-range: 0 100vh; }
-  }
+.hero-bg::before {
+  content: ''; position: absolute; inset: -35%;
+  background:
+    radial-gradient(28% 22% at 30% 40%, color-mix(in oklab, var(--accent) 34%, transparent), transparent 70%),
+    radial-gradient(24% 20% at 70% 55%, color-mix(in oklab, #4fc3ff 22%, transparent), transparent 70%),
+    radial-gradient(30% 24% at 52% 30%, color-mix(in oklab, #6a5cff 18%, transparent), transparent 70%);
+  animation: aurora 26s ease-in-out infinite alternate;
 }
-@keyframes hero-parallax { to { transform: translateY(140px) scale(1.05); } }
+.hero-bg::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 200%;
+  background:
+    radial-gradient(1.5px 1.5px at 20px 30px, rgba(170, 200, 255, .7), transparent),
+    radial-gradient(1px 1px at 90px 120px, rgba(170, 200, 255, .5), transparent),
+    radial-gradient(1.5px 1.5px at 160px 60px, rgba(120, 170, 255, .6), transparent),
+    radial-gradient(1px 1px at 230px 170px, rgba(200, 220, 255, .45), transparent);
+  background-size: 260px 220px;
+  -webkit-mask: linear-gradient(transparent, #000 20%, #000 60%, transparent); mask: linear-gradient(transparent, #000 20%, #000 60%, transparent);
+  animation: float-up 60s linear infinite;
+}
+[data-theme="light"] .hero-bg::after { filter: invert(1); opacity: .35; }
+@keyframes aurora {
+  0% { transform: translate(-4%, -2%) rotate(0deg) scale(1); }
+  50% { transform: translate(4%, 3%) rotate(8deg) scale(1.08); }
+  100% { transform: translate(-2%, 5%) rotate(-6deg) scale(1.02); }
+}
+@keyframes float-up { to { transform: translateY(-50%); } }
 
 .hero-grid { display: flex; flex-direction: column; align-items: center; gap: 0; position: relative; text-align: center; }
 .hero-copy { display: flex; flex-direction: column; align-items: center; }
@@ -1247,20 +1266,6 @@ body:has(#toasts:not(:empty)) .to-top { translate: 0 -70px; }
 }
 body:has(.consent.show) .online-pill, body:has(.consent.show) .to-top { opacity: 0; pointer-events: none; }
 
-/* ---------- Pantalla de carga (como la de Roblox: un cuadrado inclinado que gira) ---------- */
-html[data-gate]:not(.ready) body::before, html[data-gate]:not(.ready) body::after {
-  content: ''; position: fixed; z-index: 9999; pointer-events: none;
-  animation: loader-out .4s 3.5s forwards; /* por si algo falla, se va sola */
-}
-html[data-gate]:not(.ready) body::before { inset: 0; background: var(--bg); }
-html[data-gate]:not(.ready) body::after {
-  left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: var(--r);
-  background: radial-gradient(circle, var(--bg) 0 24%, transparent 25%), var(--accent);
-  box-shadow: 0 0 40px color-mix(in oklab, var(--accent) 60%, transparent);
-  animation: rbx-spin 1s cubic-bezier(.6, 0, .4, 1) infinite, loader-out .4s 3.5s forwards;
-}
-@keyframes rbx-spin { from { rotate: 15deg; } to { rotate: 375deg; } }
-@keyframes loader-out { to { opacity: 0; visibility: hidden; } }
 
 /* =====================================================================
    PIEZAS COMPARTIDAS: todas las tarjetas del sitio hablan el mismo idioma
@@ -1366,6 +1371,28 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent-2); box-s
 .big-404, .launch .big-404 { font: 700 clamp(7rem, 24vw, 14rem)/.9 var(--font-display); -webkit-text-stroke: 1px var(--line-2); }
 .big-404::after { text-shadow: 0 0 40px var(--glow); }
 
+.auth-back { position: absolute; top: 24px; left: 24px; color: var(--muted); font: 400 .68rem var(--font-title); text-transform: uppercase; letter-spacing: .2em; }
+.auth-back::before { content: '\2190  '; }
+.auth-back:hover { color: var(--text); text-decoration: none; }
+.auth-page { position: relative; }
+
+/* ---------- Tráiler del juego (portada y página del juego) ---------- */
+.poster-art { position: relative; }
+.poster-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+.hero-trailer { position: absolute; left: 0; top: 0; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #000; border: var(--bw) solid var(--line); border-radius: var(--r); }
+
+/* ---------- Minijuego de la 404 ---------- */
+.obby { position: relative; width: min(760px, 100%); margin: 56px auto 0; border: var(--bw) solid var(--line-2); border-radius: var(--r); background: radial-gradient(90% 120% at 50% 0%, color-mix(in oklab, var(--accent) 12%, var(--card)), var(--card) 70%); overflow: hidden; }
+.obby canvas { display: block; width: 100%; height: auto; aspect-ratio: 760 / 240; touch-action: manipulation; cursor: pointer; }
+.obby-hud { position: absolute; top: 14px; left: 18px; right: 18px; display: flex; justify-content: space-between; font: 400 .66rem var(--font-title); letter-spacing: .22em; text-transform: uppercase; color: var(--muted); pointer-events: none; }
+.obby-hud b { color: var(--text); font-weight: 600; letter-spacing: .04em; margin-left: 8px; font-variant-numeric: tabular-nums; }
+.obby-overlay { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 12px; background: color-mix(in oklab, var(--bg) 55%, transparent); transition: opacity .25s; }
+.obby-overlay p { margin: 0; }
+.obby-hint { font-size: .82rem; color: var(--muted); }
+.obby-over { display: none; font: 600 1.2rem var(--font-title); text-transform: uppercase; letter-spacing: .06em; color: var(--red); }
+.obby.dead .obby-over { display: block; }
+.obby.playing .obby-overlay { opacity: 0; pointer-events: none; }
+
 /* ---------- Detalles técnicos ---------- */
 count-up { display: block; }
 count-down { display: flex; }
@@ -1380,7 +1407,6 @@ html.theme-switch::view-transition-old(root), html.theme-switch::view-transition
 @media (prefers-reduced-motion: reduce) { .card, .game-card { background-image: none !important; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
-  html[data-gate]:not(.ready) body::after { display: none; }
   html { scroll-behavior: auto; }
 }
 

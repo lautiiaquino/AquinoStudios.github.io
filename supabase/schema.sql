@@ -147,6 +147,7 @@ alter table public.profiles add column if not exists banned_reason text check (c
 alter table public.comments add column if not exists hidden boolean not null default false;
 alter table public.games    add column if not exists release_at timestamptz;
 alter table public.games    add column if not exists youtube_id text check (youtube_id is null or youtube_id ~ '^[A-Za-z0-9_-]{11}$');
+alter table public.games    add column if not exists trailer_url text check (trailer_url is null or trailer_url ~ '^(videos/[A-Za-z0-9_-]+|https://[^[:space:]]+)\.(mp4|webm)$');
 
 -- ---------- PALABRAS PROHIBIDAS (filtro de comentarios y reportes) ----------
 create table if not exists public.banned_words (
