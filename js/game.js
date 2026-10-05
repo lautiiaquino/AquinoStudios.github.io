@@ -8,7 +8,7 @@ import { mountPolls } from './core/polls.js';
 import { toast, busy, say, validate, ask, errorMsg } from './core/ui.js';
 import {
   statusBadge, avatar, robloxGameUrl, gameImage, bgStyle, placeholder, fetchRobloxStats, bannedNotice, releaseIcs, REPORT_KIND,
-  ICON, likePct, codeCard, profileUrl, fetchRobloxDetails, ROBUX, robloxPassUrl, robloxBadgeUrl, robloxServerUrl, trailerSrc, trailerVideo,
+  ICON, likePct, codeCard, profileUrl, fetchRobloxDetails, ROBUX, robloxPassUrl, robloxBadgeUrl, robloxServerUrl, trailerSrc, trailerVideo, trailerSoundButton,
 } from './core/view.js';
 import * as fmt from './core/format.js';
 import { mountLaunchReward } from './core/launch.js';
@@ -42,7 +42,7 @@ function renderGame(game) {
       <div class="container">
         <div class="rbx-media">
           <div class="game-hero-img" id="heroImg" style="${bgStyle(img)}" aria-hidden="true">${img ? '' : placeholder(game, 'heroPh')}</div>
-          ${trailerSrc(game) ? trailerVideo(trailerSrc(game), img, 'hero-trailer') : ''}
+          ${trailerSrc(game) ? html`${trailerVideo(trailerSrc(game), img, 'hero-trailer')}${trailerSoundButton()}` : ''}
           <button class="rbx-nav prev hidden" type="button" data-slide="-1" aria-label="Imagen anterior">‹</button>
           <button class="rbx-nav next hidden" type="button" data-slide="1" aria-label="Imagen siguiente">›</button>
           <div class="rbx-dots" id="mediaDots"></div>
@@ -313,7 +313,7 @@ function mediaCarousel(game, robloxImages) {
   }
   let i = 0;
   const show = (n, user = true) => {
-    if (user) $('.hero-trailer')?.remove();
+    if (user) { $('.hero-trailer')?.remove(); $('.rbx-media .trailer-sound')?.remove(); }
     i = (n + slides.length) % slides.length;
     $('#heroImg').style.backgroundImage = cssUrl(slides[i]);
     $('#heroPh')?.remove();

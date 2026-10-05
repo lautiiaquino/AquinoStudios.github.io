@@ -286,6 +286,18 @@ export async function renderLayout(active = '', { bare = false } = {}) {
   // Botones de donar (menú, pie o cualquier elemento con data-donate)
   on(document, 'click', '[data-donate]', (e) => { e.preventDefault(); openDonate(); });
   donationReturn();
+  // Parlante del tráiler: al activar el sonido, el video vuelve a empezar para escucharlo entero
+  on(document, 'click', '.trailer-sound', (e, b) => {
+    e.preventDefault();
+    const v = b.parentElement.querySelector('video');
+    if (!v) return;
+    v.muted = !v.muted;
+    if (!v.muted) { v.currentTime = 0; v.play().catch(() => {}); }
+    const label = v.muted ? 'Activar sonido' : 'Silenciar';
+    b.setAttribute('aria-pressed', String(!v.muted));
+    b.setAttribute('aria-label', label);
+    b.title = label;
+  });
 
   initConsent();
   autoReveal();
