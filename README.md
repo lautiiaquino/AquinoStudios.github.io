@@ -194,7 +194,7 @@ En la portada, "AQUINO" aparece letra por letra desde un desenfoque y "STUDIOS",
 - Respeta "reducir movimiento" del sistema operativo: con esa preferencia, ninguno de los dos efectos se activa.
 
 ### 18. Tráiler en la portada de un juego
-Cada juego puede tener un tráiler: un video corto, sin sonido, que se reproduce solo y en loop en la tarjeta del juego destacado (inicio) y arriba de todo en la página del juego. Ya viene uno hecho para **Obby Imposible** en `videos/obby-imposible.mp4` (más su versión `.webm` y la imagen de portada `.webp`).
+Cada juego puede tener un tráiler: un video corto que se reproduce solo, sin sonido y en loop, en la tarjeta del juego destacado (inicio) y arriba de todo en la página del juego. Un botón de parlante arriba a la derecha activa el sonido y lo hace empezar de nuevo. Ya viene uno hecho para **Obby Imposible** en `videos/obby-imposible.mp4`: un tráiler animado épico de 25 segundos con música y efectos (más su versión `.webm` y la imagen de portada `.webp`).
 
 Para activarlo:
 1. Volvé a correr `supabase/schema.sql` en el **SQL Editor** de Supabase (agrega la columna `trailer_url` a los juegos; no borra nada).

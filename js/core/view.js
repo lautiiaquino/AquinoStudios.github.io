@@ -192,6 +192,14 @@ export function trailerVideo(src, poster, className) {
     : html`<video class="${className}" poster="${cover}" muted loop playsinline autoplay preload="auto" aria-label="Tráiler">${sources}</video>`;
 }
 
+// Botón de parlante para escuchar el tráiler (los navegadores solo dejan reproducir con sonido después de un clic)
+export function trailerSoundButton() {
+  return raw(`<button class="trailer-sound" type="button" aria-pressed="false" aria-label="Activar sonido" title="Activar sonido">
+    <svg class="snd-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m22 9-6 6M16 9l6 6"/></svg>
+    <svg class="snd-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+  </button>`);
+}
+
 export function youtubeId(input) {
   const v = String(input ?? '').trim();
   if (/^[\w-]{11}$/.test(v)) return v;

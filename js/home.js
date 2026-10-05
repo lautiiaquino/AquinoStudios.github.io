@@ -9,7 +9,7 @@ import { toast, busy, say, validate, errorMsg } from './core/ui.js';
 import { launchTeaser } from './core/launch.js';
 import { captchaOn, mountCaptcha } from './core/captcha.js';
 import {
-  gameCard, gameImage, avatar, codeCard, profileUrl, robloxGameUrl, robloxUserUrl, gameUrl, fetchRobloxStats, likePct, ICON, trailerSrc, trailerVideo,
+  gameCard, gameImage, avatar, codeCard, profileUrl, robloxGameUrl, robloxUserUrl, gameUrl, fetchRobloxStats, likePct, ICON, trailerSrc, trailerVideo, trailerSoundButton,
 } from './core/view.js';
 import * as fmt from './core/format.js';
 import { SOCIALS } from './config.js';
@@ -69,6 +69,7 @@ function renderHero() {
       <a class="poster-art" href="${gameUrl(g.slug)}" style="${img ? `background-image:${cssUrl(img)}` : ''}" aria-label="Ver ${g.title}">
         ${trailer ? trailerVideo(trailer, img, 'poster-video') : img ? '' : html`<span class="poster-initial">${g.title.slice(0, 1)}</span>`}
       </a>
+      ${trailer ? trailerSoundButton() : ''}
       <div class="poster-body">
         <h2 class="poster-title">${g.title}</h2>
         <p>${g.short_description ?? ''}</p>

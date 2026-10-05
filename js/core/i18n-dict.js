@@ -633,6 +633,8 @@ export default {
   'Te caíste del mapa': ['You fell off the map', 'Tu es tombé de la carte'],
   'Puntos': ['Score', 'Points'],
   'Tráiler': ['Trailer', 'Bande-annonce'],
+  'Activar sonido': ['Turn sound on', 'Activer le son'],
+  'Silenciar': ['Mute', 'Couper le son'],
   'Récord': ['Best', 'Record'],
   '¡Te caíste del obby!': ['You fell off the obby!', 'Tu es tombé de l’obby !'],
   'Saltá con Espacio, la flecha para arriba o tocando la pantalla.': ['Jump with Space, the up arrow or by tapping the screen.', 'Saute avec Espace, la flèche du haut ou en touchant l’écran.'],
